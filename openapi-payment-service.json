@@ -1,0 +1,764 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Payment Service Swagger",
+    "version": "v1"
+  },
+  "basePath": "/payment",
+  "paths": {
+    "/api/v1/Cart/items": {
+      "post": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Add course to cart",
+        "description": "Add a course into current user's cart",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/AddToCartRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/AddToCartResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Order/InsertOrder": {
+      "post": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Tạo đơn hàng mới và khởi tạo thanh toán qua PayOS.",
+        "description": "PaymentMethod: 1. Momo, 2. PayOS",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/InsertOrderCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/InsertOrderResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Payment/PaymentCallback": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Handle payment callback from PayOS",
+        "description": "Process payment result from PayOS gateway. Update order and payment transaction status based on payment result.",
+        "consumes": [
+          "application/json",
+          "text/json",
+          "application/*+json"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/PaymentCallbackCommand"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/PaymentCallbackResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Cart": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Get current user's cart",
+        "description": "Return active cart of the authenticated user",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/GetMyCartResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Cart/items/check": {
+      "get": {
+        "tags": [
+          "Cart"
+        ],
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "courseId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/CheckCourseInCartResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Order/SelectOrder": {
+      "get": {
+        "tags": [
+          "Order"
+        ],
+        "summary": "Lấy danh sách đơn hàng hoặc chi tiết một đơn hàng.",
+        "description": "Get paginated list of user's orders or single order detail by OrderId.",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "orderId",
+            "type": "string",
+            "format": "uuid"
+          },
+          {
+            "in": "query",
+            "name": "pageIndex",
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/SelectOrderResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Payment/RePayment": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "summary": "Lấy lại link thanh toán khi người dùng đóng tab hoặc cần thanh toán lại.",
+        "description": "Retrieve existing payment URL and QR code when user closed the payment tab or needs to retry payment.",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "orderId",
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/RePaymentResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Cart/items/{cartItemId}": {
+      "delete": {
+        "tags": [
+          "Cart"
+        ],
+        "summary": "Remove cart item",
+        "description": "Logical delete a cart item from current user's cart",
+        "produces": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "cartItemId",
+            "required": true,
+            "type": "string",
+            "format": "uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/RemoveCartItemResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AddToCartRequest": {
+      "type": "object",
+      "properties": {
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AddToCartResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CartDto": {
+      "type": "object",
+      "properties": {
+        "cartId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "userId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CartItemDto"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "CartItemDto": {
+      "type": "object",
+      "properties": {
+        "cartItemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "courseTitle": {
+          "type": "string"
+        },
+        "courseImageUrl": {
+          "type": "string"
+        },
+        "price": {
+          "format": "double",
+          "type": "number"
+        },
+        "dealPrice": {
+          "format": "double",
+          "type": "number"
+        },
+        "isSelected": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CheckCourseInCartDto": {
+      "type": "object",
+      "properties": {
+        "isInCart": {
+          "type": "boolean"
+        },
+        "cartId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "cartItemId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "CheckCourseInCartResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/CheckCourseInCartDto"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DetailError": {
+      "type": "object",
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "errorMessage": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "GetMyCartResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/CartDto"
+        }
+      },
+      "additionalProperties": false
+    },
+    "InsertOrderCommand": {
+      "required": [
+        "cartItemIds",
+        "paymentMethod"
+      ],
+      "type": "object",
+      "properties": {
+        "cartItemIds": {
+          "type": "array",
+          "items": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "paymentMethod": {
+          "$ref": "#/definitions/PaymentGateway"
+        }
+      },
+      "additionalProperties": false
+    },
+    "InsertOrderResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/PaymentResultEntity"
+        },
+        "orderId": {
+          "format": "uuid",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "OrderItemEntity": {
+      "type": "object",
+      "properties": {
+        "orderItemId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "courseId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "price": {
+          "format": "double",
+          "type": "number"
+        },
+        "discount": {
+          "format": "double",
+          "type": "number"
+        },
+        "finalPrice": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PaymentCallbackCommand": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "cancel": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string"
+        },
+        "orderCode": {
+          "format": "int64",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PaymentCallbackDto": {
+      "type": "object",
+      "properties": {
+        "checkoutUrl": {
+          "type": "string"
+        },
+        "qrCode": {
+          "type": "string"
+        },
+        "orderId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "orderStatus": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PaymentCallbackResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/PaymentCallbackDto"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PaymentGateway": {
+      "format": "int32",
+      "enum": [
+        1,
+        2
+      ],
+      "type": "integer"
+    },
+    "PaymentResultEntity": {
+      "type": "object",
+      "properties": {
+        "transactionId": {
+          "type": "string"
+        },
+        "checkoutUrl": {
+          "type": "string"
+        },
+        "qrCode": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RePaymentResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "$ref": "#/definitions/RePaymentResponseEntity"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RePaymentResponseEntity": {
+      "type": "object",
+      "properties": {
+        "paymentUrl": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "RemoveCartItemResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SelectOrderResponse": {
+      "type": "object",
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "messageId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "detailErrors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DetailError"
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SelectOrderResponseEntity"
+          }
+        },
+        "totalRecords": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageIndex": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "pageSize": {
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SelectOrderResponseEntity": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "orderDate": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "statusName": {
+          "type": "string"
+        },
+        "subtotal": {
+          "format": "double",
+          "type": "number"
+        },
+        "discount": {
+          "format": "double",
+          "type": "number"
+        },
+        "finalAmount": {
+          "format": "double",
+          "type": "number"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "paidAt": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "orderItems": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/OrderItemEntity"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "securityDefinitions": {
+    "JWT_Token": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Copy this into the value field: Bearer {token}"
+    }
+  },
+  "security": [
+    {
+      "JWT_Token": [ ]
+    }
+  ]
+}
