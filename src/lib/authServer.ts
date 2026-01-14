@@ -210,6 +210,70 @@ export async function exchangePassword(email: string, password: string) {
   return { sid };
 }
 
+export async function exchangeGoogle(
+  googleId: string,
+  email: string,
+  name: string,
+  avatar: string,
+) {
+  console.log("[exchangeGoogle] start");
+  const body = new URLSearchParams({
+    grant_type: "google",
+    googleId,
+    email,
+    name,
+    avatar,
+    client_id: CID,
+    client_secret: CSECRET,
+    scope: "openid profile roles offline_access",
+  });
+
+  let resp: Response;
+  try {
+    resp = await fetch(`${BACKEND}/connect/token`, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[exchangeGoogle] fetch error:", err);
+    throw new Error("Không gọi được /connect/token");
+  }
+
+  console.log("[exchangeGoogle] status:", resp.status);
+
+  const raw = await resp.clone().text();
+  console.log("[exchangeGoogle] raw body (trim):", raw.slice(0, 1000));
+
+  const data = safeJson<TokenResponse>(raw);
+  if (!resp.ok)
+    throw new Error(
+      (data as unknown as { error?: string })?.error ||
+        `Đăng nhập thất bại (HTTP ${resp.status})`,
+    );
+
+  const picked = data
+    ? pickTokens(data)
+    : { access: null, refresh: null, expSec: 600, idToken: null };
+  const { access, refresh, expSec, idToken } = picked;
+  if (!access || !refresh) throw new Error("Thiếu token từ backend");
+
+  const sid = randomUUID();
+  const expAt = Date.now() + Math.max(30, expSec) * 1000;
+
+  const user = idToken
+    ? extractUserFromIdToken(idToken) ?? undefined
+    : undefined;
+  // Lưu in-memory
+  await saveTokens(sid, { access, refresh, expAt });
+
+  // Ghi cookie duy nhất kèm payload
+  await setSidCookie({ sid, access, refresh, expAt, user });
+
+  return { sid };
+}
+
 export async function refreshTokens(sid: string, skipCookieUpdate = false) {
   let bundle = await loadTokens(sid);
   console.log("load sid", sid, "bundle:", bundle);

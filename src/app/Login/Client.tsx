@@ -1,12 +1,10 @@
 "use client";
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Button, Form, Segmented, Tooltip } from "antd";
+import React, { useState, useEffect, useRef } from "react";
+import { Button, Tooltip } from "antd";
 import Image from "next/image";
-import { useSpring, useTrail, animated, easings } from "@react-spring/web";
-import { gsap } from "gsap";
-import BaseControlTextField from "EduSmart/components/BaseControl/BasecontrolTextField";
+import { useSpring, animated, easings } from "@react-spring/web";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
-import bgQuestion from "EduSmart/assets/FPT_Logo_Background.jpg";
+import bgQuestion from "EduSmart/assets/modern-business-buildings-financial-district.jpg";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { isAxiosError } from "axios";
 import BubbleBackground from "EduSmart/components/Bubble/BubbleBackground";
@@ -14,30 +12,56 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import Loading from "EduSmart/components/Loading/Loading";
 import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
-import { Lobster } from "next/font/google";
+import { Lobster, Outfit } from "next/font/google";
 import "./styles/login.styles.css";
 import { FiArrowLeft } from "react-icons/fi";
-
-const xmlColumns = {
-  email: { id: "email", name: "Email", rules: "required" },
-  password: { id: "password", name: "Mật khẩu", rules: "required" },
-} as const;
-
-type LoginFormValues = { email: string; password: string };
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 
 const lobster = Lobster({
   weight: "400",
   subsets: ["latin"],
 });
 
+const outfit = Outfit({
+  weight: ["400", "500", "600", "700", "800", "900"],
+  subsets: ["latin"],
+  variable: "--font-outfit",
+});
+
+type GoogleIdTokenPayload = {
+  email?: string;
+  name?: string;
+  picture?: string;
+  given_name?: string;
+  family_name?: string;
+  sub?: string;
+};
+
+function decodeJwtPayload(token: string): GoogleIdTokenPayload {
+  const parts = token.split(".");
+  if (parts.length < 2) return {};
+
+  const base64Url = parts[1];
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = base64.padEnd(
+    base64.length + ((4 - (base64.length % 4)) % 4),
+    "=",
+  );
+
+  try {
+    const json = atob(padded);
+    return JSON.parse(json) as GoogleIdTokenPayload;
+  } catch {
+    return {};
+  }
+}
+
 export default function LoginPage() {
   const messageApi = useNotification();
-  const [form] = Form.useForm<LoginFormValues>();
-  const login = useAuthStore((state) => state.login);
+  const loginGoogle = useAuthStore((state) => state.loginGoogle);
   const isOtherSystem = useAuthStore((state) => state.isOtherSystem);
   const router = useRouter();
   const [showForm, setShowForm] = useState<boolean>(false);
-  const [activeKey, setActiveKey] = useState<"login" | "register">("login");
   const [skipMountAnim, setSkipMountAnim] = useState(false);
   const [showFormBySwipeRun, setShowFormBySwipeRun] = useState<boolean>(true);
   const [showWipe, setShowWipe] = useState(false);
@@ -80,9 +104,6 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, [isOtherSystem]);
 
-  useEffect(() => {
-    router.prefetch("/Register"); // tải sẵn chunk của trang Register
-  }, [router]);
 
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
@@ -128,60 +149,45 @@ export default function LoginPage() {
     }, 500);
   }, [wipeApi]);
 
-  const navigateWithTransition = useCallback(
-    (target: string, sessionFlag?: string) => {
-      if (sessionFlag && typeof window !== "undefined") {
-        sessionStorage.setItem("routeTransition", sessionFlag);
-      }
-      const layer = transitionLayerRef.current;
-      if (!layer) {
-        router.push(target);
+  const onGoogleSuccess = async (resp: CredentialResponse) => {
+    try {
+      const idToken = resp.credential ?? "";
+      if (!idToken) return;
+
+      useLoadingStore.getState().showLoading();
+      const payload = decodeJwtPayload(idToken);
+      
+      if (!payload.sub || !payload.email) {
+        messageApi.error("Không thể lấy thông tin từ Google");
+        useLoadingStore.getState().hideLoading();
         return;
       }
-      gsap.killTweensOf(layer);
-      gsap.set(layer, {
-        pointerEvents: "auto",
-        transformOrigin: "top",
-      });
-      gsap
-        .timeline({
-          onComplete: () => {
-            router.push(target);
-          },
-        })
-        .fromTo(
-          layer,
-          { scaleY: 0, opacity: 0 },
-          { scaleY: 1, opacity: 1, duration: 0.45, ease: "power2.out" },
-        );
-    },
-    [router],
-  );
 
-  const onFinish = async (values: LoginFormValues) => {
-    try {
-      useLoadingStore.getState().showLoading();
-      const isOK = await login(values.email, values.password);
+      const isOK = await loginGoogle(
+        payload.sub,
+        payload.email,
+        payload.name || "",
+        payload.picture || "",
+      );
+
       if (useAuthStore.getState().isOtherSystem) {
         useLoadingStore.getState().hideLoading();
         return;
       }
+
       const target = redirect || "/";
-      console.log("Redirecting to:", target);
       if (isOK) {
         messageApi.success("Đăng nhập thành công!");
         router.push(target);
         useLoadingStore.getState().hideLoading();
         return;
       }
-      messageApi.error(
-        "Đăng nhập thất bại, vui lòng kiểm tra lại email/mật khẩu",
-      );
+
+      messageApi.error("Đăng nhập thất bại, vui lòng thử lại");
       useLoadingStore.getState().hideLoading();
     } catch (error: unknown) {
       useLoadingStore.getState().hideLoading();
-      let errorMessage =
-        "Đăng nhập thất bại, vui lòng kiểm tra lại email/mật khẩu.";
+      let errorMessage = "Đăng nhập thất bại, vui lòng thử lại.";
       if (isAxiosError(error)) {
         const serverMsg =
           error.response?.data?.errors || error.response?.data?.error;
@@ -207,120 +213,117 @@ export default function LoginPage() {
     config: { mass: 1, tension: 240, friction: 22 },
   });
 
-  // 2) Trail cho các input field
-  const fieldKeys = ["email", "password"] as const;
-  const trail = useTrail(showForm ? fieldKeys.length : 0, {
-    from: { opacity: 0, transform: "translate3d(0,20px,0)" },
-    to: { opacity: 1, transform: "translate3d(0,0,0)" },
-    config: { mass: 1, tension: 200, friction: 20 },
-    delay: 600,
-  });
-
   const FormCard = (
     <animated.div
       style={mountSprings}
       className="relative w-full max-w-md isolate"
     >
       <BubbleBackground />
-      <div className="relative z-10 bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 backdrop-blur-md rounded-3xl shadow-2xl p-6 sm:p-8">
-        {/* <h2
-          className={`${knewave.className} text-xl sm:text-2xl md:text-3xl font-light tracking-wide text-center px-4 text-[#4a2580]`}
-        >
-          Welcome to EduSmart
-        </h2> */}
-        <div className="mx-auto mt-2 w-full">
-          <Segmented
-            block
-            value={activeKey}
-            onChange={(val) => {
-              const v = val as "login" | "register";
-              if (v !== activeKey) {
-                setActiveKey(v);
-                sessionStorage.setItem("authMountOnce", "1");
-                setTimeout(() => {
-                  const target = v === "login" ? "/Login" : "/Register";
-                  router.push(target, { scroll: false });
-                }, 220);
-              }
-            }}
-            options={[
-              {
-                label: (
-                  <span className="text-slate-900 dark:text-white">
-                    Đăng Nhập
-                  </span>
-                ),
-                value: "login",
-              },
-              {
-                label: (
-                  <span className="text-slate-700 dark:text-slate-300">
-                    Đăng kí
-                  </span>
-                ),
-                value: "register",
-              },
-            ]}
-            className="auth-segmented"
-          />
-          <div className="mt-2 flex justify-center"></div>
+      <div className="relative z-10 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-slate-200/60 dark:border-slate-700/60 p-10 sm:p-12 overflow-hidden">
+        {/* Decorative gradient accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500" />
+        
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)',
+            backgroundSize: '24px 24px'
+          }} />
         </div>
 
-        {/* Heading thay đổi theo tab */}
-        <div
-          className={`${lobster.className} flex justify-center items-center h-full
-              text-black text-2xl md:text-3xl font-semibold my-6 dark:text-white`}
-        >
-          Đăng Nhập ngay
-        </div>
-        <Form<LoginFormValues>
-          form={form}
-          onFinish={onFinish}
-          layout="vertical"
-        >
-          {trail.map((style, idx) => {
-            const key = fieldKeys[idx];
-            return (
-              <animated.div key={key} style={style} className="mb-4">
-                <BaseControlTextField
-                  xmlColumn={xmlColumns[key]}
-                  maxlength={50}
-                  placeholder={key === "email" ? "Nhập email" : "Nhập mật khẩu"}
-                  type={key === "password" ? "password" : undefined}
-                />
-                {key === "password" && (
-                  <div className="mt-2 flex items-center justify-end gap-2 text-right text-sm">
-                    <span className="text-slate-500 dark:text-slate-400">
-                      Quên mật khẩu?
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        navigateWithTransition(
-                          "/forgot-password",
-                          "login-to-forgot",
-                        )
-                      }
-                      className="text-sm font-semibold text-teal-600 hover:text-teal-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/60 transition-colors underline-offset-2 hover:underline cursor-pointer"
-                    >
-                      Đặt lại ngay
-                    </button>
-                  </div>
-                )}
-              </animated.div>
-            );
-          })}
-          <div className="mt-6 sm:mt-8">
-            {/* Đổi hover scale sang CSS */}
-            <button
-              type="submit"
-              className="w-full py-4 font-semibold text-white rounded-full bg-gradient-to-r from-teal-400 to-blue-500 
-                         hover:scale-[1.05] transition-transform duration-200"
-            >
-              Đăng nhập
-            </button>
+        {/* Title with Lobster font */}
+        <div className="relative mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-600 to-transparent" />
           </div>
-        </Form>
+          <h1
+            className={`${lobster.className} text-3xl sm:text-4xl text-slate-900 dark:text-white text-center mb-3`}
+          >
+            Đăng nhập Uniwrap
+          </h1>
+          {/* Trust badge */}
+          <div className="flex justify-center mb-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200/50 dark:border-violet-800/30 text-xs font-medium text-violet-700 dark:text-violet-300">
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              Bảo mật cao
+            </span>
+          </div>
+          {/* Subtitle */}
+          <p className="text-base text-slate-500 dark:text-slate-400 text-center leading-relaxed max-w-md mx-auto">
+            Tập trung vào trải nghiệm, phần kết nối cứ để chúng tôi xử lý.
+          </p>
+        </div>
+
+        {/* Google Login Button */}
+        <div className="relative flex justify-center mb-10">
+          <div className="google-login-wrapper">
+            <GoogleLogin
+              onSuccess={onGoogleSuccess}
+              onError={() => messageApi.error("Google login lỗi")}
+              useOneTap={false}
+            />
+          </div>
+        </div>
+
+        {/* Dashboard Preview Section */}
+        <div className="dashboard-preview-container relative rounded-2xl bg-gradient-to-br from-violet-50/95 via-fuchsia-50/95 to-cyan-50/95 dark:from-slate-800/95 dark:via-slate-700/95 dark:to-slate-800/95 border border-violet-200/70 dark:border-slate-600/70 shadow-xl p-7 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:shadow-2xl">
+          {/* Animated background gradient */}
+          <div className="absolute inset-0 opacity-30 dashboard-preview-gradient bg-gradient-to-br from-violet-200/20 via-fuchsia-200/20 to-cyan-200/20 dark:from-violet-900/10 dark:via-fuchsia-900/10 dark:to-cyan-900/10" />
+          
+          {/* Decorative corner accent */}
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-violet-400/10 via-fuchsia-400/5 to-transparent rounded-bl-3xl" />
+          
+          {/* Subtle shine effect */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+          
+          {/* Header with icon */}
+          <div className="dashboard-preview-header relative mb-5">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <div className="p-1.5 rounded-lg bg-violet-100/80 dark:bg-violet-900/30 transition-transform duration-300 hover:scale-110">
+                <svg className="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-600 dark:text-slate-400">
+                TRẢI NGHIỆM DASHBOARD
+              </h2>
+            </div>
+            {/* Description */}
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 text-center">
+              Tạo form theo ý của bạn
+            </p>
+          </div>
+          
+          {/* Placeholder Elements */}
+          <div className="relative space-y-3.5">
+            {/* Title placeholder */}
+            <div className="dashboard-preview-title-bar h-3 bg-gradient-to-r from-slate-300/70 via-slate-400/70 to-slate-300/70 dark:from-slate-600/50 dark:via-slate-500/50 dark:to-slate-600/50 rounded-full w-2/3 mx-auto dashboard-preview-placeholder" />
+            
+            {/* Form fields with icons */}
+            <div className="space-y-3">
+              <div className="dashboard-preview-field-1 dashboard-preview-field relative h-12 bg-white/98 dark:bg-slate-700/98 rounded-xl border border-slate-200/80 dark:border-slate-600/80 shadow-md backdrop-blur-sm flex items-center px-4 gap-3 transition-all duration-200 hover:shadow-lg hover:border-violet-300/50 dark:hover:border-violet-500/30">
+                <div className="w-4 h-4 rounded bg-slate-200/60 dark:bg-slate-600/60 dashboard-preview-placeholder" />
+                <div className="flex-1 h-3 bg-slate-100/80 dark:bg-slate-600/40 rounded dashboard-preview-placeholder" />
+              </div>
+              <div className="dashboard-preview-field-2 dashboard-preview-field relative h-12 bg-white/98 dark:bg-slate-700/98 rounded-xl border border-slate-200/80 dark:border-slate-600/80 shadow-md backdrop-blur-sm flex items-center px-4 gap-3 transition-all duration-200 hover:shadow-lg hover:border-violet-300/50 dark:hover:border-violet-500/30">
+                <div className="w-4 h-4 rounded bg-slate-200/60 dark:bg-slate-600/60 dashboard-preview-placeholder" />
+                <div className="flex-1 h-3 bg-slate-100/80 dark:bg-slate-600/40 rounded dashboard-preview-placeholder" />
+              </div>
+            </div>
+            
+            {/* Action buttons */}
+            <div className="dashboard-preview-buttons flex gap-3 pt-1">
+              <div className="dashboard-preview-gradient flex-1 h-10 bg-gradient-to-r from-violet-500/90 via-fuchsia-500/90 to-cyan-500/90 dark:from-violet-600/70 dark:via-fuchsia-600/70 dark:to-cyan-600/70 rounded-lg shadow-md border border-violet-300/40 dark:border-violet-600/30 flex items-center justify-center transition-all duration-200 hover:shadow-lg hover:scale-[1.02]">
+                <div className="h-2.5 w-16 bg-white/40 dark:bg-white/20 rounded-full dashboard-preview-placeholder" />
+              </div>
+              <div className="w-24 h-10 bg-white/90 dark:bg-slate-700/90 rounded-lg border border-slate-200/70 dark:border-slate-600/70 shadow-md flex items-center justify-center transition-all duration-200 hover:shadow-lg hover:scale-[1.02]">
+                <div className="h-2 w-12 bg-slate-300/60 dark:bg-slate-500/60 rounded-full dashboard-preview-placeholder" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </animated.div>
   );
@@ -338,11 +341,11 @@ export default function LoginPage() {
             opacity: wipeStyles.y.to([100, 0, -100], [0, 1, 0]), // fade in/out
           }}
         >
-          <div className="relative h-dvh w-full overflow-hidden rounded-b-[80px] shadow-[0_20px_60px_rgba(16,185,129,.35)]">
+          <div className="relative h-dvh w-full overflow-hidden rounded-b-[80px] shadow-[0_20px_60px_rgba(168,85,247,.35)]">
             {/* Gradient động */}
             <div
               className="absolute inset-0 bg-[length:300%_300%] animate-gradient-flow 
-                          bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-500"
+                          bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-500"
             />
 
             {/* Overlay cinematic */}
@@ -394,9 +397,9 @@ export default function LoginPage() {
           <div
             className="
             absolute -inset-[1px] rounded-3xl 
-            bg-gradient-to-br from-teal-400/35 via-cyan-400/25 to-blue-500/35 
+            bg-gradient-to-br from-violet-400/35 via-fuchsia-400/25 to-cyan-500/35 
             opacity-80 blur-md
-            dark:from-teal-400/60 dark:via-cyan-400/40 dark:to-blue-500/60
+            dark:from-violet-400/60 dark:via-fuchsia-400/40 dark:to-cyan-500/60
           "
           />
 
@@ -407,7 +410,7 @@ export default function LoginPage() {
             dark:bg-slate-900/90 dark:border-slate-700/70 dark:shadow-[0_18px_60px_rgba(15,23,42,0.85)]
           "
           >
-            <p className="text-xs font-semibold tracking-[0.25em] uppercase text-teal-600 dark:text-teal-300 mb-3">
+            <p className="text-xs font-semibold tracking-[0.25em] uppercase text-violet-600 dark:text-violet-300 mb-3">
               Đang chuyển hướng
             </p>
 
@@ -425,8 +428,8 @@ export default function LoginPage() {
               <div className="inline-flex items-center gap-3">
                 {/* Vòng tròn loading + ping */}
                 <span className="relative flex h-8 w-8">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400/35 dark:bg-teal-400/40" />
-                  <span className="relative inline-flex rounded-full h-8 w-8 border-2 border-teal-500 border-t-transparent animate-spin" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400/35 dark:bg-violet-400/40" />
+                  <span className="relative inline-flex rounded-full h-8 w-8 border-2 border-violet-500 border-t-transparent animate-spin" />
                 </span>
 
                 <div className="text-left">
@@ -442,7 +445,7 @@ export default function LoginPage() {
               {/* Thanh progress giả để đỡ trống */}
               <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden mt-2">
                 <div
-                  className="h-full bg-gradient-to-r from-teal-400 via-cyan-400 to-blue-500 transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-500 transition-all duration-500"
                   style={{
                     width: `${Math.min(100, (waitingSeconds % 10) * 10)}%`,
                   }}
@@ -464,7 +467,7 @@ export default function LoginPage() {
     <>
       <div
         ref={transitionLayerRef}
-        className="fixed inset-0 z-[70] bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600 pointer-events-none"
+        className="fixed inset-0 z-[70] bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-600 pointer-events-none"
         style={{ transform: "scaleY(0)", transformOrigin: "top", opacity: 0 }}
       />
       {/* Back floating button */}
@@ -487,9 +490,9 @@ export default function LoginPage() {
               "bg-white/70 dark:bg-slate-900/60 backdrop-blur-md",
               "ring-1 ring-black/5 dark:ring-white/10 shadow-lg hover:shadow-xl",
               "transition-all duration-200 active:scale-[0.98]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-400/60",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60",
               "before:absolute before:inset-0 before:rounded-full",
-              "before:bg-gradient-to-r before:from-teal-400/20 before:via-cyan-400/20 before:to-blue-400/20",
+              "before:bg-gradient-to-r before:from-violet-400/20 before:via-fuchsia-400/20 before:to-cyan-400/20",
               "before:opacity-0 hover:before:opacity-100 before:transition-opacity",
             ].join(" ")}
             icon={
@@ -522,15 +525,15 @@ export default function LoginPage() {
             sizes="100vw"
             className="object-cover object-right brightness-90 dark:brightness-75"
           />
-          <div className="absolute inset-0 bg-gradient-to-tr from-teal-400 via-cyan-300 to-blue-300 opacity-50 dark:opacity-40" />
-          <div className="absolute bottom-8 left-6 md:bottom-12 md:left-12 text-white z-10">
+          <div className="absolute inset-0 bg-gradient-to-tr from-violet-500 via-fuchsia-400 to-cyan-400 opacity-50 dark:opacity-40" />
+          <div className={`${outfit.variable} absolute bottom-8 left-6 md:bottom-12 md:left-12 z-10 font-[family-name:var(--font-outfit)]`}>
             <p
-              className={`hidden xs:block text-3xl sm:text-4xl md:text-5xl font-extrabold drop-shadow-2xl !m-2 lg:m-4`}
+              className={`hidden xs:block text-3xl sm:text-4xl md:text-5xl font-black tracking-[-0.02em] !m-2 lg:m-4 bg-gradient-to-r from-white via-violet-100 to-fuchsia-100 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(0,0,0,0.3),0_4px_16px_rgba(139,92,246,0.2)]`}
             >
-              EduSmart
+              Uniwrap
             </p>
-            <p className="mt-2 sm:mt-3 text-base sm:text-lg md:text-xl drop-shadow-lg">
-              Nền tảng học tập cho sinh viên FPT{" "}
+            <p className="mt-2 sm:mt-3 text-base sm:text-lg md:text-xl font-semibold text-white/98 drop-shadow-[0_1px_4px_rgba(0,0,0,0.3),0_2px_8px_rgba(139,92,246,0.15)] tracking-[0.01em]">
+              Nền tảng tạo form khảo sát chuyên nghiệp{" "}
               <span className="pl-4">
                 {" "}
                 <ThemeSwitch />
@@ -551,7 +554,7 @@ export default function LoginPage() {
         {/* Desktop */}
         <div
           className="hidden md:flex flex-1 items-center justify-center
-             bg-gradient-to-br from-blue-50 to-indigo-50
+             bg-gradient-to-br from-violet-50 to-fuchsia-50
              dark:from-gray-900 dark:to-gray-800"
         >
           <div className="relative w-full h-full">

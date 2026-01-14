@@ -3,22 +3,22 @@ export const dynamic = "force-dynamic";
 import { Metadata } from "next";
 import LoginPage from "./Client";
 export const metadata: Metadata = {
-  title: "EduSmart – Đăng nhập",
+  title: "Uniwrap – Đăng nhập",
   description:
-    "Đăng nhập vào EduSmart để tiếp tục hành trình chăm sóc tinh thần của bạn.",
+    "Đăng nhập vào Uniwrap để tạo và quản lý các form khảo sát chuyên nghiệp.",
   openGraph: {
-    title: "EduSmart",
-    description: "EduSmart",
+    title: "Uniwrap",
+    description: "Nền tảng tạo form khảo sát chuyên nghiệp",
     url: "https://EduSmart-frontend.vercel.app/Login",
     images: [
       {
         url: "https://EduSmart-frontend.vercel.app/emo.png",
         width: 1200,
         height: 630,
-        alt: "EduSmart logo",
+        alt: "Uniwrap logo",
       },
     ],
-    siteName: "EduSmart",
+    siteName: "Uniwrap",
   },
   icons: {
     icon: [

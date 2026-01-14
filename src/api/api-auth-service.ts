@@ -10,129 +10,464 @@
  * ---------------------------------------------------------------
  */
 
-export interface AccountInsertCommand {
-  /**
-   * @format email
-   * @minLength 0
-   * @maxLength 255
-   * @default "edusmartAI@gmail.com"
-   */
-  email: string;
-  /**
-   * @minLength 6
-   * @maxLength 100
-   * @default "Edusmart@123"
-   */
-  password: string;
-  /**
-   * @minLength 2
-   * @maxLength 50
-   * @default "Edu"
-   * @pattern ^[\p{L}\s]+$
-   */
-  firstName: string;
-  /**
-   * @minLength 2
-   * @maxLength 50
-   * @default "Smart"
-   * @pattern ^[\p{L}\s]+$
-   */
-  lastName: string;
+export enum LogicCondition {
+  Is = "Is",
+  IsNot = "IsNot",
+  Contains = "Contains",
+  DoesNotContain = "DoesNotContain",
+  GreaterThan = "GreaterThan",
+  LessThan = "LessThan",
+  GreaterThanOrEqual = "GreaterThanOrEqual",
+  LessThanOrEqual = "LessThanOrEqual",
+  Always = "Always",
 }
 
-export interface AccountInsertResponse {
+/** @format int32 */
+export enum FieldType {
+  Value0 = 0,
+  Value1 = 1,
+  Value2 = 2,
+  Value3 = 3,
+  Value4 = 4,
+  Value5 = 5,
+  Value6 = 6,
+  Value7 = 7,
+  Value8 = 8,
+  Value9 = 9,
+  Value10 = 10,
+  Value11 = 11,
+  Value12 = 12,
+  Value13 = 13,
+  Value14 = 14,
+  Value15 = 15,
+}
+
+export interface AnswerDetailResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  fieldId?: string;
+  fieldTitle?: string | null;
+  fieldDescription?: string | null;
+  fieldType?: string | null;
+  value?: any;
+  /** @format uuid */
+  fieldOptionId?: string | null;
+  optionLabel?: string | null;
+  optionValue?: string | null;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface AnswerDto {
+  /** @format uuid */
+  fieldId?: string;
+  value?: any;
+  /** @format uuid */
+  fieldOptionId?: string | null;
+}
+
+export interface AnswerResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  fieldId?: string;
+  fieldTitle?: string | null;
+  fieldType?: string | null;
+  value?: any;
+  /** @format uuid */
+  fieldOptionId?: string | null;
+  optionLabel?: string | null;
+  optionValue?: string | null;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface CreateFieldCommand {
+  /** @format uuid */
+  formId?: string;
+  title?: string | null;
+  description?: string | null;
+  type?: FieldType;
+  properties?: any;
+  isRequired?: boolean;
+  options?: FieldOptionDto[] | null;
+}
+
+export interface CreateFieldCommandResponse {
   success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: string;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CreateFieldResponseEntity;
 }
 
-export interface AccountVerifyCommand {
-  /** @minLength 1 */
-  key: string;
+export interface CreateFieldResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  formId?: string;
+  title?: string | null;
+  description?: string | null;
+  type?: string | null;
+  properties?: any;
+  isRequired?: boolean;
+  /** @format int32 */
+  order?: number;
+  /** @format date-time */
+  createdAt?: string;
+  options?: FieldOptionResponseEntity[] | null;
 }
 
-export interface AccountVerifyResponse {
+export interface CreateFormCommand {
+  title?: string | null;
+  slug?: string | null;
+}
+
+export interface CreateFormCommandResponse {
   success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: string;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CreateFormResponseEntity;
+}
+
+export interface CreateFormResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  userId?: string;
+  title?: string | null;
+  slug?: string | null;
+  isPublished?: boolean;
+  /** @format date-time */
+  createdAt?: string;
+}
+
+export interface CreateMultipleFieldCommand {
+  /** @format uuid */
+  formId?: string;
+  fields?: FieldDataDto[] | null;
+}
+
+export interface CreateMultipleFieldCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CreateFieldResponseEntity[] | null;
+}
+
+export interface CreateOrUpdateLogicCommand {
+  /** @format uuid */
+  fieldId?: string;
+  condition?: LogicCondition;
+  value?: string | null;
+  /** @format uuid */
+  destinationFieldId?: string | null;
+}
+
+export interface CreateOrUpdateLogicCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: LogicResponseEntity;
 }
 
 export interface DetailError {
-  field?: string;
-  messageId?: string;
-  errorMessage?: string;
+  field?: string | null;
+  messageId?: string | null;
+  errorMessage?: string | null;
 }
 
-export interface ForgotPasswordCommand {
-  /** @minLength 1 */
-  email: string;
+export interface FieldDataDto {
+  title?: string | null;
+  description?: string | null;
+  type?: FieldType;
+  properties?: any;
+  isRequired?: boolean;
+  options?: FieldOptionDto[] | null;
 }
 
-export interface ForgotPasswordResponse {
+export interface FieldOptionDto {
+  label?: string | null;
+  value?: string | null;
+}
+
+export interface FieldOptionResponseEntity {
+  /** @format uuid */
+  id?: string;
+  label?: string | null;
+  value?: string | null;
+  /** @format int32 */
+  order?: number;
+}
+
+export interface FieldResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  formId?: string;
+  title?: string | null;
+  description?: string | null;
+  type?: string | null;
+  properties?: any;
+  isRequired?: boolean;
+  /** @format int32 */
+  order?: number;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+  options?: FieldOptionResponseEntity[] | null;
+}
+
+export interface FieldWithLogicResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  formId?: string;
+  title?: string | null;
+  description?: string | null;
+  type?: string | null;
+  properties?: any;
+  isRequired?: boolean;
+  /** @format int32 */
+  order?: number;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+  logicRules?: LogicRuleResponseEntity[] | null;
+  /** @format uuid */
+  defaultNextFieldId?: string | null;
+  options?: FieldOptionResponseEntity[] | null;
+}
+
+export interface FormResponseEntity {
+  /** @format uuid */
+  id?: string;
+  title?: string | null;
+  slug?: string | null;
+  themeConfig?: any;
+  settings?: any;
+  isPublished?: boolean;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+}
+
+export interface FormWithFieldsAndLogicResponseEntity {
+  /** @format uuid */
+  id?: string;
+  title?: string | null;
+  slug?: string | null;
+  themeConfig?: any;
+  settings?: any;
+  isPublished?: boolean;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+  fields?: FieldWithLogicResponseEntity[] | null;
+}
+
+export interface GetFieldsByFormIdQueryResponse {
   success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: string;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: FieldResponseEntity[] | null;
 }
 
-export interface ResetPasswordCommand {
-  /** @minLength 1 */
-  key: string;
-  /**
-   * @minLength 6
-   * @maxLength 100
-   */
-  newPassword: string;
-}
-
-export interface ResetPasswordResponse {
+export interface GetFormWithFieldsAndLogicQueryResponse {
   success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: string;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: FormWithFieldsAndLogicResponseEntity;
+}
+
+export interface GetFormsQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: FormResponseEntity[] | null;
+}
+
+export interface GetPublishedFormWithFieldsAndLogicQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: FormWithFieldsAndLogicResponseEntity;
+}
+
+export interface GetSubmissionByIdQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SubmissionDetailResponseEntity;
+}
+
+export interface GetSubmissionsQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SubmissionResponseEntity[] | null;
+}
+
+export interface LogicResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  fieldId?: string;
+  condition?: string | null;
+  value?: string | null;
+  /** @format uuid */
+  destinationFieldId?: string | null;
+  /** @format int32 */
+  order?: number;
+  /** @format uuid */
+  logicGroupId?: string | null;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+}
+
+export interface LogicRuleResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  fieldId?: string;
+  condition?: string | null;
+  value?: string | null;
+  /** @format uuid */
+  destinationFieldId?: string | null;
+  /** @format int32 */
+  order?: number;
+  /** @format uuid */
+  logicGroupId?: string | null;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+}
+
+export interface RegisterApplicationCommand {
+  clientId?: string | null;
+  clientSecret?: string | null;
+  displayName?: string | null;
+  clientType?: string | null;
+  permissions?: string[] | null;
+  redirectUris?: string[] | null;
+  postLogoutRedirectUris?: string[] | null;
+}
+
+export interface SubmissionDetailResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  formId?: string;
+  formTitle?: string | null;
+  metaData?: any;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+  answers?: AnswerDetailResponseEntity[] | null;
+}
+
+export interface SubmissionResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  formId?: string;
+  metaData?: any;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+  answers?: AnswerResponseEntity[] | null;
+}
+
+export interface SubmitFormCommand {
+  /** @format uuid */
+  formId?: string;
+  metaData?: any;
+  answers?: AnswerDto[] | null;
+}
+
+export interface SubmitFormCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SubmitFormResponseEntity;
+}
+
+export interface SubmitFormResponseEntity {
+  /** @format uuid */
+  submissionId?: string;
+  /** @format uuid */
+  formId?: string;
+  /** @format date-time */
+  createdAt?: string;
 }
 
 export interface TokenVerifyResponse {
   success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
   response?: TokenVerifyResponseEntity;
 }
 
 export interface TokenVerifyResponseEntity {
   /** @format uuid */
   userId?: string;
-  name?: string;
-  email?: string;
-  role?: string;
-  avatarUrl?: string;
+  email?: string | null;
+  name?: string | null;
+  role?: string | null;
+  avatarUrl?: string | null;
 }
 
-export interface UpdatePasswordCommand {
-  /** @minLength 1 */
-  currentPassword: string;
-  /**
-   * @minLength 6
-   * @maxLength 100
-   */
-  newPassword: string;
-  /** @minLength 1 */
-  confirmPassword: string;
+export interface UpdateFormPublishedStatusCommand {
+  /** @format uuid */
+  formId?: string;
+  isPublished?: boolean;
 }
 
-export interface UpdatePasswordResponse {
+export interface UpdateFormPublishedStatusCommandResponse {
   success?: boolean;
-  messageId?: string;
-  message?: string;
-  detailErrors?: DetailError[];
-  response?: string;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: UpdateFormPublishedStatusResponseEntity;
+}
+
+export interface UpdateFormPublishedStatusResponseEntity {
+  /** @format uuid */
+  id?: string;
+  isPublished?: boolean;
+  /** @format date-time */
+  updatedAt?: string;
+}
+
+export interface UserRegisterCommand {
+  email?: string | null;
+  password?: string | null;
+  name?: string | null;
+  avatar?: string | null;
+  googleId?: string | null;
+  /** @format uuid */
+  roleId?: string | null;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -188,7 +523,7 @@ export enum ContentType {
 }
 
 export class HttpClient<SecurityDataType = unknown> {
-  public baseUrl: string = "/auth";
+  public baseUrl: string = "";
   private securityData: SecurityDataType | null = null;
   private securityWorker?: ApiConfig<SecurityDataType>["securityWorker"];
   private abortControllers = new Map<CancelToken, AbortController>();
@@ -390,141 +725,15 @@ export class HttpClient<SecurityDataType = unknown> {
 }
 
 /**
- * @title Auth Service
+ * @title ClientService.API
  * @version v1
- * @baseUrl /auth
+ *
+ * API for Client Service with OAuth2 authentication
  */
 export class Api<
   SecurityDataType extends unknown,
 > extends HttpClient<SecurityDataType> {
-  api = {
-    /**
-     * No description
-     *
-     * @tags Account
-     * @name V1AccountForgotPasswordCreate
-     * @request POST:/api/v1/Account/forgot-password
-     * @secure
-     */
-    v1AccountForgotPasswordCreate: (
-      body: ForgotPasswordCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<ForgotPasswordResponse, any>({
-        path: `/api/v1/Account/forgot-password`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Account
-     * @name V1AccountInsertAccountCreate
-     * @request POST:/api/v1/Account/insert-account
-     * @secure
-     */
-    v1AccountInsertAccountCreate: (
-      body: AccountInsertCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<AccountInsertResponse, any>({
-        path: `/api/v1/Account/insert-account`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Account
-     * @name V1AccountResetPasswordCreate
-     * @request POST:/api/v1/Account/reset-password
-     * @secure
-     */
-    v1AccountResetPasswordCreate: (
-      body: ResetPasswordCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<ResetPasswordResponse, any>({
-        path: `/api/v1/Account/reset-password`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Account
-     * @name V1AccountUpdatePasswordCreate
-     * @request POST:/api/v1/Account/update-password
-     * @secure
-     */
-    v1AccountUpdatePasswordCreate: (
-      body: UpdatePasswordCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<UpdatePasswordResponse, any>({
-        path: `/api/v1/Account/update-password`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Account
-     * @name V1AccountVerifyAccountCreate
-     * @request POST:/api/v1/Account/verify-account
-     * @secure
-     */
-    v1AccountVerifyAccountCreate: (
-      body: AccountVerifyCommand,
-      params: RequestParams = {},
-    ) =>
-      this.request<AccountVerifyResponse, any>({
-        path: `/api/v1/Account/verify-account`,
-        method: "POST",
-        body: body,
-        secure: true,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
   connect = {
-    /**
-     * No description
-     *
-     * @tags Auth
-     * @name LogoutCreate
-     * @request POST:/connect/logout
-     * @secure
-     */
-    logoutCreate: (params: RequestParams = {}) =>
-      this.request<void, any>({
-        path: `/connect/logout`,
-        method: "POST",
-        secure: true,
-        ...params,
-      }),
-
     /**
      * No description
      *
@@ -536,6 +745,22 @@ export class Api<
     tokenCreate: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/connect/token`,
+        method: "POST",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Auth
+     * @name LogoutCreate
+     * @request POST:/connect/logout
+     * @secure
+     */
+    logoutCreate: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/connect/logout`,
         method: "POST",
         secure: true,
         ...params,
@@ -554,6 +779,330 @@ export class Api<
       this.request<TokenVerifyResponse, any>({
         path: `/verify-token`,
         method: "POST",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+  };
+  api = {
+    /**
+     * No description
+     *
+     * @tags Auth
+     * @name V1AuthRegisterCreate
+     * @request POST:/api/v1/Auth/register
+     * @secure
+     */
+    v1AuthRegisterCreate: (
+      data: UserRegisterCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, any>({
+        path: `/api/v1/Auth/register`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Auth
+     * @name V1AuthRegisterApplicationCreate
+     * @request POST:/api/v1/Auth/register-application
+     * @secure
+     */
+    v1AuthRegisterApplicationCreate: (
+      data: RegisterApplicationCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, any>({
+        path: `/api/v1/Auth/register-application`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description Tạo form mới với is_published = false
+     *
+     * @tags Forms
+     * @name V1FormsCreateFormCreate
+     * @summary Tạo form mới
+     * @request POST:/api/v1/Forms/CreateForm
+     * @secure
+     */
+    v1FormsCreateFormCreate: (
+      data: CreateFormCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateFormCommandResponse, any>({
+        path: `/api/v1/Forms/CreateForm`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo field mới cho form. Order sẽ tự động tăng dựa trên field tạo trước đó.
+     *
+     * @tags Forms
+     * @name V1FormsCreateFieldCreate
+     * @summary Tạo field mới
+     * @request POST:/api/v1/Forms/CreateField
+     * @secure
+     */
+    v1FormsCreateFieldCreate: (
+      data: CreateFieldCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateFieldCommandResponse, any>({
+        path: `/api/v1/Forms/CreateField`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Tạo nhiều field cho form trong một request. Order sẽ tự động tăng dựa trên field tạo trước đó.
+     *
+     * @tags Forms
+     * @name V1FormsCreateMultipleFieldCreate
+     * @summary Tạo nhiều field cùng lúc
+     * @request POST:/api/v1/Forms/CreateMultipleField
+     * @secure
+     */
+    v1FormsCreateMultipleFieldCreate: (
+      data: CreateMultipleFieldCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateMultipleFieldCommandResponse, any>({
+        path: `/api/v1/Forms/CreateMultipleField`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy tất cả fields của form, sắp xếp theo thứ tự Order (câu nào tạo trước sẽ có Order nhỏ hơn)
+     *
+     * @tags Forms
+     * @name V1FormsGetFieldsByFormIdList
+     * @summary Lấy danh sách fields theo FormId
+     * @request GET:/api/v1/Forms/GetFieldsByFormId
+     * @secure
+     */
+    v1FormsGetFieldsByFormIdList: (
+      query?: {
+        /** @format uuid */
+        formId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetFieldsByFormIdQueryResponse, any>({
+        path: `/api/v1/Forms/GetFieldsByFormId`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy tất cả forms của user đang đăng nhập, sắp xếp theo thời gian tạo (mới nhất trước)
+     *
+     * @tags Forms
+     * @name V1FormsGetFormsList
+     * @summary Lấy danh sách tất cả forms của user hiện tại
+     * @request GET:/api/v1/Forms/GetForms
+     * @secure
+     */
+    v1FormsGetFormsList: (params: RequestParams = {}) =>
+      this.request<GetFormsQueryResponse, any>({
+        path: `/api/v1/Forms/GetForms`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy form với tất cả fields và logic rules. Mỗi field có DefaultNextFieldId (field tiếp theo theo Order mặc định)
+     *
+     * @tags Forms
+     * @name V1FormsGetFormWithFieldsAndLogicList
+     * @summary Lấy form kèm fields và logic rules
+     * @request GET:/api/v1/Forms/GetFormWithFieldsAndLogic
+     * @secure
+     */
+    v1FormsGetFormWithFieldsAndLogicList: (
+      query?: {
+        /** @format uuid */
+        formId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetFormWithFieldsAndLogicQueryResponse, any>({
+        path: `/api/v1/Forms/GetFormWithFieldsAndLogic`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy form đã published (IsPublished = true) với tất cả fields và logic rules. Endpoint này không cần authentication, ai cũng có thể xem form đã published.
+     *
+     * @tags Forms
+     * @name V1FormsGetPublishedFormWithFieldsAndLogicList
+     * @summary Lấy form đã published kèm fields và logic rules
+     * @request GET:/api/v1/Forms/GetPublishedFormWithFieldsAndLogic
+     * @secure
+     */
+    v1FormsGetPublishedFormWithFieldsAndLogicList: (
+      query?: {
+        /** @format uuid */
+        formId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetPublishedFormWithFieldsAndLogicQueryResponse, any>({
+        path: `/api/v1/Forms/GetPublishedFormWithFieldsAndLogic`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Nếu logic với cùng FieldId, Condition, và Value đã tồn tại thì update, không thì tạo mới
+     *
+     * @tags Forms
+     * @name V1FormsCreateOrUpdateLogicCreate
+     * @summary Tạo hoặc cập nhật logic rule
+     * @request POST:/api/v1/Forms/CreateOrUpdateLogic
+     * @secure
+     */
+    v1FormsCreateOrUpdateLogicCreate: (
+      data: CreateOrUpdateLogicCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateOrUpdateLogicCommandResponse, any>({
+        path: `/api/v1/Forms/CreateOrUpdateLogic`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Nếu IsPublished = true, sẽ kiểm tra form có title và ít nhất 1 field. Nếu false thì update bình thường.
+     *
+     * @tags Forms
+     * @name V1FormsUpdateFormPublishedStatusCreate
+     * @summary Cập nhật trạng thái publish của form
+     * @request POST:/api/v1/Forms/UpdateFormPublishedStatus
+     * @secure
+     */
+    v1FormsUpdateFormPublishedStatusCreate: (
+      data: UpdateFormPublishedStatusCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateFormPublishedStatusCommandResponse, any>({
+        path: `/api/v1/Forms/UpdateFormPublishedStatus`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Submit form với answers. Form phải được published. Endpoint này không cần authentication.
+     *
+     * @tags Forms
+     * @name V1FormsSubmitFormCreate
+     * @summary Submit form
+     * @request POST:/api/v1/Forms/SubmitForm
+     * @secure
+     */
+    v1FormsSubmitFormCreate: (
+      data: SubmitFormCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<SubmitFormCommandResponse, any>({
+        path: `/api/v1/Forms/SubmitForm`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy tất cả submissions (câu trả lời) của form, bao gồm answers. Chỉ owner của form mới xem được.
+     *
+     * @tags Forms
+     * @name V1FormsGetSubmissionsList
+     * @summary Lấy danh sách submissions của form
+     * @request GET:/api/v1/Forms/GetSubmissions
+     * @secure
+     */
+    v1FormsGetSubmissionsList: (
+      query?: {
+        /** @format uuid */
+        formId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSubmissionsQueryResponse, any>({
+        path: `/api/v1/Forms/GetSubmissions`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Người submit form có thể xem lại submission của họ bằng submissionId. Endpoint này không cần authentication.
+     *
+     * @tags Forms
+     * @name V1FormsGetSubmissionByIdList
+     * @summary Xem lại submission đã submit
+     * @request GET:/api/v1/Forms/GetSubmissionById
+     * @secure
+     */
+    v1FormsGetSubmissionByIdList: (
+      query?: {
+        /** @format uuid */
+        submissionId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetSubmissionByIdQueryResponse, any>({
+        path: `/api/v1/Forms/GetSubmissionById`,
+        method: "GET",
+        query: query,
         secure: true,
         format: "json",
         ...params,

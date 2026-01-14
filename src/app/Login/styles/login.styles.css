@@ -66,3 +66,138 @@
   --muted: rgba(255, 255, 255, 0.78);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
+
+/* Google Login Button Wrapper */
+.google-login-wrapper {
+  display: inline-flex;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.google-login-wrapper:hover {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+.google-login-wrapper > div {
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  transition: all 0.2s ease !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+.google-login-wrapper:hover > div {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+.dark .google-login-wrapper > div {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .google-login-wrapper:hover > div {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Dashboard Preview Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes subtle-pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.dashboard-preview-field {
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-preview-field::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.dashboard-preview-placeholder {
+  animation: subtle-pulse 2s ease-in-out infinite;
+}
+
+.dashboard-preview-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 4s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dashboard-preview-container {
+  animation: fade-in 0.6s ease-out;
+}
+
+.dashboard-preview-header {
+  animation: slide-up 0.5s ease-out 0.2s both;
+}
+
+.dashboard-preview-title-bar {
+  animation: slide-up 0.4s ease-out 0.4s both;
+}
+
+.dashboard-preview-field-1 {
+  animation: slide-up 0.4s ease-out 0.5s both;
+}
+
+.dashboard-preview-field-2 {
+  animation: slide-up 0.4s ease-out 0.6s both;
+}
+
+.dashboard-preview-buttons {
+  animation: slide-up 0.4s ease-out 0.7s both;
+}

@@ -5,12 +5,11 @@ import Cookies from "js-cookie";
 import apiClient from "EduSmart/hooks/apiClient";
 import {
   getAuthen,
-  insertStudentAction,
   loginAction,
+  loginGoogleAction,
   logoutAction,
   refreshAction,
 } from "EduSmart/app/(auth)/action";
-import { ForgotPasswordResponse, ResetPasswordResponse, TokenVerifyResponse } from "EduSmart/api/api-auth-service";
 import { BasicUser } from "EduSmart/lib/authServer";
 
 export interface AuthState {
@@ -20,17 +19,10 @@ export interface AuthState {
   refreshTokenValue: string | null;
   isOtherSystem: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  forgotPassword: (email: string) => Promise<ForgotPasswordResponse>;
-  resetPassword: (key: string, newPassword: string) => Promise<ResetPasswordResponse>;
+  loginGoogle: (googleId: string, email: string, name: string, avatar: string) => Promise<boolean>;
   refreshToken: () => Promise<void>;
   logout: () => void;
   getAuthen: () => Promise<boolean>;
-  insertStudent: (
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
-  ) => Promise<TokenVerifyResponse>;
   verifyyEmail?: (key: string) => Promise<boolean>;
 }
 
@@ -65,18 +57,6 @@ export const useAuthStore = create<AuthState>()(
         return ok;
       },
 
-      insertStudent: async (email, password, firstName, lastName) => {
-        const res = await insertStudentAction({
-          email,
-          password,
-          firstName,
-          lastName,
-        });
-        sessionStorage.setItem("justRegisteredEmail", email);
-        if (!res.ok) throw new Error(res.error || "InsertStudent failed");
-        return res.data;
-      },
-
       login: async (email, password) => {
         try {
           const resp = await loginAction({ email, password });
@@ -105,23 +85,34 @@ export const useAuthStore = create<AuthState>()(
           return false;
         }
       },
-
-      forgotPassword: async (email) => {
-        const resp =
-          await apiClient.authEduService.api.v1AccountForgotPasswordCreate({
-            email,
-          });
-        return resp.data;
+      loginGoogle: async (googleId, email, name, avatar) => {
+        try {
+          const resp = await loginGoogleAction({ googleId, email, name, avatar });
+          if (resp.redirectUrl) {
+            if (typeof window !== "undefined") {
+              window.location.href = resp.redirectUrl;
+            }
+            set({ isOtherSystem: true });
+            return false;
+          }
+          if (resp.ok) {
+            await getAuthen();
+            const token = resp.accessToken;
+            const user: BasicUser = resp.user ?? {
+              name: "",
+              email: "",
+              role: "",
+            };
+            set({ token, user });
+            apiClient.authEduService.setSecurityData({ token });
+            return true;
+          }
+          console.log("resp", resp.error);
+          return false;
+        } catch {
+          return false;
+        }
       },
-      resetPassword: async (key, newPassword) => {
-        const resp =
-          await apiClient.authEduService.api.v1AccountResetPasswordCreate({
-            key: key,
-            newPassword: newPassword,
-          });
-        return resp.data;
-      },
-
       // 2) Refresh token và revoke khi cần
       refreshToken: async () => {
         console.log("[AuthStore] refreshToken called");

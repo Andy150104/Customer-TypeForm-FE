@@ -1,26 +1,6 @@
 [
   {
     "key": "auth-service",
-    "url": "https://api.edusmart.pro.vn/auth/swagger/v1/swagger.json"
-  },
-  {
-    "key": "course-service",
-    "url": "https://api.edusmart.pro.vn/course/swagger/v1/swagger.json"
-  },
-  {
-    "key": "quiz-service",
-    "url": "https://api.edusmart.pro.vn/quiz/swagger/v1/swagger.json"
-  },
-  {
-    "key": "student-service",
-    "url": "https://api.edusmart.pro.vn/student/swagger/v1/swagger.json"
-  },
-  {
-    "key": "ai-service",
-    "url": "https://api.edusmart.pro.vn/ai/swagger/v1/swagger.json"
-  },
-  {
-    "key": "payment-service",
-    "url": "https://api.edusmart.pro.vn/payment/swagger/v1/swagger.json"
+    "url": "https://localhost:7218/swagger/index.html"
   }
 ]
