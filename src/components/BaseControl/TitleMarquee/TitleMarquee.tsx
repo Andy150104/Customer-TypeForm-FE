@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const BASE_TITLE = "EduSmart – Học cùng AI cho học sinh   ";
+const BASE_TITLE = "Uniwrap – Nền tảng tạo form khảo sát chuyên nghiệp";
 
 export default function TitleMarquee() {
   useEffect(() => {
