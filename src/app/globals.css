@@ -70,3 +70,112 @@ body {
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
+
+/* Admin sidebar menu styling */
+.admin-sidebar-menu.ant-menu {
+  padding: 0 4px 8px;
+}
+.admin-sidebar-menu.ant-menu,
+.admin-sidebar-menu.ant-menu-dark,
+.admin-sidebar-menu.ant-menu-light {
+  background: transparent !important;
+}
+
+.admin-sidebar-menu .ant-menu-item {
+  margin: 4px 0;
+  border-radius: 12px;
+  height: 42px;
+  line-height: 42px;
+  position: relative;
+  transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.admin-sidebar-menu:not(.ant-menu-inline-collapsed) .ant-menu-item {
+  padding-inline: 14px;
+}
+
+.admin-sidebar-menu .ant-menu-item::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-sidebar-menu .ant-menu-item .ant-menu-title-content {
+  font-weight: 500;
+}
+
+.admin-sidebar-menu.ant-menu-inline .ant-menu-item::after {
+  border-right: none;
+}
+
+.admin-sidebar-menu.ant-menu-inline-collapsed .ant-menu-item::before {
+  display: none;
+}
+
+.admin-sidebar-menu.ant-menu-light .ant-menu-item-selected {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.18),
+    rgba(99, 102, 241, 0.08)
+  ) !important;
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.12);
+  color: #1d4ed8 !important;
+}
+
+.admin-sidebar-menu.ant-menu-light .ant-menu-item-selected::before {
+  background: #4f46e5;
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(79, 70, 229, 0.5);
+}
+
+.admin-sidebar-menu.ant-menu-light .ant-menu-item-selected .anticon {
+  color: #2563eb;
+}
+
+.admin-sidebar-menu.ant-menu-light .ant-menu-item:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+.admin-sidebar-menu.ant-menu-dark .ant-menu-item {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.admin-sidebar-menu.ant-menu-dark .ant-menu-item .anticon {
+  color: rgba(226, 232, 240, 0.9);
+}
+
+.admin-sidebar-menu.ant-menu-dark .ant-menu-item-selected {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.2),
+    rgba(59, 130, 246, 0.08)
+  ) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: none;
+  color: #f8fafc !important;
+}
+
+.admin-sidebar-menu.ant-menu-dark .ant-menu-item-selected::before {
+  background: #93c5fd;
+  opacity: 1;
+  box-shadow: 0 0 10px rgba(147, 197, 253, 0.5);
+}
+
+.admin-sidebar-menu.ant-menu-dark .ant-menu-item-selected .anticon {
+  color: #f8fafc;
+}
+
+.admin-sidebar-menu.ant-menu-dark .ant-menu-item:hover {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+.admin-sidebar-menu.ant-menu-inline-collapsed .ant-menu-item .anticon {
+  opacity: 1;
+}

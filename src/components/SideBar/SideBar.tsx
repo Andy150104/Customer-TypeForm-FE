@@ -2,18 +2,19 @@
 
 import React, { CSSProperties, useEffect, useState } from "react";
 import Image from "next/image";
-import { Lobster } from "next/font/google";
 import {
-  PieChartOutlined,
+  FileTextOutlined,
   LogoutOutlined,
-  UserOutlined,
-  RobotOutlined,
-  ShoppingOutlined,
-  BookOutlined,
-  HeartOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  FolderOutlined,
+  BarChartOutlined,
+  SettingOutlined,
+  TeamOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Menu, Layout, theme } from "antd";
+import { Menu, Layout, theme, Button, Input, Divider } from "antd";
 import imageEmoLogo from "EduSmart/assets/Logo.png";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { ThemeSwitch } from "../Themes/Theme";
@@ -29,8 +30,6 @@ type MenuItem = Required<MenuProps>["items"][number];
 interface CSSVarProperties extends CSSProperties {
   "--ant-primary-color"?: string;
 }
-
-const lobster = Lobster({ weight: "400", subsets: ["latin"] });
 
 type NavMenuItem = {
   label: React.ReactNode;
@@ -48,59 +47,15 @@ const getItem = (
   path?: string,
 ): NavMenuItem => ({ label, key, icon, children, path });
 
+// Menu items cho form management
 const navItems: NavMenuItem[] = [
-  getItem(
-    "Lộ trình học tập",
-    "dashboard",
-    <PieChartOutlined />,
-    undefined,
-    "/dashboard/learning-paths",
-  ),
-  getItem(
-    "Khóa học của tôi",
-    "dashboard-my-courses",
-    <BookOutlined />,
-    undefined,
-    "/dashboard/my-courses",
-  ),
-  getItem(
-    "Khóa học yêu thích",
-    "dashboard-wishlist",
-    <HeartOutlined />,
-    undefined,
-    "/dashboard/wishlist",
-  ),
-  getItem(
-    "Hồ sơ của tôi",
-    "dashboard-my-profile",
-    <UserOutlined />,
-    undefined,
-    "/dashboard/my-profile",
-  ),
-  getItem(
-    "Đơn hàng của tôi",
-    "dashboard-orders",
-    <ShoppingOutlined />,
-    undefined,
-    "/dashboard/orders",
-  ),
-  // getItem(
-  //   "Dashboard Người dùng",
-  //   "dashboard-user",
-  //   <DesktopOutlined />,
-  //   undefined,
-  //   "/Admin/profiles",
-  // ),
-  // getItem(
-  //   "Subscriptions",
-  //   "subscriptions",
-  //   <SolutionOutlined />,
-  //   undefined,
-  //   "/Admin/subscriptions",
-  // ),
-  getItem("Chat AI", "chat-ai", <RobotOutlined />, undefined, "/chat/ai"),
-  getItem("Đăng xuất", "logout", <LogoutOutlined />),
-  // ❌ BỎ ThemeSwitch khỏi menu để tránh lệch
+  getItem("My Forms", "forms", <FileTextOutlined />, undefined, "/home"),
+  getItem("Templates", "templates", <FolderOutlined />, undefined, "/templates"),
+  getItem("Analytics", "analytics", <BarChartOutlined />, undefined, "/analytics"),
+  getItem("Contacts", "contacts", <TeamOutlined />, undefined, "/contacts"),
+  getItem("Notifications", "notifications", <BellOutlined />, undefined, "/notifications"),
+  getItem("Settings", "settings", <SettingOutlined />, undefined, "/settings"),
+  getItem("Logout", "logout", <LogoutOutlined />),
 ];
 
 /* ---------- HELPERS ---------- */
@@ -156,7 +111,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const [mounted, setMounted] = useState(false);
   const { isDarkMode } = useTheme();
   const {
-    token: { colorPrimary, colorBorderSecondary },
+    token: { colorPrimary },
   } = theme.useToken();
   const messageApi = useNotification();
   const pathname = usePathname();
@@ -164,13 +119,21 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   const { logout } = useAuthStore();
 
   useEffect(() => setMounted(true), []);
-  if (!mounted) return <div style={{ width: collapsed ? 80 : 260 }} />;
+  if (!mounted) return <div style={{ width: collapsed ? 80 : 280 }} />;
 
   const siderStyle: CSSVarProperties = {
-    backgroundColor: isDarkMode ? "#021526" : "#ffffff",
+    backgroundColor: isDarkMode ? "#0b1220" : "#ffffff",
     color: isDarkMode ? "#ffffff" : "#000000",
     "--ant-primary-color": colorPrimary,
+    backgroundImage: isDarkMode
+      ? "linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, transparent 45%), radial-gradient(circle at 20% 8%, rgba(124, 58, 237, 0.18) 0%, transparent 55%)"
+      : "linear-gradient(180deg, rgba(99, 102, 241, 0.08) 0%, transparent 45%), radial-gradient(circle at 20% 8%, rgba(168, 85, 247, 0.12) 0%, transparent 55%)",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "100% 100%, 240px 240px",
   };
+  const siderClassName = `flex min-h-screen flex-col relative overflow-hidden border-r shadow-sm ${
+    isDarkMode ? "border-gray-800" : "border-gray-200"
+  }`;
 
   const antItems = toAntdItems(menuItems);
   const selectedKeys = defaultSelectedKeys ?? getSelectedKeys(pathname);
@@ -190,31 +153,23 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     if (path) router.push(path);
   };
 
-  return (
-    <Sider
-      style={siderStyle}
-      className="flex min-h-screen flex-col"
-      breakpoint="md"
-      collapsedWidth={80}
-      collapsible
-      collapsed={collapsed}
-      onCollapse={onCollapse}
-      width={260}
-      trigger={null}
-    >
-      <div className="flex h-full min-h-0 flex-col">
-        {/* Logo */}
-        <div
-          style={{
-            height: 48,
-            margin: "8px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: collapsed ? "center" : "flex-start",
-            overflow: "hidden",
-          }}
-        >
-          {collapsed ? (
+  if (collapsed) {
+    // Collapsed view - chỉ hiển thị icons
+    return (
+      <Sider
+        style={siderStyle}
+        className={siderClassName}
+        breakpoint="md"
+        collapsedWidth={80}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={onCollapse}
+        width={280}
+        trigger={null}
+      >
+        <div className="flex h-full min-h-0 flex-col">
+          {/* Logo */}
+          <div className="flex items-center justify-center py-4">
             <Image
               src={imageEmoLogo}
               alt="EduSmart Logo"
@@ -222,47 +177,150 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               height={32}
               priority
               placeholder="empty"
-              className="object-cover"
+              className="object-cover rounded"
             />
-          ) : (
-            <div
-              className={`${lobster.className} text-black dark:text-white text-3xl font-light tracking-widest ml-9 cursor-pointer`}
-              onClick={() => router.push("/home")}
-            >
-              EduSmart
+          </div>
+
+          {/* Create button - chỉ icon khi collapsed */}
+          <div className="px-2 mb-2">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              size="large"
+              block
+              className="h-10 bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1]"
+              onClick={() => {
+                // Handle create form
+              }}
+            />
+          </div>
+
+          {/* Menu - chỉ icons */}
+          <Menu
+            theme={isDarkMode ? "dark" : "light"}
+            mode="inline"
+            inlineCollapsed={collapsed}
+            items={antItems}
+            selectedKeys={selectedKeys}
+            onClick={handleMenuClick}
+            className="admin-sidebar-menu border-none bg-transparent"
+            style={{
+              flex: 1,
+              marginTop: 8,
+              background: "transparent",
+            }}
+          />
+
+          {/* Theme switch */}
+          <div className="px-2 pb-2">
+            <div className="flex justify-center">
+              <ThemeSwitch />
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Menu */}
-        <Menu
-          theme={isDarkMode ? "dark" : "light"}
-          mode="inline"
-          items={antItems}
-          selectedKeys={selectedKeys}
-          onClick={handleMenuClick}
-          style={{
-            border: "none",
-            background: "transparent",
-            marginTop: 16,
-            flex: 1,
-          }}
-        />
-
-        {/* Theme switch: hàng riêng, căn giữa khi collapsed */}
-        <div className="px-3 pb-3">
-          <div className={`w-full ${collapsed ? "flex justify-center" : ""}`}>
-            <ThemeSwitch />
+          {/* User info */}
+          <div
+            className={`px-2 py-2 border-t ${
+              isDarkMode ? "border-gray-700" : "border-gray-200"
+            }`}
+          >
+            <UserTitle collapsed={collapsed} />
           </div>
         </div>
+      </Sider>
+    );
+  }
 
-        {/* Footer info */}
-        <div
-          className={`px-3 py-3 border-t border-dashed ${
-            isDarkMode ? "border-white/10" : ""
-          }`}
-          style={{ borderColor: isDarkMode ? "" : colorBorderSecondary }}
+  // Expanded view - layout mới theo design
+  return (
+    <Sider
+      style={siderStyle}
+      className={siderClassName}
+      breakpoint="md"
+      collapsedWidth={80}
+      collapsible
+      collapsed={collapsed}
+      onCollapse={onCollapse}
+      width={280}
+      trigger={null}
+    >
+      <div className="flex h-full min-h-0 flex-col p-4">
+        <div className="flex items-center gap-3 mb-4 px-1">
+          <Image
+            src={imageEmoLogo}
+            alt="Uniwrap Logo"
+            width={36}
+            height={36}
+            priority
+            placeholder="empty"
+            className="object-cover rounded-md"
+          />
+          <div className="leading-tight">
+            <p
+              className={`m-0 text-sm font-semibold tracking-[0.18em] uppercase ${
+                isDarkMode ? "text-slate-100" : "text-slate-900"
+              }`}
+            >
+              uniwrap
+            </p>
+            <p
+              className={`m-0 text-xs ${
+                isDarkMode ? "text-slate-400" : "text-slate-500"
+              }`}
+            >
+              Workspace
+            </p>
+          </div>
+        </div>
+        {/* Create a new form button */}
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          block
+          size="large"
+          className="h-11 rounded-lg bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] font-medium mb-4"
+          onClick={() => {
+            // Handle create form
+          }}
         >
+          Create a new form
+        </Button>
+
+        <Divider className="my-4" />
+
+        {/* Search bar */}
+        <Input
+          placeholder="Search"
+          prefix={<SearchOutlined className={isDarkMode ? "text-gray-500" : "text-gray-400"} />}
+          className={`rounded-lg mb-4 ${isDarkMode ? "bg-gray-800 border-gray-700" : ""}`}
+        />
+
+        <Divider className="my-4" />
+
+        {/* Navigation Menu */}
+        <div className="flex-1 overflow-auto">
+          <Menu
+            theme={isDarkMode ? "dark" : "light"}
+            mode="inline"
+            inlineCollapsed={collapsed}
+            items={antItems}
+            selectedKeys={selectedKeys}
+            onClick={handleMenuClick}
+            className="admin-sidebar-menu border-none bg-transparent"
+            style={{
+              flex: 1,
+              background: "transparent",
+            }}
+          />
+        </div>
+
+        {/* Theme Switch */}
+        <div className="px-2 py-2 border-t border-gray-200 dark:border-gray-700">
+          <ThemeSwitch />
+        </div>
+
+        {/* User Title */}
+        <div className="px-2 py-2 border-t border-gray-200 dark:border-gray-700">
           <UserTitle collapsed={collapsed} />
         </div>
       </div>
