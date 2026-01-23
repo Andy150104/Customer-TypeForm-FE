@@ -277,7 +277,7 @@ const axiosFetch: typeof fetch = async (input, init = {}) => {
 };
 
 export const AuthEduClient = new AuthEduClientApi({
-  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}/auth`,
+  baseUrl: `${process.env.NEXT_PUBLIC_API_URL}`,
   customFetch: axiosFetch,
 });
 

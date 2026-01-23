@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
 import { Typography, Card, Row, Col, Button } from "antd";
 import {
@@ -8,13 +8,50 @@ import {
   PlusOutlined,
   UserAddOutlined,
   CloseOutlined,
+  AppstoreOutlined,
+  UnorderedListOutlined,
 } from "@ant-design/icons";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
+import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 
 const { Title, Text } = Typography;
 
+type ViewMode = "list" | "grid";
+type SortOption = "dateCreated" | null;
+
 export default function HomePage() {
   const { isDarkMode } = useTheme();
+  const { forms, fetchForms } = useFormsStore();
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [sortBy, setSortBy] = useState<SortOption>("dateCreated");
+
+  useEffect(() => {
+    fetchForms();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "-";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  // Sort và filter forms
+  const sortedForms = useMemo(() => {
+    const sorted = [...forms];
+    if (sortBy === "dateCreated") {
+      sorted.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA; // Mới nhất trước
+      });
+    }
+    return sorted;
+  }, [forms, sortBy]);
 
   return (
     <BaseScreenAdmin>
@@ -72,31 +109,48 @@ export default function HomePage() {
               View
             </Text>
             <Button.Group>
-            <Button
-              className={
-                isDarkMode
-                  ? "text-gray-300 border-gray-600 hover:border-gray-500"
-                  : "text-gray-700 border-gray-300 hover:border-gray-400"
-              }
-            >
-              Date created
-            </Button>
-            <Button
-              type="primary"
-              className="bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] text-white"
-            >
-              List
-            </Button>
-            <Button
-              className={
-                isDarkMode
-                  ? "text-gray-300 border-gray-600 hover:border-gray-500"
-                  : "text-gray-700 border-gray-300 hover:border-gray-400"
-              }
-            >
-              Grid
-            </Button>
-          </Button.Group>
+              <Button
+                type={sortBy === "dateCreated" ? "primary" : "default"}
+                className={
+                  sortBy === "dateCreated"
+                    ? "bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] text-white"
+                    : isDarkMode
+                    ? "text-gray-300 border-gray-600 hover:border-gray-500"
+                    : "text-gray-700 border-gray-300 hover:border-gray-400"
+                }
+                onClick={() => setSortBy(sortBy === "dateCreated" ? null : "dateCreated")}
+              >
+                Date created
+              </Button>
+              <Button
+                type={viewMode === "list" ? "primary" : "default"}
+                icon={<UnorderedListOutlined />}
+                className={
+                  viewMode === "list"
+                    ? "bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] text-white"
+                    : isDarkMode
+                    ? "text-gray-300 border-gray-600 hover:border-gray-500"
+                    : "text-gray-700 border-gray-300 hover:border-gray-400"
+                }
+                onClick={() => setViewMode("list")}
+              >
+                List
+              </Button>
+              <Button
+                type={viewMode === "grid" ? "primary" : "default"}
+                icon={<AppstoreOutlined />}
+                className={
+                  viewMode === "grid"
+                    ? "bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] text-white"
+                    : isDarkMode
+                    ? "text-gray-300 border-gray-600 hover:border-gray-500"
+                    : "text-gray-700 border-gray-300 hover:border-gray-400"
+                }
+                onClick={() => setViewMode("grid")}
+              >
+                Grid
+              </Button>
+            </Button.Group>
           </div>
         </div>
 
@@ -358,176 +412,211 @@ export default function HomePage() {
               </Text>
             </div>
           </div>
-          <div
-            className={`rounded-xl border overflow-hidden shadow-md ${
-              isDarkMode
-                ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700"
-                : "bg-gradient-to-br from-white to-gray-50 border-gray-200"
-            }`}
-          >
-            <table className="w-full border-collapse">
-              <thead>
-                <tr
-                  className={`border-b ${
-                    isDarkMode
-                      ? "border-gray-700 bg-gray-900"
-                      : "border-gray-200 bg-gray-50"
-                  }`}
-                >
-                  <th
-                    className={`text-left p-3 font-medium ${
-                      isDarkMode ? "text-gray-300" : "text-gray-700"
+
+          {sortedForms.length === 0 ? (
+            <div
+              className={`rounded-xl border p-8 text-center ${
+                isDarkMode
+                  ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700"
+                  : "bg-gradient-to-br from-white to-gray-50 border-gray-200"
+              }`}
+            >
+              <Text className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
+                No forms found. Create your first form to get started.
+              </Text>
+            </div>
+          ) : viewMode === "list" ? (
+            <div
+              className={`rounded-xl border overflow-hidden shadow-md ${
+                isDarkMode
+                  ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700"
+                  : "bg-gradient-to-br from-white to-gray-50 border-gray-200"
+              }`}
+            >
+              <div className="w-full overflow-x-auto">
+                <table className="w-full min-w-[720px] border-collapse table-auto">
+                <thead>
+                  <tr
+                    className={`border-b ${
+                      isDarkMode
+                        ? "border-gray-700 bg-gray-900"
+                        : "border-gray-200 bg-gray-50"
                     }`}
                   >
-                    Form Name
-                  </th>
-                  <th
-                    className={`text-left p-3 font-medium ${
-                      isDarkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    Responses
-                  </th>
-                  <th
-                    className={`text-left p-3 font-medium ${
-                      isDarkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    Completion
-                  </th>
-                  <th
-                    className={`text-left p-3 font-medium ${
-                      isDarkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    Updated
-                  </th>
-                  <th
-                    className={`text-left p-3 font-medium ${
-                      isDarkMode ? "text-gray-300" : "text-gray-700"
-                    }`}
-                  >
-                    Integrations
-                  </th>
-                  <th className="text-right p-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  className={`border-b cursor-pointer transition-all duration-200 ${
-                    isDarkMode
-                      ? "border-gray-700 hover:bg-purple-500/10 hover:border-purple-500/30"
-                      : "border-gray-200 hover:bg-purple-50 hover:border-purple-200"
-                  }`}
-                >
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#8B4513] to-[#A0522D] rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
-                        <FileTextOutlined className="text-white text-base" />
-                      </div>
-                      <Text strong className={isDarkMode ? "text-gray-100" : "text-gray-900"}>
-                        My new form
-                      </Text>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <Text
-                      className={`font-medium ${
-                        isDarkMode ? "text-gray-100" : "text-gray-900"
-                      }`}
-                    >
-                      1
-                    </Text>
-                  </td>
-                  <td className="p-4">
-                    <span
-                      className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                      <th
+                        className={`text-left p-3 font-medium min-w-[220px] ${
+                          isDarkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        Form Name
+                      </th>
+                      <th
+                        className={`text-left p-3 font-medium min-w-[120px] whitespace-nowrap ${
+                          isDarkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        Responses
+                      </th>
+                      <th
+                        className={`text-left p-3 font-medium min-w-[120px] whitespace-nowrap ${
+                          isDarkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        Completion
+                      </th>
+                      <th
+                        className={`text-left p-3 font-medium min-w-[120px] whitespace-nowrap ${
+                          isDarkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        Updated
+                      </th>
+                      <th
+                        className={`text-left p-3 font-medium min-w-[120px] whitespace-nowrap ${
+                          isDarkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        Integrations
+                      </th>
+                      <th className="text-right p-3 w-[48px]"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                  {sortedForms.map((form) => (
+                    <tr
+                      key={form.id}
+                      className={`border-b cursor-pointer transition-all duration-200 ${
                         isDarkMode
-                          ? "bg-green-500/20 text-green-400"
-                          : "bg-green-100 text-green-700"
+                          ? "border-gray-700 hover:bg-purple-500/10 hover:border-purple-500/30"
+                          : "border-gray-200 hover:bg-purple-50 hover:border-purple-200"
                       }`}
                     >
-                      20%
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <Text className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
-                      14 Jan 2026
-                    </Text>
-                  </td>
-                  <td className="p-4">
-                    <Button
-                      type="text"
-                      icon={<PlusOutlined />}
-                      size="small"
-                      className={`px-2 py-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
-                        isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
-                      }`}
-                    />
-                  </td>
-                  <td className="p-4 text-right">
-                    <Button
-                      type="text"
-                      className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
-                        isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
-                      }`}
-                    >
-                      ⋯
-                    </Button>
-                  </td>
-                </tr>
-                <tr
-                  className={`cursor-pointer transition-all duration-200 ${
-                    isDarkMode
-                      ? "hover:bg-purple-500/10 hover:border-purple-500/30"
-                      : "hover:bg-purple-50 hover:border-purple-200"
-                  }`}
-                >
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-[#8B4513] to-[#A0522D] rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
-                        <FileTextOutlined className="text-white text-base" />
+                        <td className="p-4 min-w-[220px]">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-[#8B4513] to-[#A0522D] rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                              <FileTextOutlined className="text-white text-base" />
+                            </div>
+                            <Text
+                              strong
+                              className={`break-words ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}
+                            >
+                              {form.title || "Untitled Form"}
+                            </Text>
+                          </div>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <Text
+                            className={`font-medium ${
+                              isDarkMode ? "text-gray-100" : "text-gray-900"
+                            }`}
+                          >
+                            -
+                          </Text>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                              form.isPublished
+                                ? isDarkMode
+                                  ? "bg-green-500/20 text-green-400"
+                                : "bg-green-100 text-green-700"
+                              : isDarkMode
+                              ? "bg-gray-500/20 text-gray-400"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
+                          >
+                            {form.isPublished ? "Published" : "Draft"}
+                          </span>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <Text className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
+                            {formatDate(form.updatedAt || form.createdAt)}
+                          </Text>
+                        </td>
+                        <td className="p-4 whitespace-nowrap">
+                          <Button
+                            type="text"
+                            icon={<PlusOutlined />}
+                            size="small"
+                            className={`px-2 py-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
+                              isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
+                            }`}
+                          />
+                        </td>
+                        <td className="p-4 text-right whitespace-nowrap">
+                          <Button
+                            type="text"
+                            className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
+                              isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
+                            }`}
+                          >
+                          ⋯
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                </table>
+              </div>
+            </div>
+          ) : (
+            <Row gutter={[16, 16]}>
+              {sortedForms.map((form) => (
+                <Col xs={24} sm={12} lg={8} xl={6} key={form.id}>
+                  <Card
+                    className={`group rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 ${
+                      isDarkMode
+                        ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/20"
+                        : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xl hover:shadow-purple-200/50"
+                    }`}
+                    bodyStyle={{ padding: "20px" }}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-[#8B4513] to-[#A0522D] rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <FileTextOutlined className="text-white text-lg" />
                       </div>
-                      <Text strong className={isDarkMode ? "text-gray-100" : "text-gray-900"}>
-                        My new form
-                      </Text>
+                      <Button
+                        type="text"
+                        className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
+                          isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
+                        }`}
+                      >
+                        ⋯
+                      </Button>
                     </div>
-                  </td>
-                  <td className="p-4">
-                    <Text className={isDarkMode ? "text-gray-500" : "text-gray-400"}>-</Text>
-                  </td>
-                  <td className="p-4">
-                    <Text className={isDarkMode ? "text-gray-500" : "text-gray-400"}>-</Text>
-                  </td>
-                  <td className="p-4">
-                    <Text className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
-                      09 Jan 2026
-                    </Text>
-                  </td>
-                  <td className="p-4">
-                    <Button
-                      type="text"
-                      icon={<PlusOutlined />}
-                      size="small"
-                      className={`px-2 py-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
-                        isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
-                      }`}
-                    />
-                  </td>
-                  <td className="p-4 text-right">
-                    <Button
-                      type="text"
-                      className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
-                        isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
-                      }`}
-                    >
-                      ⋯
-                    </Button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    <div className="space-y-2">
+                      <Text
+                        strong
+                        className={`text-base block ${
+                          isDarkMode ? "text-gray-100" : "text-gray-900"
+                        }`}
+                      >
+                        {form.title || "Untitled Form"}
+                      </Text>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium ${
+                            form.isPublished
+                              ? isDarkMode
+                                ? "bg-green-500/20 text-green-400"
+                                : "bg-green-100 text-green-700"
+                              : isDarkMode
+                              ? "bg-gray-500/20 text-gray-400"
+                              : "bg-gray-100 text-gray-500"
+                          }`}
+                        >
+                          {form.isPublished ? "Published" : "Draft"}
+                        </span>
+                        <Text className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                          {formatDate(form.updatedAt || form.createdAt)}
+                        </Text>
+                      </div>
+                    </div>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
         </div>
       </div>
     </BaseScreenAdmin>

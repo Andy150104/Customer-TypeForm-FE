@@ -298,6 +298,22 @@ export interface GetFormsQueryResponse {
   response?: FormResponseEntity[] | null;
 }
 
+export interface GetNextQuestionQuery {
+  /** @format uuid */
+  formId?: string;
+  /** @format uuid */
+  currentFieldId?: string;
+  currentValue?: any;
+}
+
+export interface GetNextQuestionQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: NextQuestionResponseEntity;
+}
+
 export interface GetPublishedFormWithFieldsAndLogicQueryResponse {
   success?: boolean;
   messageId?: string | null;
@@ -358,6 +374,15 @@ export interface LogicRuleResponseEntity {
   createdAt?: string;
   /** @format date-time */
   updatedAt?: string | null;
+}
+
+export interface NextQuestionResponseEntity {
+  /** @format uuid */
+  nextFieldId?: string | null;
+  nextField?: FieldResponseEntity;
+  isEndOfForm?: boolean;
+  /** @format uuid */
+  appliedLogicId?: string | null;
 }
 
 export interface RegisterApplicationCommand {
@@ -1104,6 +1129,29 @@ export class Api<
         method: "GET",
         query: query,
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Lấy câu hỏi tiếp theo dựa trên logic rules. Nếu có logic match thì đi theo logic, không thì đi theo Order. Trả về IsEndOfForm = true nếu hết form.
+     *
+     * @tags Forms
+     * @name V1FormsGetNextQuestionCreate
+     * @summary Lấy câu hỏi tiếp theo
+     * @request POST:/api/v1/Forms/GetNextQuestion
+     * @secure
+     */
+    v1FormsGetNextQuestionCreate: (
+      data: GetNextQuestionQuery,
+      params: RequestParams = {},
+    ) =>
+      this.request<GetNextQuestionQueryResponse, any>({
+        path: `/api/v1/Forms/GetNextQuestion`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

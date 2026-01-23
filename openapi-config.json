@@ -1,6 +1,6 @@
 [
   {
     "key": "auth-service",
-    "url": "https://localhost:7218/swagger/index.html"
+    "url": "https://api.v2.edusmart.pro.vn/swagger/index.html"
   }
 ]

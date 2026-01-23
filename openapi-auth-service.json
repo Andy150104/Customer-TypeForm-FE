@@ -656,6 +656,56 @@
           }
         }
       }
+    },
+    "/api/v1/Forms/GetNextQuestion": {
+      "post": {
+        "tags": [
+          "Forms"
+        ],
+        "summary": "Lấy câu hỏi tiếp theo",
+        "description": "Lấy câu hỏi tiếp theo dựa trên logic rules. Nếu có logic match thì đi theo logic, không thì đi theo Order. Trả về IsEndOfForm = true nếu hết form.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetNextQuestionQuery"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetNextQuestionQuery"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/GetNextQuestionQuery"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetNextQuestionQueryResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetNextQuestionQueryResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetNextQuestionQueryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1431,6 +1481,50 @@
         },
         "additionalProperties": false
       },
+      "GetNextQuestionQuery": {
+        "type": "object",
+        "properties": {
+          "formId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currentFieldId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "currentValue": {
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetNextQuestionQueryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/NextQuestionResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
       "GetPublishedFormWithFieldsAndLogicQueryResponse": {
         "type": "object",
         "properties": {
@@ -1615,6 +1709,28 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NextQuestionResponseEntity": {
+        "type": "object",
+        "properties": {
+          "nextFieldId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "nextField": {
+            "$ref": "#/components/schemas/FieldResponseEntity"
+          },
+          "isEndOfForm": {
+            "type": "boolean"
+          },
+          "appliedLogicId": {
+            "type": "string",
+            "format": "uuid",
             "nullable": true
           }
         },

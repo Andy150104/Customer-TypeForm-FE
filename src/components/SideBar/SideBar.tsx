@@ -6,15 +6,15 @@ import {
   FileTextOutlined,
   LogoutOutlined,
   PlusOutlined,
-  SearchOutlined,
   FolderOutlined,
   BarChartOutlined,
   SettingOutlined,
   TeamOutlined,
   BellOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Menu, Layout, theme, Button, Input, Divider } from "antd";
+import { Menu, Layout, theme, Button, Input, Divider, Modal, Form, Grid } from "antd";
 import imageEmoLogo from "EduSmart/assets/Logo.png";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { ThemeSwitch } from "../Themes/Theme";
@@ -23,6 +23,7 @@ import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import { useLoadingStore } from "EduSmart/stores/Loading/LoadingStore";
 import { UserTitle } from "./UserTitle";
+import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 
 const { Sider } = Layout;
 type MenuItem = Required<MenuProps>["items"][number];
@@ -109,14 +110,20 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   defaultSelectedKeys,
 }) => {
   const [mounted, setMounted] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [form] = Form.useForm();
   const { isDarkMode } = useTheme();
   const {
     token: { colorPrimary },
   } = theme.useToken();
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.md;
+  const siderWidth = isMobile ? "100%" : 280;
   const messageApi = useNotification();
   const pathname = usePathname();
   const router = useRouter();
   const { logout } = useAuthStore();
+  const { createForm } = useFormsStore();
 
   useEffect(() => setMounted(true), []);
   if (!mounted) return <div style={{ width: collapsed ? 80 : 280 }} />;
@@ -153,6 +160,134 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     if (path) router.push(path);
   };
 
+  const handleCreateForm = async () => {
+    try {
+      const values = await form.validateFields();
+      const newForm = await createForm({ title: values.title });
+      if (newForm) {
+        messageApi.success("Tạo form thành công!");
+        setIsModalOpen(false);
+        form.resetFields();
+        // Navigate to form editor if needed
+        // router.push(`/forms/${newForm.id}`);
+      } else {
+        messageApi.error("Tạo form thất bại. Vui lòng thử lại.");
+      }
+    } catch (error) {
+      console.error("Create form error:", error);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+    form.resetFields();
+  };
+
+  const createFormModal = (
+    <Modal
+      title={
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+              isDarkMode
+                ? "bg-gradient-to-br from-purple-500/20 to-blue-500/20"
+                : "bg-gradient-to-br from-purple-100 to-blue-100"
+            }`}
+          >
+            <FileTextOutlined
+              className={`text-lg ${
+                isDarkMode ? "text-purple-400" : "text-purple-600"
+              }`}
+            />
+          </div>
+          <div>
+            <h3
+              className={`m-0 text-lg font-semibold ${
+                isDarkMode ? "text-gray-100" : "text-gray-900"
+              }`}
+            >
+              Create New Form
+            </h3>
+            <p
+              className={`m-0 text-sm ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              Give your form a name to get started
+            </p>
+          </div>
+        </div>
+      }
+      open={isModalOpen}
+      width={isMobile ? "100vw" : undefined}
+      style={isMobile ? { top: 0, margin: 0, paddingBottom: 0 } : undefined}
+      onOk={handleCreateForm}
+      onCancel={handleCancel}
+      okText="Create Form"
+      cancelText="Cancel"
+      okButtonProps={{
+        className: "bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1]",
+        size: "large",
+      }}
+      cancelButtonProps={{
+        size: "large",
+      }}
+      className="create-form-modal"
+      styles={{
+        content: {
+          backgroundColor: isDarkMode ? "#0b1220" : "#ffffff",
+          ...(isMobile
+            ? {
+                height: "100vh",
+                borderRadius: 0,
+                display: "flex",
+                flexDirection: "column",
+              }
+            : {}),
+        },
+        header: {
+          backgroundColor: isDarkMode ? "#0b1220" : "#ffffff",
+          borderBottom: isDarkMode ? "1px solid #1e293b" : "1px solid #e2e8f0",
+          padding: "24px",
+        },
+        body: {
+          backgroundColor: isDarkMode ? "#0b1220" : "#ffffff",
+          padding: "24px",
+          ...(isMobile ? { flex: "1 1 auto", overflow: "auto" } : {}),
+        },
+        footer: {
+          backgroundColor: isDarkMode ? "#0b1220" : "#ffffff",
+          borderTop: isDarkMode ? "1px solid #1e293b" : "1px solid #e2e8f0",
+          padding: "16px 24px",
+        },
+      }}
+    >
+      <Form form={form} layout="vertical" className="mt-4">
+        <Form.Item
+          name="title"
+          label={
+            <span className={isDarkMode ? "text-gray-300" : "text-gray-700"}>
+              Form Title
+            </span>
+          }
+          rules={[
+            { required: true, message: "Please enter a form title" },
+            { max: 100, message: "Title must be less than 100 characters" },
+          ]}
+        >
+          <Input
+            placeholder="e.g., Course Feedback Survey"
+            size="large"
+            className={`rounded-lg ${
+              isDarkMode ? "bg-gray-800 border-gray-700 text-gray-100" : ""
+            }`}
+            autoFocus
+          />
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+
   if (collapsed) {
     // Collapsed view - chỉ hiển thị icons
     return (
@@ -164,7 +299,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         collapsible
         collapsed={collapsed}
         onCollapse={onCollapse}
-        width={280}
+        width={siderWidth}
         trigger={null}
       >
         <div className="flex h-full min-h-0 flex-col">
@@ -189,9 +324,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               size="large"
               block
               className="h-10 bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1]"
-              onClick={() => {
-                // Handle create form
-              }}
+              onClick={() => setIsModalOpen(true)}
             />
           </div>
 
@@ -227,6 +360,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             <UserTitle collapsed={collapsed} />
           </div>
         </div>
+        {createFormModal}
       </Sider>
     );
   }
@@ -239,39 +373,53 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       breakpoint="md"
       collapsedWidth={80}
       collapsible
-      collapsed={collapsed}
-      onCollapse={onCollapse}
-      width={280}
-      trigger={null}
-    >
-      <div className="flex h-full min-h-0 flex-col p-4">
-        <div className="flex items-center gap-3 mb-4 px-1">
-          <Image
-            src={imageEmoLogo}
-            alt="Uniwrap Logo"
-            width={36}
-            height={36}
-            priority
-            placeholder="empty"
-            className="object-cover rounded-md"
-          />
-          <div className="leading-tight">
-            <p
-              className={`m-0 text-sm font-semibold tracking-[0.18em] uppercase ${
-                isDarkMode ? "text-slate-100" : "text-slate-900"
-              }`}
-            >
-              uniwrap
-            </p>
-            <p
-              className={`m-0 text-xs ${
-                isDarkMode ? "text-slate-400" : "text-slate-500"
-              }`}
-            >
-              Workspace
-            </p>
+        collapsed={collapsed}
+        onCollapse={onCollapse}
+        width={siderWidth}
+        trigger={null}
+      >
+        <div className="flex h-full min-h-0 flex-col p-4">
+          <div className="relative flex w-full items-center gap-3 mb-4 px-1 pr-12">
+            <Image
+              src={imageEmoLogo}
+              alt="Uniwrap Logo"
+              width={36}
+              height={36}
+              priority
+              placeholder="empty"
+              className="object-cover rounded-md"
+            />
+            <div className="leading-tight">
+              <p
+                className={`m-0 text-sm font-semibold tracking-[0.18em] uppercase ${
+                  isDarkMode ? "text-slate-100" : "text-slate-900"
+                }`}
+              >
+                uniwrap
+              </p>
+              <p
+                className={`m-0 text-xs ${
+                  isDarkMode ? "text-slate-400" : "text-slate-500"
+                }`}
+              >
+                Workspace
+              </p>
+            </div>
+            {isMobile && (
+              <Button
+                type="text"
+                icon={<CloseOutlined />}
+                onClick={() => onCollapse(true)}
+                style={{ position: "absolute", right: 0, top: 0 }}
+                className={`flex h-9 w-9 items-center justify-center rounded-md border ${
+                  isDarkMode
+                    ? "border-white/20 text-gray-200 hover:bg-white/10"
+                    : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                }`}
+                aria-label="Close sidebar"
+              />
+            )}
           </div>
-        </div>
         {/* Create a new form button */}
         <Button
           type="primary"
@@ -279,21 +427,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           block
           size="large"
           className="h-11 rounded-lg bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] font-medium mb-4"
-          onClick={() => {
-            // Handle create form
-          }}
+          onClick={() => setIsModalOpen(true)}
         >
           Create a new form
         </Button>
-
-        <Divider className="my-4" />
-
-        {/* Search bar */}
-        <Input
-          placeholder="Search"
-          prefix={<SearchOutlined className={isDarkMode ? "text-gray-500" : "text-gray-400"} />}
-          className={`rounded-lg mb-4 ${isDarkMode ? "bg-gray-800 border-gray-700" : ""}`}
-        />
 
         <Divider className="my-4" />
 
@@ -324,6 +461,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <UserTitle collapsed={collapsed} />
         </div>
       </div>
+
+      {createFormModal}
     </Sider>
   );
 };
