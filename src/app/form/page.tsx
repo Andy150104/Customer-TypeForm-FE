@@ -13,6 +13,7 @@ import {
 } from "@ant-design/icons";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
+import { useRouter } from "next/navigation";
 
 const { Title, Text } = Typography;
 
@@ -24,6 +25,7 @@ export default function HomePage() {
   const { forms, fetchForms } = useFormsStore();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [sortBy, setSortBy] = useState<SortOption>("dateCreated");
+  const router = useRouter();
 
   useEffect(() => {
     fetchForms();
@@ -52,6 +54,11 @@ export default function HomePage() {
     }
     return sorted;
   }, [forms, sortBy]);
+
+  const handleOpenForm = (id?: string | number | null) => {
+    if (!id) return;
+    router.push(`/form/${id}/edit`);
+  };
 
   return (
     <BaseScreenAdmin>
@@ -485,6 +492,7 @@ export default function HomePage() {
                   {sortedForms.map((form) => (
                     <tr
                       key={form.id}
+                      onClick={() => handleOpenForm(form.id)}
                       className={`border-b cursor-pointer transition-all duration-200 ${
                         isDarkMode
                           ? "border-gray-700 hover:bg-purple-500/10 hover:border-purple-500/30"
@@ -538,6 +546,7 @@ export default function HomePage() {
                             type="text"
                             icon={<PlusOutlined />}
                             size="small"
+                            onClick={(event) => event.stopPropagation()}
                             className={`px-2 py-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
                               isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
                             }`}
@@ -546,6 +555,7 @@ export default function HomePage() {
                         <td className="p-4 text-right whitespace-nowrap">
                           <Button
                             type="text"
+                            onClick={(event) => event.stopPropagation()}
                             className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
                               isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
                             }`}
@@ -561,22 +571,24 @@ export default function HomePage() {
             </div>
           ) : (
             <Row gutter={[16, 16]}>
-              {sortedForms.map((form) => (
-                <Col xs={24} sm={12} lg={8} xl={6} key={form.id}>
-                  <Card
-                    className={`group rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 ${
-                      isDarkMode
-                        ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/20"
-                        : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xl hover:shadow-purple-200/50"
-                    }`}
-                    bodyStyle={{ padding: "20px" }}
-                  >
+                {sortedForms.map((form) => (
+                  <Col xs={24} sm={12} lg={8} xl={6} key={form.id}>
+                    <Card
+                      onClick={() => handleOpenForm(form.id)}
+                      className={`group rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 ${
+                        isDarkMode
+                          ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/20"
+                          : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xl hover:shadow-purple-200/50"
+                      }`}
+                      bodyStyle={{ padding: "20px" }}
+                    >
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-[#8B4513] to-[#A0522D] rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
                         <FileTextOutlined className="text-white text-lg" />
                       </div>
                       <Button
                         type="text"
+                        onClick={(event) => event.stopPropagation()}
                         className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
                           isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
                         }`}

@@ -50,7 +50,7 @@ const getItem = (
 
 // Menu items cho form management
 const navItems: NavMenuItem[] = [
-  getItem("My Forms", "forms", <FileTextOutlined />, undefined, "/home"),
+  getItem("My Forms", "forms", <FileTextOutlined />, undefined, "/form"),
   getItem("Templates", "templates", <FolderOutlined />, undefined, "/templates"),
   getItem("Analytics", "analytics", <BarChartOutlined />, undefined, "/analytics"),
   getItem("Contacts", "contacts", <TeamOutlined />, undefined, "/contacts"),

@@ -185,7 +185,7 @@ export default function CourseNavigationbar({
               />
               <span
                 className={`${kaushan.className} text-2xl sm:text-3xl cursor-pointer dark:text-white`}
-                onClick={() => router.push("/home")}
+                onClick={() => router.push("/form")}
               >
                 EduSmart
               </span>

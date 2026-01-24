@@ -48,7 +48,7 @@ export default function Navigationbar() {
   const [elevated, setElevated] = useState(false);
 
   const menuItems = [
-    { key: "home", label: "Trang chủ", href: "/home" },
+    { key: "home", label: "Trang chủ", href: "/form" },
     { key: "jobs", label: "Khóa học", href: "/course" },
     { key: "learningPath", label: "Đề xuất lộ trình học tập", href: "/learning-path" },
     { key: "dashboard", label: "Dashboard", href: "/dashboard" },

@@ -83,7 +83,7 @@ export async function middleware(req: NextRequest) {
   if (isPublicPath(pathname)) {
     if (sid && (pathname.toLowerCase() === "/login" || pathname === "/")) {
       const url = req.nextUrl.clone();
-      url.pathname = "/";
+      url.pathname = "/form";
       return NextResponse.redirect(url);
     }
     return NextResponse.next();

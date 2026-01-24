@@ -386,7 +386,7 @@ export default function LoginPage() {
 
   const backButton = () => {
     sessionStorage.removeItem("authMountOnce");
-    router.push("/home");
+    router.push("/form");
   };
 
   if (isOtherSystem) {
