@@ -67,12 +67,13 @@ const getFieldIcon = (type?: string | null) => {
 };
 
 type EditorPageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export default function FormEditorPage({ params }: EditorPageProps) {
   const { isDarkMode } = useTheme();
   const router = useRouter();
+  const [formId, setFormId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(tabs[0]);
   const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const isMobilePreview = previewMode === "mobile";
@@ -107,7 +108,9 @@ export default function FormEditorPage({ params }: EditorPageProps) {
   const previewContentClassName = `${previewContentWidth}`;
   const handleTabChange = (tab: string) => {
     if (tab === "Share") {
-      router.push(`/form/${params.id}/share`);
+      if (formId) {
+        router.push(`/form/${formId}/share`);
+      }
       return;
     }
     setActiveTab(tab);
@@ -115,10 +118,27 @@ export default function FormEditorPage({ params }: EditorPageProps) {
 
   useEffect(() => {
     let isActive = true;
+    Promise.resolve(params)
+      .then((resolved) => {
+        if (isActive) {
+          setFormId(resolved.id);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to resolve route params:", error);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, [params]);
+
+  useEffect(() => {
+    let isActive = true;
     const loadFormFields = async () => {
+      if (!formId) return;
       setIsFormLoading(true);
       try {
-        const result = await getFormWithFieldsAndLogic(params.id);
+        const result = await getFormWithFieldsAndLogic(formId);
         if (!isActive) return;
         const orderedFields = result?.fields ?? [];
         setFormFields(orderedFields);
@@ -138,7 +158,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
     return () => {
       isActive = false;
     };
-  }, [getFormWithFieldsAndLogic, params.id]);
+  }, [formId, getFormWithFieldsAndLogic]);
 
   useEffect(() => {
     if (!formFields.length) {
@@ -307,7 +327,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                   <Button type="text" icon={<SettingOutlined />} />
                 </Tooltip>
               </div>
-            <span className={`ml-auto text-xs ${mutedText}`}>Form ID: {params.id}</span>
+            <span className={`ml-auto text-xs ${mutedText}`}>Form ID: {formId ?? "-"}</span>
           </div>
         )}
 

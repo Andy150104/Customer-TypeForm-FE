@@ -11,7 +11,7 @@ import { FormPreviewCard } from "EduSmart/components/FormPreview/FormPreviewCard
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 
 type ClientFormPageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 const mergeAnswers = (current: AnswerDto[], payload: AnswerDto[]) => {
@@ -23,6 +23,7 @@ const mergeAnswers = (current: AnswerDto[], payload: AnswerDto[]) => {
 };
 
 export default function ClientFormPage({ params }: ClientFormPageProps) {
+  const [formId, setFormId] = useState<string | null>(null);
   const [formTitle, setFormTitle] = useState<string | null>(null);
   const [formFields, setFormFields] = useState<FieldWithLogicResponseEntity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,19 +38,39 @@ export default function ClientFormPage({ params }: ClientFormPageProps) {
     submitForm,
   } = useFormsStore();
 
+  useEffect(() => {
+    let isActive = true;
+    Promise.resolve(params)
+      .then((resolved) => {
+        if (isActive) {
+          setFormId(resolved.id);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to resolve route params:", error);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, [params]);
+
   const submitPayload = useMemo(
-    () => ({
-      formId: params.id,
-      metaData: { submittedAt: new Date().toISOString() },
-    }),
-    [params.id],
+    () =>
+      formId
+        ? {
+            formId,
+            metaData: { submittedAt: new Date().toISOString() },
+          }
+        : null,
+    [formId],
   );
 
   const fetchForm = useCallback(async () => {
+    if (!formId) return;
     setIsLoading(true);
     setErrorMessage(null);
     try {
-      const result = await getPublishedFormWithFieldsAndLogic(params.id);
+      const result = await getPublishedFormWithFieldsAndLogic(formId);
       if (!result) {
         throw new Error("Failed to load form");
       }
@@ -62,7 +83,7 @@ export default function ClientFormPage({ params }: ClientFormPageProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [getPublishedFormWithFieldsAndLogic, params.id]);
+  }, [formId, getPublishedFormWithFieldsAndLogic]);
 
   useEffect(() => {
     fetchForm();
@@ -78,6 +99,7 @@ export default function ClientFormPage({ params }: ClientFormPageProps) {
       const combinedAnswers = payload?.length
         ? mergeAnswers(answers, payload)
         : answers;
+      if (!submitPayload) return;
       const data: SubmitFormCommand = {
         ...submitPayload,
         answers: combinedAnswers,
@@ -104,17 +126,16 @@ export default function ClientFormPage({ params }: ClientFormPageProps) {
     async (currentFieldId: string, currentValue: string) => {
       const payloadValue =
         currentValue && currentValue.trim() !== "" ? currentValue : null;
-      const result = await getNextQuestion(
-        params.id,
-        currentFieldId,
-        payloadValue,
-      );
+      if (!formId) {
+        return null;
+      }
+      const result = await getNextQuestion(formId, currentFieldId, payloadValue);
       if (result.isEndOfForm) {
         return null;
       }
       return result.nextFieldId ?? null;
     },
-    [getNextQuestion, params.id],
+    [formId, getNextQuestion],
   );
 
   return (

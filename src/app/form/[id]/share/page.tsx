@@ -9,7 +9,7 @@ import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 import { useRouter } from "next/navigation";
 
 type SharePageProps = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 const tabs = ["Content", "Workflow", "Connect", "Share", "Results"];
@@ -23,7 +23,8 @@ export default function FormSharePage({ params }: SharePageProps) {
   );
   const [isFormLoading, setIsFormLoading] = useState(false);
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
-  const shareUrl = `${window.location.origin}/client/form/${params.id}`;
+  const [formId, setFormId] = useState<string | null>(null);
+  const [shareUrl, setShareUrl] = useState<string>("");
   const activeTabIndex = Math.max(0, tabs.indexOf("Share"));
   const tabSurface = isDarkMode
     ? "border-slate-800 bg-slate-900/70"
@@ -35,15 +36,40 @@ export default function FormSharePage({ params }: SharePageProps) {
 
   const handleTabChange = (tab: string) => {
     if (tab === "Share") return;
-    router.push(`/form/${params.id}/edit`);
+    if (formId) {
+      router.push(`/form/${formId}/edit`);
+    }
   };
+
+  useEffect(() => {
+    let isActive = true;
+    Promise.resolve(params)
+      .then((resolved) => {
+        if (isActive) {
+          setFormId(resolved.id);
+        }
+      })
+      .catch((error) => {
+        console.error("Failed to resolve route params:", error);
+      });
+    return () => {
+      isActive = false;
+    };
+  }, [params]);
+
+  useEffect(() => {
+    if (!formId) return;
+    const origin = typeof window !== "undefined" ? window.location.origin : "https://uniwrap.app";
+    setShareUrl(`${origin}/client/form/${formId}`);
+  }, [formId]);
 
   useEffect(() => {
     let isActive = true;
     const loadFormFields = async () => {
       setIsFormLoading(true);
       try {
-        const result = await getFormWithFieldsAndLogic(params.id);
+        if (!formId) return;
+        const result = await getFormWithFieldsAndLogic(formId);
         if (!isActive) return;
         setFormFields(result?.fields ?? []);
       } catch (error) {
@@ -62,7 +88,7 @@ export default function FormSharePage({ params }: SharePageProps) {
     return () => {
       isActive = false;
     };
-  }, [getFormWithFieldsAndLogic, params.id]);
+  }, [formId, getFormWithFieldsAndLogic]);
 
   useEffect(() => {
     if (!formFields.length) {
