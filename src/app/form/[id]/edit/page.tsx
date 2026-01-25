@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
 import { Button, Tooltip } from "antd";
 import {
@@ -29,11 +29,15 @@ import {
   BulbOutlined,
   DownOutlined,
 } from "@ant-design/icons";
-import { FieldWithLogicResponseEntity } from "EduSmart/api/api-auth-service";
+import {
+  CreateFieldResponseEntity,
+  FieldWithLogicResponseEntity,
+} from "EduSmart/api/api-auth-service";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { FormPreviewCard } from "EduSmart/components/FormPreview/FormPreviewCard";
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 import { useRouter } from "next/navigation";
+import { AddContentModal } from "EduSmart/components/Modal/AddContentModal";
 
 const tabs = ["Content", "Workflow", "Connect", "Share", "Results"];
 
@@ -83,6 +87,30 @@ export default function FormEditorPage({ params }: EditorPageProps) {
   const [isFormLoading, setIsFormLoading] = useState(false);
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   const { getFormWithFieldsAndLogic } = useFormsStore();
+  const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
+
+  const handleFieldCreated = useCallback(
+    async (field: CreateFieldResponseEntity) => {
+      if (!formId) {
+        return;
+      }
+      setIsFormLoading(true);
+      try {
+        const result = await getFormWithFieldsAndLogic(formId);
+        const orderedFields = result?.fields ?? [];
+        setFormFields(orderedFields);
+        const nextActiveId = field.id && orderedFields.some((item) => item.id === field.id)
+          ? field.id
+          : orderedFields[0]?.id ?? null;
+        setActiveFieldId(nextActiveId);
+      } catch (error) {
+        console.error("Failed to refresh form fields:", error);
+      } finally {
+        setIsFormLoading(false);
+      }
+    },
+    [formId, getFormWithFieldsAndLogic],
+  );
 
   const mutedText = isDarkMode ? "text-slate-400" : "text-slate-500";
   const panelSurface = isDarkMode
@@ -190,9 +218,14 @@ export default function FormEditorPage({ params }: EditorPageProps) {
   const openPlayPreview = () => setIsPlayOpen(true);
   const closePlayPreview = () => setIsPlayVisible(false);
 
+  const handleAddContent = () => {
+    setIsAddContentModalOpen(true)
+  }
+
   return (
-    <BaseScreenAdmin>
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4">
+    <>
+      <BaseScreenAdmin>
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div
             className={`relative inline-grid grid-cols-5 items-center rounded-full border p-1 ${
@@ -248,6 +281,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                 type="primary"
                 icon={<PlusOutlined />}
                 className="rounded-full bg-slate-900 px-4 hover:bg-slate-800"
+                onClick={handleAddContent}
               >
                 Add content
               </Button>
@@ -509,7 +543,15 @@ export default function FormEditorPage({ params }: EditorPageProps) {
             </div>
           </div>
         )}
-      </div>
-    </BaseScreenAdmin>
+        </div>
+      </BaseScreenAdmin>
+
+      <AddContentModal
+        open={isAddContentModalOpen}
+        formId={formId}
+        onClose={() => setIsAddContentModalOpen(false)}
+        onCreated={handleFieldCreated}
+      />
+    </>
   );
 }

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { useLoadingStore } from "../Loading/LoadingStore";
 import {
+  CreateFieldCommand,
+  CreateFieldResponseEntity,
   CreateFormCommand,
   FieldWithLogicResponseEntity,
   FormResponseEntity,
@@ -24,6 +26,7 @@ interface FormsState {
   forms: FormResponseEntity[];
   fetchForms: () => Promise<void>;
   createForm: (data: CreateFormCommand) => Promise<FormResponseEntity | null>;
+  createField: (data: CreateFieldCommand) => Promise<CreateFieldResponseEntity | null>;
   getFormWithFieldsAndLogic: (formId: string) => Promise<FormWithFieldsResult | null>;
   getPublishedFormWithFieldsAndLogic: (
     formId: string,
@@ -77,6 +80,22 @@ export const useFormsStore = create<FormsState>(
         return null;
       } catch (error) {
         console.error("createForm error:", error);
+        return null;
+      } finally {
+        setLoading(false);
+      }
+    },
+    createField: async (data: CreateFieldCommand) => {
+      const setLoading = useLoadingStore.getState().setLoading;
+      setLoading(true);
+      try {
+        const response = await apiClient.authEduService.api.v1FormsCreateFieldCreate(data);
+        if (response.data?.success && response.data?.response) {
+          return response.data.response;
+        }
+        return null;
+      } catch (error) {
+        console.error("createField error:", error);
         return null;
       } finally {
         setLoading(false);
