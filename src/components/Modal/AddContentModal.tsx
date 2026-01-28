@@ -226,6 +226,7 @@ const FIELD_TYPE_SECTIONS = [
 
 const MIN_OPTION_COUNT = 2;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FieldPropertyBag = Record<string, any>;
 
 const DEFAULT_PLACEHOLDER = "Type your answer";
