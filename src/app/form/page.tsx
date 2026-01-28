@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
-import { Typography, Card, Row, Col, Button } from "antd";
+import { Typography, Card, Row, Col, Button, Popconfirm, Dropdown } from "antd";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import {
   FileTextOutlined,
   PlusOutlined,
@@ -10,6 +11,7 @@ import {
   CloseOutlined,
   AppstoreOutlined,
   UnorderedListOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
@@ -22,10 +24,12 @@ type SortOption = "dateCreated" | null;
 
 export default function HomePage() {
   const { isDarkMode } = useTheme();
-  const { forms, fetchForms } = useFormsStore();
+  const { forms, fetchForms, deleteForm } = useFormsStore();
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [sortBy, setSortBy] = useState<SortOption>("dateCreated");
+  const [deletingFormId, setDeletingFormId] = useState<string | null>(null);
   const router = useRouter();
+  const messageApi = useNotification();
 
   useEffect(() => {
     fetchForms();
@@ -58,6 +62,24 @@ export default function HomePage() {
   const handleOpenForm = (id?: string | number | null) => {
     if (!id) return;
     router.push(`/form/${id}/edit`);
+  };
+
+  const handleDeleteForm = async (formId: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setDeletingFormId(formId);
+    try {
+      const success = await deleteForm(formId);
+      if (success) {
+        messageApi.success("Form đã được xóa thành công");
+      } else {
+        messageApi.error("Xóa form thất bại");
+      }
+    } catch (error) {
+      console.error("Delete form error:", error);
+      messageApi.error("Có lỗi xảy ra khi xóa form");
+    } finally {
+      setDeletingFormId(null);
+    }
   };
 
   return (
@@ -112,7 +134,11 @@ export default function HomePage() {
             </Text>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Text className={isDarkMode ? "text-xs text-slate-400" : "text-xs text-slate-500"}>
+            <Text
+              className={
+                isDarkMode ? "text-xs text-slate-400" : "text-xs text-slate-500"
+              }
+            >
               View
             </Text>
             <Button.Group>
@@ -122,10 +148,12 @@ export default function HomePage() {
                   sortBy === "dateCreated"
                     ? "bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] text-white"
                     : isDarkMode
-                    ? "text-gray-300 border-gray-600 hover:border-gray-500"
-                    : "text-gray-700 border-gray-300 hover:border-gray-400"
+                      ? "text-gray-300 border-gray-600 hover:border-gray-500"
+                      : "text-gray-700 border-gray-300 hover:border-gray-400"
                 }
-                onClick={() => setSortBy(sortBy === "dateCreated" ? null : "dateCreated")}
+                onClick={() =>
+                  setSortBy(sortBy === "dateCreated" ? null : "dateCreated")
+                }
               >
                 Date created
               </Button>
@@ -136,8 +164,8 @@ export default function HomePage() {
                   viewMode === "list"
                     ? "bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] text-white"
                     : isDarkMode
-                    ? "text-gray-300 border-gray-600 hover:border-gray-500"
-                    : "text-gray-700 border-gray-300 hover:border-gray-400"
+                      ? "text-gray-300 border-gray-600 hover:border-gray-500"
+                      : "text-gray-700 border-gray-300 hover:border-gray-400"
                 }
                 onClick={() => setViewMode("list")}
               >
@@ -150,8 +178,8 @@ export default function HomePage() {
                   viewMode === "grid"
                     ? "bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1] text-white"
                     : isDarkMode
-                    ? "text-gray-300 border-gray-600 hover:border-gray-500"
-                    : "text-gray-700 border-gray-300 hover:border-gray-400"
+                      ? "text-gray-300 border-gray-600 hover:border-gray-500"
+                      : "text-gray-700 border-gray-300 hover:border-gray-400"
                 }
                 onClick={() => setViewMode("grid")}
               >
@@ -190,7 +218,7 @@ export default function HomePage() {
                     : "bg-gradient-to-br from-purple-50/80 to-blue-50/80"
                 }`}
               />
-              
+
               <div className="relative z-10 flex items-start justify-between">
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -267,7 +295,7 @@ export default function HomePage() {
                     : "bg-gradient-to-br from-purple-50/80 to-blue-50/80"
                 }`}
               />
-              
+
               <div className="relative z-10 flex items-start justify-between">
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -344,7 +372,7 @@ export default function HomePage() {
                     : "bg-gradient-to-br from-purple-50/80 to-blue-50/80"
                 }`}
               />
-              
+
               <div className="relative z-10 flex items-start justify-between">
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center ${
@@ -407,7 +435,9 @@ export default function HomePage() {
               >
                 Recent forms
               </Text>
-              <span className={isDarkMode ? "text-slate-500" : "text-slate-400"}>
+              <span
+                className={isDarkMode ? "text-slate-500" : "text-slate-400"}
+              >
                 •
               </span>
               <Text
@@ -442,14 +472,14 @@ export default function HomePage() {
             >
               <div className="w-full overflow-x-auto">
                 <table className="w-full min-w-[720px] border-collapse table-auto">
-                <thead>
-                  <tr
-                    className={`border-b ${
-                      isDarkMode
-                        ? "border-gray-700 bg-gray-900"
-                        : "border-gray-200 bg-gray-50"
-                    }`}
-                  >
+                  <thead>
+                    <tr
+                      className={`border-b ${
+                        isDarkMode
+                          ? "border-gray-700 bg-gray-900"
+                          : "border-gray-200 bg-gray-50"
+                      }`}
+                    >
                       <th
                         className={`text-left p-3 font-medium min-w-[220px] ${
                           isDarkMode ? "text-gray-300" : "text-gray-700"
@@ -487,18 +517,18 @@ export default function HomePage() {
                       </th>
                       <th className="text-right p-3 w-[48px]"></th>
                     </tr>
-                </thead>
-                <tbody>
-                  {sortedForms.map((form) => (
-                    <tr
-                      key={form.id}
-                      onClick={() => handleOpenForm(form.id)}
-                      className={`border-b cursor-pointer transition-all duration-200 ${
-                        isDarkMode
-                          ? "border-gray-700 hover:bg-purple-500/10 hover:border-purple-500/30"
-                          : "border-gray-200 hover:bg-purple-50 hover:border-purple-200"
-                      }`}
-                    >
+                  </thead>
+                  <tbody>
+                    {sortedForms.map((form) => (
+                      <tr
+                        key={form.id}
+                        onClick={() => handleOpenForm(form.id)}
+                        className={`border-b cursor-pointer transition-all duration-200 ${
+                          isDarkMode
+                            ? "border-gray-700 hover:bg-purple-500/10 hover:border-purple-500/30"
+                            : "border-gray-200 hover:bg-purple-50 hover:border-purple-200"
+                        }`}
+                      >
                         <td className="p-4 min-w-[220px]">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-gradient-to-br from-[#8B4513] to-[#A0522D] rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
@@ -527,17 +557,21 @@ export default function HomePage() {
                               form.isPublished
                                 ? isDarkMode
                                   ? "bg-green-500/20 text-green-400"
-                                : "bg-green-100 text-green-700"
-                              : isDarkMode
-                              ? "bg-gray-500/20 text-gray-400"
-                              : "bg-gray-100 text-gray-500"
-                          }`}
+                                  : "bg-green-100 text-green-700"
+                                : isDarkMode
+                                  ? "bg-gray-500/20 text-gray-400"
+                                  : "bg-gray-100 text-gray-500"
+                            }`}
                           >
                             {form.isPublished ? "Published" : "Draft"}
                           </span>
                         </td>
                         <td className="p-4 whitespace-nowrap">
-                          <Text className={isDarkMode ? "text-gray-400" : "text-gray-500"}>
+                          <Text
+                            className={
+                              isDarkMode ? "text-gray-400" : "text-gray-500"
+                            }
+                          >
                             {formatDate(form.updatedAt || form.createdAt)}
                           </Text>
                         </td>
@@ -548,53 +582,127 @@ export default function HomePage() {
                             size="small"
                             onClick={(event) => event.stopPropagation()}
                             className={`px-2 py-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
-                              isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
+                              isDarkMode
+                                ? "text-gray-400 hover:text-purple-400"
+                                : "text-gray-600 hover:text-purple-600"
                             }`}
                           />
                         </td>
                         <td className="p-4 text-right whitespace-nowrap">
-                          <Button
-                            type="text"
-                            onClick={(event) => event.stopPropagation()}
-                            className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
-                              isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
-                            }`}
+                          <Dropdown
+                            menu={{
+                              items: [
+                                {
+                                  key: "delete",
+                                  label: (
+                                    <Popconfirm
+                                      title="Xóa form"
+                                      description="Bạn có chắc chắn muốn xóa form này?"
+                                      onConfirm={(e) =>
+                                        handleDeleteForm(form.id!, e)
+                                      }
+                                      onCancel={(e) => e?.stopPropagation()}
+                                      okText="Xóa"
+                                      cancelText="Hủy"
+                                      okButtonProps={{
+                                        danger: true,
+                                        loading: deletingFormId === form.id,
+                                      }}
+                                    >
+                                      <span
+                                        className="flex items-center gap-2 text-red-500"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <DeleteOutlined /> Xóa form
+                                      </span>
+                                    </Popconfirm>
+                                  ),
+                                },
+                              ],
+                            }}
+                            trigger={["click"]}
                           >
-                          ⋯
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+                            <Button
+                              type="text"
+                              onClick={(event) => event.stopPropagation()}
+                              className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
+                                isDarkMode
+                                  ? "text-gray-400 hover:text-purple-400"
+                                  : "text-gray-600 hover:text-purple-600"
+                              }`}
+                            >
+                              ⋯
+                            </Button>
+                          </Dropdown>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
                 </table>
               </div>
             </div>
           ) : (
             <Row gutter={[16, 16]}>
-                {sortedForms.map((form) => (
-                  <Col xs={24} sm={12} lg={8} xl={6} key={form.id}>
-                    <Card
-                      onClick={() => handleOpenForm(form.id)}
-                      className={`group rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 ${
-                        isDarkMode
-                          ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/20"
-                          : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xl hover:shadow-purple-200/50"
-                      }`}
-                      bodyStyle={{ padding: "20px" }}
-                    >
+              {sortedForms.map((form) => (
+                <Col xs={24} sm={12} lg={8} xl={6} key={form.id}>
+                  <Card
+                    onClick={() => handleOpenForm(form.id)}
+                    className={`group rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1 ${
+                      isDarkMode
+                        ? "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 hover:border-purple-500/50 hover:shadow-2xl hover:shadow-purple-500/20"
+                        : "bg-white border-gray-200 hover:border-purple-300 hover:shadow-2xl hover:shadow-purple-200/50"
+                    }`}
+                    bodyStyle={{ padding: "20px" }}
+                  >
                     <div className="flex items-start justify-between mb-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-[#8B4513] to-[#A0522D] rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
                         <FileTextOutlined className="text-white text-lg" />
                       </div>
-                      <Button
-                        type="text"
-                        onClick={(event) => event.stopPropagation()}
-                        className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
-                          isDarkMode ? "text-gray-400 hover:text-purple-400" : "text-gray-600 hover:text-purple-600"
-                        }`}
+                      <Dropdown
+                        menu={{
+                          items: [
+                            {
+                              key: "delete",
+                              label: (
+                                <Popconfirm
+                                  title="Xóa form"
+                                  description="Bạn có chắc chắn muốn xóa form này?"
+                                  onConfirm={(e) =>
+                                    handleDeleteForm(form.id!, e)
+                                  }
+                                  onCancel={(e) => e?.stopPropagation()}
+                                  okText="Xóa"
+                                  cancelText="Hủy"
+                                  okButtonProps={{
+                                    danger: true,
+                                    loading: deletingFormId === form.id,
+                                  }}
+                                >
+                                  <span
+                                    className="flex items-center gap-2 text-red-500"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <DeleteOutlined /> Xóa form
+                                  </span>
+                                </Popconfirm>
+                              ),
+                            },
+                          ],
+                        }}
+                        trigger={["click"]}
                       >
-                        ⋯
-                      </Button>
+                        <Button
+                          type="text"
+                          onClick={(event) => event.stopPropagation()}
+                          className={`p-1 hover:bg-purple-100 dark:hover:bg-purple-500/20 ${
+                            isDarkMode
+                              ? "text-gray-400 hover:text-purple-400"
+                              : "text-gray-600 hover:text-purple-600"
+                          }`}
+                        >
+                          ⋯
+                        </Button>
+                      </Dropdown>
                     </div>
                     <div className="space-y-2">
                       <Text
@@ -613,13 +721,15 @@ export default function HomePage() {
                                 ? "bg-green-500/20 text-green-400"
                                 : "bg-green-100 text-green-700"
                               : isDarkMode
-                              ? "bg-gray-500/20 text-gray-400"
-                              : "bg-gray-100 text-gray-500"
+                                ? "bg-gray-500/20 text-gray-400"
+                                : "bg-gray-100 text-gray-500"
                           }`}
                         >
                           {form.isPublished ? "Published" : "Draft"}
                         </span>
-                        <Text className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                        <Text
+                          className={`text-xs ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}
+                        >
                           {formatDate(form.updatedAt || form.createdAt)}
                         </Text>
                       </div>

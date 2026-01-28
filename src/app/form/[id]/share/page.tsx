@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { CSSProperties, useEffect, useState } from "react";
 import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
 import { FieldWithLogicResponseEntity } from "EduSmart/api/api-auth-service";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
@@ -12,7 +12,7 @@ type SharePageProps = {
   params: Promise<{ id: string }>;
 };
 
-const tabs = ["Content", "Workflow", "Connect", "Share", "Results"];
+const tabs = ["Content", "Workflow", "Share", "Results"];
 
 export default function FormSharePage({ params }: SharePageProps) {
   const { isDarkMode } = useTheme();
@@ -33,11 +33,23 @@ export default function FormSharePage({ params }: SharePageProps) {
     ? "text-slate-300 hover:bg-slate-800/80"
     : "text-slate-600 hover:bg-slate-100";
   const brandColor = "#6B46C1";
+  const tabGridTemplate: CSSProperties = {
+    gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
+  };
 
   const handleTabChange = (tab: string) => {
-    if (tab === "Share") return;
-    if (formId) {
-      router.push(`/form/${formId}/edit`);
+    if (!formId || tab === "Share") return;
+
+    const tabRoutes: Record<string, string> = {
+      Content: `/form/${formId}/edit`,
+      Workflow: `/form/${formId}/workflow`,
+      Share: `/form/${formId}/share`,
+      Results: `/form/${formId}/results`,
+    };
+
+    const target = tabRoutes[tab];
+    if (target) {
+      router.push(target);
     }
   };
 
@@ -105,7 +117,8 @@ export default function FormSharePage({ params }: SharePageProps) {
     <BaseScreenAdmin>
       <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4">
         <div
-          className={`relative inline-grid grid-cols-5 items-center rounded-full border p-1 ${tabSurface}`}
+          className={`relative inline-grid items-center rounded-full border p-1 ${tabSurface}`}
+          style={tabGridTemplate}
         >
           <span
             className="absolute left-1 top-1 bottom-1 rounded-full transition-transform duration-300 ease-out"

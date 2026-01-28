@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { CSSProperties, useCallback, useEffect, useState } from "react";
 import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
-import { Button, Tooltip } from "antd";
+import { Button, Popconfirm, Tooltip } from "antd";
 import {
   PlusOutlined,
   BgColorsOutlined,
@@ -28,14 +28,20 @@ import {
   NumberOutlined,
   BulbOutlined,
   DownOutlined,
+  DeleteOutlined,
 } from "@ant-design/icons";
-import { FieldWithLogicResponseEntity } from "EduSmart/api/api-auth-service";
+import {
+  CreateFieldResponseEntity,
+  FieldWithLogicResponseEntity,
+} from "EduSmart/api/api-auth-service";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
+import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import { FormPreviewCard } from "EduSmart/components/FormPreview/FormPreviewCard";
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 import { useRouter } from "next/navigation";
+import { AddContentModal } from "EduSmart/components/Modal/AddContentModal";
 
-const tabs = ["Content", "Workflow", "Connect", "Share", "Results"];
+const tabs = ["Content", "Workflow", "Share", "Results"];
 
 const getFieldTone = (type?: string | null) => {
   const normalized = type?.toLowerCase() ?? "";
@@ -73,16 +79,76 @@ type EditorPageProps = {
 export default function FormEditorPage({ params }: EditorPageProps) {
   const { isDarkMode } = useTheme();
   const router = useRouter();
+  const messageApi = useNotification();
   const [formId, setFormId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(tabs[0]);
-  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">(
+    "desktop",
+  );
   const isMobilePreview = previewMode === "mobile";
   const [isPlayOpen, setIsPlayOpen] = useState(false);
   const [isPlayVisible, setIsPlayVisible] = useState(false);
-  const [formFields, setFormFields] = useState<FieldWithLogicResponseEntity[]>([]);
+  const [formFields, setFormFields] = useState<FieldWithLogicResponseEntity[]>(
+    [],
+  );
   const [isFormLoading, setIsFormLoading] = useState(false);
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
-  const { getFormWithFieldsAndLogic } = useFormsStore();
+  const [isDeletingField, setIsDeletingField] = useState(false);
+  const { getFormWithFieldsAndLogic, deleteField } = useFormsStore();
+  const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
+
+  const handleFieldCreated = useCallback(
+    async (field: CreateFieldResponseEntity) => {
+      if (!formId) {
+        return;
+      }
+      setIsFormLoading(true);
+      try {
+        const result = await getFormWithFieldsAndLogic(formId);
+        const orderedFields = result?.fields ?? [];
+        setFormFields(orderedFields);
+        const nextActiveId =
+          field.id && orderedFields.some((item) => item.id === field.id)
+            ? field.id
+            : (orderedFields[0]?.id ?? null);
+        setActiveFieldId(nextActiveId);
+      } catch (error) {
+        console.error("Failed to refresh form fields:", error);
+      } finally {
+        setIsFormLoading(false);
+      }
+    },
+    [formId, getFormWithFieldsAndLogic],
+  );
+
+  const handleDeleteField = useCallback(
+    async (fieldId: string) => {
+      if (!formId || !fieldId) return;
+      setIsDeletingField(true);
+      try {
+        const success = await deleteField(fieldId);
+        if (success) {
+          messageApi.success("Field deleted successfully");
+          // Refresh fields list
+          const result = await getFormWithFieldsAndLogic(formId);
+          const orderedFields = result?.fields ?? [];
+          setFormFields(orderedFields);
+          // Update active field if deleted
+          if (activeFieldId === fieldId) {
+            setActiveFieldId(orderedFields[0]?.id ?? null);
+          }
+        } else {
+          messageApi.error("Failed to delete field");
+        }
+      } catch (error) {
+        console.error("Delete field error:", error);
+        messageApi.error("Failed to delete field");
+      } finally {
+        setIsDeletingField(false);
+      }
+    },
+    [formId, deleteField, messageApi, getFormWithFieldsAndLogic, activeFieldId],
+  );
 
   const mutedText = isDarkMode ? "text-slate-400" : "text-slate-500";
   const panelSurface = isDarkMode
@@ -97,23 +163,44 @@ export default function FormEditorPage({ params }: EditorPageProps) {
   const brandColor = "#6B46C1";
   const previewWidth = isMobilePreview ? "max-w-[420px]" : "max-w-[720px]";
   const previewFramePadding = isMobilePreview ? "px-8" : "px-12";
-  const previewContentWidth = isMobilePreview ? "max-w-[360px]" : "max-w-[520px]";
+  const previewContentWidth = isMobilePreview
+    ? "max-w-[360px]"
+    : "max-w-[520px]";
   const previewFrameHeight = isMobilePreview ? "h-[720px]" : "h-[520px]";
   const previewFrameSurface = isDarkMode
     ? "border-slate-800 bg-slate-950/40"
     : "border-slate-200 bg-white";
   const activeTabIndex = Math.max(0, tabs.indexOf(activeTab));
   const previewIndex = previewMode === "desktop" ? 0 : 1;
+  const tabGridTemplate: CSSProperties = {
+    gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
+  };
   const previewFrameClassName = `${previewWidth} ${previewFrameHeight} ${previewFrameSurface} ${previewFramePadding}`;
   const previewContentClassName = `${previewContentWidth}`;
   const handleTabChange = (tab: string) => {
-    if (tab === "Share") {
-      if (formId) {
-        router.push(`/form/${formId}/share`);
-      }
+    if (tab === activeTab) {
       return;
     }
-    setActiveTab(tab);
+
+    if (!formId) {
+      setActiveTab(tab);
+      return;
+    }
+
+    const tabRoutes: Record<string, string> = {
+      Content: `/form/${formId}/edit`,
+      Workflow: `/form/${formId}/workflow`,
+      Share: `/form/${formId}/share`,
+      Results: `/form/${formId}/results`,
+    };
+
+    const nextRoute = tabRoutes[tab];
+    if (!nextRoute || tab === "Content") {
+      setActiveTab(tab);
+      return;
+    }
+
+    router.push(nextRoute);
   };
 
   useEffect(() => {
@@ -190,121 +277,146 @@ export default function FormEditorPage({ params }: EditorPageProps) {
   const openPlayPreview = () => setIsPlayOpen(true);
   const closePlayPreview = () => setIsPlayVisible(false);
 
-  return (
-    <BaseScreenAdmin>
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div
-            className={`relative inline-grid grid-cols-5 items-center rounded-full border p-1 ${
-              tabSurface
-            }`}
-          >
-            <span
-              className="absolute left-1 top-1 bottom-1 rounded-full transition-transform duration-300 ease-out"
-              style={{
-                width: `calc((100% - 8px) / ${tabs.length})`,
-                transform: `translateX(${activeTabIndex * 100}%)`,
-                backgroundColor: brandColor,
-              }}
-            />
-            {tabs.map((tab) => {
-              const isActive = tab === activeTab;
-              return (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => handleTabChange(tab)}
-                  style={isActive ? { color: "#ffffff" } : undefined}
-                  className={`relative z-10 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
-                    isActive ? "text-white" : tabInactiveClass
-                  }`}
-                >
-                  {tab}
-                </button>
-              );
-            })}
-          </div>
-          <Tooltip title="Publish edits">
-            <Button
-              type="default"
-              icon={<UploadOutlined />}
-              className={`rounded-full px-4 font-medium ${
-                isDarkMode ? "border-slate-700 text-slate-100" : "border-slate-300 text-slate-700"
-              }`}
-            >
-              Publish edits
-            </Button>
-          </Tooltip>
-        </div>
+  const handleAddContent = () => {
+    setIsAddContentModalOpen(true);
+  };
 
-        {activeTab !== "Share" && (
-          <div
-            className={`flex flex-wrap items-center gap-2 rounded-2xl border p-3 shadow-sm ${
-              isDarkMode ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-white/80"
-            }`}
-          >
-            <Tooltip title="Add content">
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                className="rounded-full bg-slate-900 px-4 hover:bg-slate-800"
-              >
-                Add content
-              </Button>
-            </Tooltip>
-            <Tooltip title="Design">
-              <Button
-                type="default"
-                icon={<BgColorsOutlined />}
-                className={`rounded-full ${
-                  isDarkMode ? "border-slate-700 text-slate-100" : "border-slate-200 text-slate-700"
-                }`}
-              >
-                Design
-              </Button>
-            </Tooltip>
+  return (
+    <>
+      <BaseScreenAdmin>
+        <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div
-              className={`relative inline-grid grid-cols-2 items-center rounded-full border p-1 ${
-                isDarkMode ? "border-slate-800 bg-slate-900/60" : "border-slate-200 bg-white"
+              className={`relative inline-grid items-center rounded-full border p-1 ${
+                tabSurface
               }`}
+              style={tabGridTemplate}
             >
               <span
                 className="absolute left-1 top-1 bottom-1 rounded-full transition-transform duration-300 ease-out"
                 style={{
-                  width: "calc((100% - 8px) / 2)",
-                  transform: `translateX(${previewIndex * 100}%)`,
+                  width: `calc((100% - 8px) / ${tabs.length})`,
+                  transform: `translateX(${activeTabIndex * 100}%)`,
                   backgroundColor: brandColor,
                 }}
               />
-              <Tooltip title="Desktop view">
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode("desktop")}
-                  aria-pressed={previewMode === "desktop"}
-                  aria-label="Desktop preview"
-                  style={previewMode === "desktop" ? { color: "#ffffff" } : undefined}
-                  className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                    previewMode === "desktop" ? "text-white" : tabInactiveClass
-                  }`}
-                >
-                  <LaptopOutlined />
-                </button>
-              </Tooltip>
-              <Tooltip title="Mobile view">
-                <button
-                  type="button"
-                  onClick={() => setPreviewMode("mobile")}
-                  aria-pressed={previewMode === "mobile"}
-                  aria-label="Mobile preview"
-                  style={previewMode === "mobile" ? { color: "#ffffff" } : undefined}
-                  className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                    previewMode === "mobile" ? "text-white" : tabInactiveClass
-                  }`}
-                >
-                  <MobileOutlined />
-                </button>
-              </Tooltip>
+              {tabs.map((tab) => {
+                const isActive = tab === activeTab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => handleTabChange(tab)}
+                    style={isActive ? { color: "#ffffff" } : undefined}
+                    className={`relative z-10 rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+                      isActive ? "text-white" : tabInactiveClass
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                );
+              })}
             </div>
+            <Tooltip title="Publish edits">
+              <Button
+                type="default"
+                icon={<UploadOutlined />}
+                className={`rounded-full px-4 font-medium ${
+                  isDarkMode
+                    ? "border-slate-700 text-slate-100"
+                    : "border-slate-300 text-slate-700"
+                }`}
+              >
+                Publish edits
+              </Button>
+            </Tooltip>
+          </div>
+
+          {activeTab !== "Share" && (
+            <div
+              className={`flex flex-wrap items-center gap-2 rounded-2xl border p-3 shadow-sm ${
+                isDarkMode
+                  ? "border-slate-800 bg-slate-900/60"
+                  : "border-slate-200 bg-white/80"
+              }`}
+            >
+              <Tooltip title="Add content">
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  className="rounded-full bg-slate-900 px-4 hover:bg-slate-800"
+                  onClick={handleAddContent}
+                >
+                  Add content
+                </Button>
+              </Tooltip>
+              <Tooltip title="Design">
+                <Button
+                  type="default"
+                  icon={<BgColorsOutlined />}
+                  className={`rounded-full ${
+                    isDarkMode
+                      ? "border-slate-700 text-slate-100"
+                      : "border-slate-200 text-slate-700"
+                  }`}
+                >
+                  Design
+                </Button>
+              </Tooltip>
+              <div
+                className={`relative inline-grid grid-cols-2 items-center rounded-full border p-1 ${
+                  isDarkMode
+                    ? "border-slate-800 bg-slate-900/60"
+                    : "border-slate-200 bg-white"
+                }`}
+              >
+                <span
+                  className="absolute left-1 top-1 bottom-1 rounded-full transition-transform duration-300 ease-out"
+                  style={{
+                    width: "calc((100% - 8px) / 2)",
+                    transform: `translateX(${previewIndex * 100}%)`,
+                    backgroundColor: brandColor,
+                  }}
+                />
+                <Tooltip title="Desktop view">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("desktop")}
+                    aria-pressed={previewMode === "desktop"}
+                    aria-label="Desktop preview"
+                    style={
+                      previewMode === "desktop"
+                        ? { color: "#ffffff" }
+                        : undefined
+                    }
+                    className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                      previewMode === "desktop"
+                        ? "text-white"
+                        : tabInactiveClass
+                    }`}
+                  >
+                    <LaptopOutlined />
+                  </button>
+                </Tooltip>
+                <Tooltip title="Mobile view">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewMode("mobile")}
+                    aria-pressed={previewMode === "mobile"}
+                    aria-label="Mobile preview"
+                    style={
+                      previewMode === "mobile"
+                        ? { color: "#ffffff" }
+                        : undefined
+                    }
+                    className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                      previewMode === "mobile" ? "text-white" : tabInactiveClass
+                    }`}
+                  >
+                    <MobileOutlined />
+                  </button>
+                </Tooltip>
+              </div>
               <div
                 className={`flex items-center gap-1 rounded-full border px-2 py-1 ${
                   isDarkMode ? "border-slate-800" : "border-slate-200"
@@ -327,20 +439,28 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                   <Button type="text" icon={<SettingOutlined />} />
                 </Tooltip>
               </div>
-            <span className={`ml-auto text-xs ${mutedText}`}>Form ID: {formId ?? "-"}</span>
-          </div>
-        )}
+              <span className={`ml-auto text-xs ${mutedText}`}>
+                Form ID: {formId ?? "-"}
+              </span>
+            </div>
+          )}
 
-        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-            <div className={`flex h-full max-h-[720px] flex-col overflow-hidden rounded-2xl border p-4 shadow-sm ${panelSurface}`}>
+          <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+            <div
+              className={`flex h-full max-h-[720px] flex-col overflow-hidden rounded-2xl border p-4 shadow-sm ${panelSurface}`}
+            >
               <div className="flex-1 space-y-3 overflow-y-auto pr-2">
                 {isFormLoading && !formFields.length && (
-                  <div className={`rounded-2xl border px-3 py-2 text-sm ${panelSurface}`}>
+                  <div
+                    className={`rounded-2xl border px-3 py-2 text-sm ${panelSurface}`}
+                  >
                     Loading questions...
                   </div>
                 )}
                 {!isFormLoading && !formFields.length && (
-                  <div className={`rounded-2xl border px-3 py-2 text-sm ${panelSurface}`}>
+                  <div
+                    className={`rounded-2xl border px-3 py-2 text-sm ${panelSurface}`}
+                  >
                     No questions yet.
                   </div>
                 )}
@@ -352,34 +472,71 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                         ? "bg-rose-500/20 text-rose-200"
                         : "bg-rose-100 text-rose-700"
                       : isDarkMode
-                      ? "bg-indigo-500/20 text-indigo-200"
-                      : "bg-indigo-100 text-indigo-700";
+                        ? "bg-indigo-500/20 text-indigo-200"
+                        : "bg-indigo-100 text-indigo-700";
                   const rowActive = field.id && field.id === activeFieldId;
                   const label = field.title?.trim() || `Question ${index + 1}`;
                   const order = field.order ?? index + 1;
                   return (
-                    <button
+                    <div
                       key={field.id ?? `field-${index}`}
-                      type="button"
-                      onClick={() => field.id && setActiveFieldId(field.id)}
-                      disabled={!field.id}
-                      className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors ${
+                      className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2 transition-colors ${
                         rowActive
                           ? isDarkMode
                             ? "bg-slate-800/70"
                             : "bg-slate-100"
-                          : "bg-transparent"
-                      }`}
+                          : "bg-transparent hover:bg-slate-50"
+                      } ${isDarkMode ? "hover:bg-slate-800/50" : ""}`}
                     >
-                      <div className={`flex h-10 w-16 items-center justify-center gap-1 rounded-xl ${badgeTone}`}>
-                        {getFieldIcon(field.type)}
-                        <span className="text-sm font-semibold">{order}</span>
-                      </div>
-                      <span className={`text-sm font-medium ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}>
-                        {label}
-                        {field.isRequired && <span className="text-rose-500"> *</span>}
-                      </span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => field.id && setActiveFieldId(field.id)}
+                        disabled={!field.id}
+                        className="flex flex-1 items-center gap-3 text-left"
+                      >
+                        <div
+                          className={`flex h-10 w-16 items-center justify-center gap-1 rounded-xl ${badgeTone}`}
+                        >
+                          {getFieldIcon(field.type)}
+                          <span className="text-sm font-semibold">{order}</span>
+                        </div>
+                        <span
+                          className={`flex-1 text-sm font-medium ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+                        >
+                          {label}
+                          {field.isRequired && (
+                            <span className="text-rose-500"> *</span>
+                          )}
+                        </span>
+                      </button>
+                      {field.id && (
+                        <Popconfirm
+                          title="Delete this field?"
+                          description="This action cannot be undone."
+                          onConfirm={() => handleDeleteField(field.id!)}
+                          okText="Delete"
+                          cancelText="Cancel"
+                          okButtonProps={{
+                            danger: true,
+                            loading: isDeletingField,
+                          }}
+                        >
+                          <Tooltip title="Delete field">
+                            <button
+                              type="button"
+                              className={`flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100 ${
+                                isDarkMode
+                                  ? "text-slate-400 hover:bg-red-500/20 hover:text-red-400"
+                                  : "text-slate-400 hover:bg-red-50 hover:text-red-500"
+                              }`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <DeleteOutlined />
+                            </button>
+                          </Tooltip>
+                        </Popconfirm>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -388,18 +545,24 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                 <button
                   type="button"
                   className={`flex w-full items-center justify-between rounded-2xl border border-dashed px-4 py-4 text-left ${
-                    isDarkMode ? "border-slate-700 text-slate-200" : "border-slate-200 text-slate-700"
+                    isDarkMode
+                      ? "border-slate-700 text-slate-200"
+                      : "border-slate-200 text-slate-700"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                        isDarkMode ? "bg-slate-800 text-amber-200" : "bg-amber-100 text-amber-700"
+                        isDarkMode
+                          ? "bg-slate-800 text-amber-200"
+                          : "bg-amber-100 text-amber-700"
                       }`}
                     >
                       <BulbOutlined />
                     </div>
-                    <span className="text-sm font-semibold">Add a Welcome Screen</span>
+                    <span className="text-sm font-semibold">
+                      Add a Welcome Screen
+                    </span>
                   </div>
                   <DownOutlined className={mutedText} />
                 </button>
@@ -419,97 +582,121 @@ export default function FormEditorPage({ params }: EditorPageProps) {
             </div>
           </div>
 
-        {isPlayOpen && (
-          <div
-            className={`fixed inset-0 z-50 flex items-start justify-center overflow-auto transition-opacity duration-200 ${
-              isDarkMode ? "bg-slate-950/70" : "bg-slate-50/80"
-            } ${isPlayVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
-            onClick={closePlayPreview}
-          >
+          {isPlayOpen && (
             <div
-              className={`relative flex min-h-full w-full flex-col items-center justify-start px-6 pb-12 pt-10 transition-transform duration-200 ${
-                isPlayVisible ? "scale-100" : "scale-95"
-              }`}
-              onClick={(event) => event.stopPropagation()}
-              onMouseDown={(event) => event.stopPropagation()}
-              onPointerDown={(event) => event.stopPropagation()}
+              className={`fixed inset-0 z-50 flex items-start justify-center overflow-auto transition-opacity duration-200 ${
+                isDarkMode ? "bg-slate-950/70" : "bg-slate-50/80"
+              } ${isPlayVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+              onClick={closePlayPreview}
             >
               <div
-                className={`sticky top-6 z-10 flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm ${
-                  isDarkMode
-                    ? "border-slate-700 bg-slate-900/90 text-slate-100"
-                    : "border-slate-200 bg-white/90 text-slate-700"
+                className={`relative flex min-h-full w-full flex-col items-center justify-start px-6 pb-12 pt-10 transition-transform duration-200 ${
+                  isPlayVisible ? "scale-100" : "scale-95"
                 }`}
+                onClick={(event) => event.stopPropagation()}
+                onMouseDown={(event) => event.stopPropagation()}
+                onPointerDown={(event) => event.stopPropagation()}
               >
-                <Tooltip title="Close preview">
-                  <button
-                    type="button"
-                    onClick={closePlayPreview}
-                    className={`flex h-9 w-9 items-center justify-center rounded-full ${
-                      isDarkMode ? "hover:bg-slate-800" : "hover:bg-slate-100"
-                    }`}
-                    aria-label="Close preview"
-                  >
-                    <CloseOutlined />
-                  </button>
-                </Tooltip>
-                <span className={`h-6 w-px ${isDarkMode ? "bg-slate-700" : "bg-slate-200"}`} />
                 <div
-                  className={`relative inline-grid grid-cols-2 items-center rounded-full border p-1 ${
-                    isDarkMode ? "border-slate-700 bg-slate-900/80" : "border-slate-200 bg-white"
+                  className={`sticky top-6 z-10 flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm ${
+                    isDarkMode
+                      ? "border-slate-700 bg-slate-900/90 text-slate-100"
+                      : "border-slate-200 bg-white/90 text-slate-700"
                   }`}
                 >
+                  <Tooltip title="Close preview">
+                    <button
+                      type="button"
+                      onClick={closePlayPreview}
+                      className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                        isDarkMode ? "hover:bg-slate-800" : "hover:bg-slate-100"
+                      }`}
+                      aria-label="Close preview"
+                    >
+                      <CloseOutlined />
+                    </button>
+                  </Tooltip>
                   <span
-                    className="absolute left-1 top-1 bottom-1 rounded-full transition-transform duration-300 ease-out"
-                    style={{
-                      width: "calc((100% - 8px) / 2)",
-                      transform: `translateX(${previewIndex * 100}%)`,
-                      backgroundColor: brandColor,
-                    }}
+                    className={`h-6 w-px ${isDarkMode ? "bg-slate-700" : "bg-slate-200"}`}
                   />
-                  <Tooltip title="Desktop view">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewMode("desktop")}
-                      aria-pressed={previewMode === "desktop"}
-                      aria-label="Desktop preview"
-                      style={previewMode === "desktop" ? { color: "#ffffff" } : undefined}
-                      className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                        previewMode === "desktop" ? "text-white" : tabInactiveClass
-                      }`}
-                    >
-                      <LaptopOutlined />
-                    </button>
-                  </Tooltip>
-                  <Tooltip title="Mobile view">
-                    <button
-                      type="button"
-                      onClick={() => setPreviewMode("mobile")}
-                      aria-pressed={previewMode === "mobile"}
-                      aria-label="Mobile preview"
-                      style={previewMode === "mobile" ? { color: "#ffffff" } : undefined}
-                      className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                        previewMode === "mobile" ? "text-white" : tabInactiveClass
-                      }`}
-                    >
-                      <MobileOutlined />
-                    </button>
-                  </Tooltip>
+                  <div
+                    className={`relative inline-grid grid-cols-2 items-center rounded-full border p-1 ${
+                      isDarkMode
+                        ? "border-slate-700 bg-slate-900/80"
+                        : "border-slate-200 bg-white"
+                    }`}
+                  >
+                    <span
+                      className="absolute left-1 top-1 bottom-1 rounded-full transition-transform duration-300 ease-out"
+                      style={{
+                        width: "calc((100% - 8px) / 2)",
+                        transform: `translateX(${previewIndex * 100}%)`,
+                        backgroundColor: brandColor,
+                      }}
+                    />
+                    <Tooltip title="Desktop view">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode("desktop")}
+                        aria-pressed={previewMode === "desktop"}
+                        aria-label="Desktop preview"
+                        style={
+                          previewMode === "desktop"
+                            ? { color: "#ffffff" }
+                            : undefined
+                        }
+                        className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                          previewMode === "desktop"
+                            ? "text-white"
+                            : tabInactiveClass
+                        }`}
+                      >
+                        <LaptopOutlined />
+                      </button>
+                    </Tooltip>
+                    <Tooltip title="Mobile view">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode("mobile")}
+                        aria-pressed={previewMode === "mobile"}
+                        aria-label="Mobile preview"
+                        style={
+                          previewMode === "mobile"
+                            ? { color: "#ffffff" }
+                            : undefined
+                        }
+                        className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                          previewMode === "mobile"
+                            ? "text-white"
+                            : tabInactiveClass
+                        }`}
+                      >
+                        <MobileOutlined />
+                      </button>
+                    </Tooltip>
+                  </div>
                 </div>
+                <FormPreviewCard
+                  isView={false}
+                  frameClassName={`${previewFrameClassName} shadow-xl mt-6`}
+                  contentClassName={previewContentClassName}
+                  fields={formFields}
+                  isLoading={isFormLoading}
+                  currentFieldId={activeFieldId}
+                  onCurrentFieldChange={setActiveFieldId}
+                />
               </div>
-              <FormPreviewCard
-                isView={false}
-                frameClassName={`${previewFrameClassName} shadow-xl mt-6`}
-                contentClassName={previewContentClassName}
-                fields={formFields}
-                isLoading={isFormLoading}
-                currentFieldId={activeFieldId}
-                onCurrentFieldChange={setActiveFieldId}
-              />
             </div>
-          </div>
-        )}
-      </div>
-    </BaseScreenAdmin>
+          )}
+        </div>
+      </BaseScreenAdmin>
+
+      <AddContentModal
+        open={isAddContentModalOpen}
+        formId={formId}
+        onClose={() => setIsAddContentModalOpen(false)}
+        onCreated={handleFieldCreated}
+      />
+    </>
   );
 }
