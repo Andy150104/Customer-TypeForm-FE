@@ -121,7 +121,6 @@ export interface CreateFieldResponseEntity {
 
 export interface CreateFormCommand {
   title?: string | null;
-  slug?: string | null;
 }
 
 export interface CreateFormCommandResponse {
@@ -173,6 +172,51 @@ export interface CreateOrUpdateLogicCommandResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: LogicResponseEntity;
+}
+
+export interface DeleteFieldCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: DeleteFieldResponseEntity;
+}
+
+export interface DeleteFieldResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format date-time */
+  updatedAt?: string;
+}
+
+export interface DeleteFormCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: DeleteFormResponseEntity;
+}
+
+export interface DeleteFormResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format date-time */
+  updatedAt?: string;
+}
+
+export interface DeleteLogicCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: DeleteLogicResponseEntity;
+}
+
+export interface DeleteLogicResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format date-time */
+  updatedAt?: string;
 }
 
 export interface DetailError {
@@ -395,6 +439,20 @@ export interface RegisterApplicationCommand {
   postLogoutRedirectUris?: string[] | null;
 }
 
+export interface ReorderFieldsCommand {
+  /** @format uuid */
+  formId?: string;
+  fieldIdsInOrder?: string[] | null;
+}
+
+export interface ReorderFieldsCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: FieldResponseEntity[] | null;
+}
+
 export interface SubmissionDetailResponseEntity {
   /** @format uuid */
   id?: string;
@@ -463,6 +521,72 @@ export interface TokenVerifyResponseEntity {
   avatarUrl?: string | null;
 }
 
+export interface UpdateFieldCommand {
+  /** @format uuid */
+  fieldId?: string;
+  title?: string | null;
+  description?: string | null;
+  type?: FieldType;
+  properties?: any;
+  isRequired?: boolean | null;
+  options?: UpdateFieldOptionDto[] | null;
+}
+
+export interface UpdateFieldCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: UpdateFieldResponseEntity;
+}
+
+export interface UpdateFieldOptionDto {
+  /** @format uuid */
+  id?: string | null;
+  label?: string | null;
+  value?: string | null;
+}
+
+export interface UpdateFieldOptionResponseEntity {
+  /** @format uuid */
+  id?: string;
+  label?: string | null;
+  value?: string | null;
+  /** @format int32 */
+  order?: number;
+}
+
+export interface UpdateFieldResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  formId?: string;
+  title?: string | null;
+  description?: string | null;
+  type?: string | null;
+  properties?: any;
+  isRequired?: boolean;
+  /** @format int32 */
+  order?: number;
+  /** @format date-time */
+  updatedAt?: string;
+  options?: UpdateFieldOptionResponseEntity[] | null;
+}
+
+export interface UpdateFormCommand {
+  /** @format uuid */
+  formId?: string;
+  title?: string | null;
+}
+
+export interface UpdateFormCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: UpdateFormResponseEntity;
+}
+
 export interface UpdateFormPublishedStatusCommand {
   /** @format uuid */
   formId?: string;
@@ -481,6 +605,54 @@ export interface UpdateFormPublishedStatusResponseEntity {
   /** @format uuid */
   id?: string;
   isPublished?: boolean;
+  /** @format date-time */
+  updatedAt?: string;
+}
+
+export interface UpdateFormResponseEntity {
+  /** @format uuid */
+  id?: string;
+  title?: string | null;
+  slug?: string | null;
+  themeConfig?: any;
+  settings?: any;
+  isPublished?: boolean;
+  /** @format date-time */
+  updatedAt?: string;
+}
+
+export interface UpdateLogicCommand {
+  /** @format uuid */
+  logicId?: string;
+  /** @format uuid */
+  fieldId?: string;
+  condition?: LogicCondition;
+  value?: string | null;
+  /** @format uuid */
+  destinationFieldId?: string | null;
+}
+
+export interface UpdateLogicCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: UpdateLogicResponseEntity;
+}
+
+export interface UpdateLogicResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  fieldId?: string;
+  condition?: string | null;
+  value?: string | null;
+  /** @format uuid */
+  destinationFieldId?: string | null;
+  /** @format int32 */
+  order?: number;
+  /** @format uuid */
+  logicGroupId?: string | null;
   /** @format date-time */
   updatedAt?: string;
 }
@@ -1038,6 +1210,56 @@ export class Api<
       }),
 
     /**
+     * @description Update logic rule by LogicId and FieldId.
+     *
+     * @tags Forms
+     * @name V1FormsUpdateLogicUpdate
+     * @summary Update logic rule
+     * @request PUT:/api/v1/Forms/UpdateLogic
+     * @secure
+     */
+    v1FormsUpdateLogicUpdate: (
+      data: UpdateLogicCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateLogicCommandResponse, any>({
+        path: `/api/v1/Forms/UpdateLogic`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Soft delete logic rule by LogicId and FieldId.
+     *
+     * @tags Forms
+     * @name V1FormsDeleteLogicDelete
+     * @summary Delete logic rule (soft delete)
+     * @request DELETE:/api/v1/Forms/DeleteLogic
+     * @secure
+     */
+    v1FormsDeleteLogicDelete: (
+      query?: {
+        /** @format uuid */
+        fieldId?: string;
+        /** @format uuid */
+        logicId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DeleteLogicCommandResponse, any>({
+        path: `/api/v1/Forms/DeleteLogic`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Nếu IsPublished = true, sẽ kiểm tra form có title và ít nhất 1 field. Nếu false thì update bình thường.
      *
      * @tags Forms
@@ -1148,6 +1370,125 @@ export class Api<
     ) =>
       this.request<GetNextQuestionQueryResponse, any>({
         path: `/api/v1/Forms/GetNextQuestion`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cập nhật thông tin form. Chỉ cần gửi các field muốn cập nhật, các field khác sẽ giữ nguyên.
+     *
+     * @tags Forms
+     * @name V1FormsUpdateFormUpdate
+     * @summary Cập nhật form
+     * @request PUT:/api/v1/Forms/UpdateForm
+     * @secure
+     */
+    v1FormsUpdateFormUpdate: (
+      data: UpdateFormCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateFormCommandResponse, any>({
+        path: `/api/v1/Forms/UpdateForm`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Xóa mềm form bằng cách set IsActive = false. Chỉ owner của form mới có thể xóa.
+     *
+     * @tags Forms
+     * @name V1FormsDeleteFormDelete
+     * @summary Xóa form (soft delete)
+     * @request DELETE:/api/v1/Forms/DeleteForm
+     * @secure
+     */
+    v1FormsDeleteFormDelete: (
+      query?: {
+        /** @format uuid */
+        formId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DeleteFormCommandResponse, any>({
+        path: `/api/v1/Forms/DeleteForm`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Cập nhật thông tin field. Chỉ cần gửi các field muốn cập nhật, các field khác sẽ giữ nguyên. Có thể cập nhật options bằng cách gửi danh sách options mới.
+     *
+     * @tags Forms
+     * @name V1FormsUpdateFieldUpdate
+     * @summary Cập nhật field
+     * @request PUT:/api/v1/Forms/UpdateField
+     * @secure
+     */
+    v1FormsUpdateFieldUpdate: (
+      data: UpdateFieldCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateFieldCommandResponse, any>({
+        path: `/api/v1/Forms/UpdateField`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Xóa mềm field bằng cách set IsActive = false. Chỉ owner của form mới có thể xóa field.
+     *
+     * @tags Forms
+     * @name V1FormsDeleteFieldDelete
+     * @summary Xóa field (soft delete)
+     * @request DELETE:/api/v1/Forms/DeleteField
+     * @secure
+     */
+    v1FormsDeleteFieldDelete: (
+      query?: {
+        /** @format uuid */
+        fieldId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DeleteFieldCommandResponse, any>({
+        path: `/api/v1/Forms/DeleteField`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Gửi danh sách FieldId theo thứ tự mong muốn để cập nhật lại Order của các field trong form.
+     *
+     * @tags Forms
+     * @name V1FormsReorderFieldsCreate
+     * @summary Cập nhật thứ tự fields trong form
+     * @request POST:/api/v1/Forms/ReorderFields
+     * @secure
+     */
+    v1FormsReorderFieldsCreate: (
+      data: ReorderFieldsCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<ReorderFieldsCommandResponse, any>({
+        path: `/api/v1/Forms/ReorderFields`,
         method: "POST",
         body: data,
         secure: true,

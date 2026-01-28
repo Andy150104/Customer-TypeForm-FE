@@ -8,9 +8,7 @@
   "paths": {
     "/connect/token": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "responses": {
           "200": {
             "description": "OK"
@@ -20,9 +18,7 @@
     },
     "/connect/logout": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "responses": {
           "200": {
             "description": "OK"
@@ -32,9 +28,7 @@
     },
     "/verify-token": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "responses": {
           "200": {
             "description": "OK",
@@ -61,9 +55,7 @@
     },
     "/api/v1/Auth/register": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -92,9 +84,7 @@
     },
     "/api/v1/Auth/register-application": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
+        "tags": ["Auth"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -123,9 +113,7 @@
     },
     "/api/v1/Forms/CreateForm": {
       "post": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Tạo form mới",
         "description": "Tạo form mới với is_published = false",
         "requestBody": {
@@ -173,9 +161,7 @@
     },
     "/api/v1/Forms/CreateField": {
       "post": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Tạo field mới",
         "description": "Tạo field mới cho form. Order sẽ tự động tăng dựa trên field tạo trước đó.",
         "requestBody": {
@@ -223,9 +209,7 @@
     },
     "/api/v1/Forms/CreateMultipleField": {
       "post": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Tạo nhiều field cùng lúc",
         "description": "Tạo nhiều field cho form trong một request. Order sẽ tự động tăng dựa trên field tạo trước đó.",
         "requestBody": {
@@ -273,9 +257,7 @@
     },
     "/api/v1/Forms/GetFieldsByFormId": {
       "get": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Lấy danh sách fields theo FormId",
         "description": "Lấy tất cả fields của form, sắp xếp theo thứ tự Order (câu nào tạo trước sẽ có Order nhỏ hơn)",
         "parameters": [
@@ -314,9 +296,7 @@
     },
     "/api/v1/Forms/GetForms": {
       "get": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Lấy danh sách tất cả forms của user hiện tại",
         "description": "Lấy tất cả forms của user đang đăng nhập, sắp xếp theo thời gian tạo (mới nhất trước)",
         "responses": {
@@ -345,9 +325,7 @@
     },
     "/api/v1/Forms/GetFormWithFieldsAndLogic": {
       "get": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Lấy form kèm fields và logic rules",
         "description": "Lấy form với tất cả fields và logic rules. Mỗi field có DefaultNextFieldId (field tiếp theo theo Order mặc định)",
         "parameters": [
@@ -386,9 +364,7 @@
     },
     "/api/v1/Forms/GetPublishedFormWithFieldsAndLogic": {
       "get": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Lấy form đã published kèm fields và logic rules",
         "description": "Lấy form đã published (IsPublished = true) với tất cả fields và logic rules. Endpoint này không cần authentication, ai cũng có thể xem form đã published.",
         "parameters": [
@@ -427,9 +403,7 @@
     },
     "/api/v1/Forms/CreateOrUpdateLogic": {
       "post": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Tạo hoặc cập nhật logic rule",
         "description": "Nếu logic với cùng FieldId, Condition, và Value đã tồn tại thì update, không thì tạo mới",
         "requestBody": {
@@ -475,11 +449,104 @@
         }
       }
     },
+    "/api/v1/Forms/UpdateLogic": {
+      "put": {
+        "tags": ["Forms"],
+        "summary": "Update logic rule",
+        "description": "Update logic rule by LogicId and FieldId.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLogicCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLogicCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLogicCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateLogicCommandResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateLogicCommandResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateLogicCommandResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Forms/DeleteLogic": {
+      "delete": {
+        "tags": ["Forms"],
+        "summary": "Delete logic rule (soft delete)",
+        "description": "Soft delete logic rule by LogicId and FieldId.",
+        "parameters": [
+          {
+            "name": "fieldId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "logicId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteLogicCommandResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteLogicCommandResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteLogicCommandResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/Forms/UpdateFormPublishedStatus": {
       "post": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Cập nhật trạng thái publish của form",
         "description": "Nếu IsPublished = true, sẽ kiểm tra form có title và ít nhất 1 field. Nếu false thì update bình thường.",
         "requestBody": {
@@ -527,9 +594,7 @@
     },
     "/api/v1/Forms/SubmitForm": {
       "post": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Submit form",
         "description": "Submit form với answers. Form phải được published. Endpoint này không cần authentication.",
         "requestBody": {
@@ -577,9 +642,7 @@
     },
     "/api/v1/Forms/GetSubmissions": {
       "get": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Lấy danh sách submissions của form",
         "description": "Lấy tất cả submissions (câu trả lời) của form, bao gồm answers. Chỉ owner của form mới xem được.",
         "parameters": [
@@ -618,9 +681,7 @@
     },
     "/api/v1/Forms/GetSubmissionById": {
       "get": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Xem lại submission đã submit",
         "description": "Người submit form có thể xem lại submission của họ bằng submissionId. Endpoint này không cần authentication.",
         "parameters": [
@@ -659,9 +720,7 @@
     },
     "/api/v1/Forms/GetNextQuestion": {
       "post": {
-        "tags": [
-          "Forms"
-        ],
+        "tags": ["Forms"],
         "summary": "Lấy câu hỏi tiếp theo",
         "description": "Lấy câu hỏi tiếp theo dựa trên logic rules. Nếu có logic match thì đi theo logic, không thì đi theo Order. Trả về IsEndOfForm = true nếu hết form.",
         "requestBody": {
@@ -700,6 +759,228 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/GetNextQuestionQueryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Forms/UpdateForm": {
+      "put": {
+        "tags": ["Forms"],
+        "summary": "Cập nhật form",
+        "description": "Cập nhật thông tin form. Chỉ cần gửi các field muốn cập nhật, các field khác sẽ giữ nguyên.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFormCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFormCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFormCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateFormCommandResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateFormCommandResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateFormCommandResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Forms/DeleteForm": {
+      "delete": {
+        "tags": ["Forms"],
+        "summary": "Xóa form (soft delete)",
+        "description": "Xóa mềm form bằng cách set IsActive = false. Chỉ owner của form mới có thể xóa.",
+        "parameters": [
+          {
+            "name": "formId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteFormCommandResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteFormCommandResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteFormCommandResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Forms/UpdateField": {
+      "put": {
+        "tags": ["Forms"],
+        "summary": "Cập nhật field",
+        "description": "Cập nhật thông tin field. Chỉ cần gửi các field muốn cập nhật, các field khác sẽ giữ nguyên. Có thể cập nhật options bằng cách gửi danh sách options mới.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFieldCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFieldCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateFieldCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateFieldCommandResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateFieldCommandResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateFieldCommandResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Forms/DeleteField": {
+      "delete": {
+        "tags": ["Forms"],
+        "summary": "Xóa field (soft delete)",
+        "description": "Xóa mềm field bằng cách set IsActive = false. Chỉ owner của form mới có thể xóa field.",
+        "parameters": [
+          {
+            "name": "fieldId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteFieldCommandResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteFieldCommandResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteFieldCommandResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Forms/ReorderFields": {
+      "post": {
+        "tags": ["Forms"],
+        "summary": "Cập nhật thứ tự fields trong form",
+        "description": "Gửi danh sách FieldId theo thứ tự mong muốn để cập nhật lại Order của các field trong form.",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderFieldsCommand"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderFieldsCommand"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderFieldsCommand"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReorderFieldsCommandResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReorderFieldsCommandResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReorderFieldsCommandResponse"
                 }
               }
             }
@@ -930,10 +1211,6 @@
           "title": {
             "type": "string",
             "nullable": true
-          },
-          "slug": {
-            "type": "string",
-            "nullable": true
           }
         },
         "additionalProperties": false
@@ -1091,6 +1368,129 @@
         },
         "additionalProperties": false
       },
+      "DeleteFieldCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/DeleteFieldResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteFieldResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteFormCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/DeleteFormResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteFormResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteLogicCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/DeleteLogicResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteLogicResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "DetailError": {
         "type": "object",
         "properties": {
@@ -1228,24 +1628,7 @@
         "additionalProperties": false
       },
       "FieldType": {
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15
-        ],
+        "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
         "type": "integer",
         "format": "int32"
       },
@@ -1779,6 +2162,55 @@
         },
         "additionalProperties": false
       },
+      "ReorderFieldsCommand": {
+        "type": "object",
+        "properties": {
+          "formId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fieldIdsInOrder": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReorderFieldsCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldResponseEntity"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "SubmissionDetailResponseEntity": {
         "type": "object",
         "properties": {
@@ -1967,6 +2399,197 @@
         },
         "additionalProperties": false
       },
+      "UpdateFieldCommand": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/FieldType"
+          },
+          "properties": {
+            "nullable": true
+          },
+          "isRequired": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateFieldOptionDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateFieldCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/UpdateFieldResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateFieldOptionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateFieldOptionResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateFieldResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "formId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "properties": {
+            "nullable": true
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateFieldOptionResponseEntity"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateFormCommand": {
+        "type": "object",
+        "properties": {
+          "formId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateFormCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/UpdateFormResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
       "UpdateFormPublishedStatusCommand": {
         "type": "object",
         "properties": {
@@ -2024,6 +2647,130 @@
         },
         "additionalProperties": false
       },
+      "UpdateFormResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeConfig": {
+            "nullable": true
+          },
+          "settings": {
+            "nullable": true
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateLogicCommand": {
+        "type": "object",
+        "properties": {
+          "logicId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fieldId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "condition": {
+            "$ref": "#/components/schemas/LogicCondition"
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "destinationFieldId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateLogicCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/UpdateLogicResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateLogicResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "fieldId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "condition": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "destinationFieldId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "logicGroupId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "UserRegisterCommand": {
         "type": "object",
         "properties": {
@@ -2067,7 +2814,7 @@
   },
   "security": [
     {
-      "Bearer": [ ]
+      "Bearer": []
     }
   ]
 }
