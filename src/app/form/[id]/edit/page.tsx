@@ -2,7 +2,7 @@
 
 import React, { CSSProperties, useCallback, useEffect, useState } from "react";
 import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
-import { Button, Popconfirm, Tooltip } from "antd";
+import { Button, Modal, Popconfirm, Tooltip } from "antd";
 import {
   PlusOutlined,
   BgColorsOutlined,
@@ -29,10 +29,13 @@ import {
   BulbOutlined,
   DownOutlined,
   DeleteOutlined,
+  HolderOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import {
   CreateFieldResponseEntity,
   FieldWithLogicResponseEntity,
+  UpdateFieldResponseEntity,
 } from "EduSmart/api/api-auth-service";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
@@ -40,6 +43,24 @@ import { FormPreviewCard } from "EduSmart/components/FormPreview/FormPreviewCard
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 import { useRouter } from "next/navigation";
 import { AddContentModal } from "EduSmart/components/Modal/AddContentModal";
+import { EditFieldModal } from "EduSmart/components/Modal/EditFieldModal";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const tabs = ["Content", "Workflow", "Share", "Results"];
 
@@ -72,6 +93,152 @@ const getFieldIcon = (type?: string | null) => {
   return <BarsOutlined />;
 };
 
+type SortableFieldItemProps = {
+  field: FieldWithLogicResponseEntity;
+  index: number;
+  isActive: boolean;
+  isDarkMode: boolean;
+  isDeletingField: boolean;
+  onSelect: (id: string) => void;
+  onEdit: (field: FieldWithLogicResponseEntity) => void;
+  onDelete: (id: string) => void;
+};
+
+const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
+  field,
+  index,
+  isActive,
+  isDarkMode,
+  isDeletingField,
+  onSelect,
+  onEdit,
+  onDelete,
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.id ?? `field-${index}` });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : "auto",
+  };
+
+  const tone = getFieldTone(field.type);
+  const badgeTone =
+    tone === "rose"
+      ? isDarkMode
+        ? "bg-rose-500/20 text-rose-200"
+        : "bg-rose-100 text-rose-700"
+      : isDarkMode
+        ? "bg-indigo-500/20 text-indigo-200"
+        : "bg-indigo-100 text-indigo-700";
+  const label = field.title?.trim() || `Question ${index + 1}`;
+  const order = field.order ?? index + 1;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`group flex w-full items-center gap-2 rounded-2xl px-3 py-2 transition-colors ${
+        isActive
+          ? isDarkMode
+            ? "bg-slate-800/70"
+            : "bg-slate-100"
+          : "bg-transparent hover:bg-slate-50"
+      } ${isDarkMode ? "hover:bg-slate-800/50" : ""} ${isDragging ? "shadow-lg" : ""}`}
+    >
+      {/* Drag Handle */}
+      <button
+        type="button"
+        className={`flex h-8 w-6 cursor-grab items-center justify-center rounded-lg transition-colors active:cursor-grabbing ${
+          isDarkMode
+            ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700/50"
+            : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+        }`}
+        {...attributes}
+        {...listeners}
+      >
+        <HolderOutlined />
+      </button>
+
+      {/* Content */}
+      <button
+        type="button"
+        onClick={() => field.id && onSelect(field.id)}
+        disabled={!field.id}
+        className="flex flex-1 min-w-0 items-center gap-3 text-left"
+      >
+        <div
+          className={`flex h-10 w-14 flex-shrink-0 items-center justify-center gap-1 rounded-xl ${badgeTone}`}
+        >
+          {getFieldIcon(field.type)}
+          <span className="text-sm font-semibold">{order}</span>
+        </div>
+        <span
+          className={`flex-1 min-w-0 text-sm font-medium truncate ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+        >
+          {label}
+          {field.isRequired && <span className="text-rose-500"> *</span>}
+        </span>
+      </button>
+
+      {/* Actions */}
+      {field.id && (
+        <div className="flex items-center gap-1">
+          <Tooltip title="Edit field">
+            <button
+              type="button"
+              className={`flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100 ${
+                isDarkMode
+                  ? "text-slate-400 hover:bg-violet-500/20 hover:text-violet-400"
+                  : "text-slate-400 hover:bg-violet-50 hover:text-violet-500"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(field);
+              }}
+            >
+              <EditOutlined />
+            </button>
+          </Tooltip>
+          <Popconfirm
+            title="Delete this field?"
+            description="This action cannot be undone."
+            onConfirm={() => onDelete(field.id!)}
+            okText="Delete"
+            cancelText="Cancel"
+            okButtonProps={{
+              danger: true,
+              loading: isDeletingField,
+            }}
+          >
+            <Tooltip title="Delete field">
+              <button
+                type="button"
+                className={`flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100 ${
+                  isDarkMode
+                    ? "text-slate-400 hover:bg-red-500/20 hover:text-red-400"
+                    : "text-slate-400 hover:bg-red-50 hover:text-red-500"
+                }`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <DeleteOutlined />
+              </button>
+            </Tooltip>
+          </Popconfirm>
+        </div>
+      )}
+    </div>
+  );
+};
+
 type EditorPageProps = {
   params: Promise<{ id: string }>;
 };
@@ -94,8 +261,69 @@ export default function FormEditorPage({ params }: EditorPageProps) {
   const [isFormLoading, setIsFormLoading] = useState(false);
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   const [isDeletingField, setIsDeletingField] = useState(false);
-  const { getFormWithFieldsAndLogic, deleteField } = useFormsStore();
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const {
+    getFormWithFieldsAndLogic,
+    deleteField,
+    reorderFields,
+    updateFormPublishedStatus,
+  } = useFormsStore();
   const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
+  const [isEditFieldModalOpen, setIsEditFieldModalOpen] = useState(false);
+  const [editingField, setEditingField] =
+    useState<FieldWithLogicResponseEntity | null>(null);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id || !formId) return;
+
+      const oldIndex = formFields.findIndex((f) => f.id === active.id);
+      const newIndex = formFields.findIndex((f) => f.id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      // Optimistic update
+      const newFields = arrayMove(formFields, oldIndex, newIndex);
+      setFormFields(newFields);
+
+      // Call API to persist the new order
+      const fieldIdsInOrder = newFields
+        .map((f) => f.id)
+        .filter(Boolean) as string[];
+      try {
+        const success = await reorderFields({
+          formId,
+          fieldIdsInOrder,
+        });
+        if (success) {
+          messageApi.success("Đã cập nhật thứ tự câu hỏi");
+        } else {
+          // Revert on failure
+          setFormFields(formFields);
+          messageApi.error("Không thể cập nhật thứ tự");
+        }
+      } catch (error) {
+        console.error("Reorder fields error:", error);
+        setFormFields(formFields);
+        messageApi.error("Không thể cập nhật thứ tự");
+      }
+    },
+    [formId, formFields, reorderFields, messageApi],
+  );
 
   const handleFieldCreated = useCallback(
     async (field: CreateFieldResponseEntity) => {
@@ -149,6 +377,65 @@ export default function FormEditorPage({ params }: EditorPageProps) {
     },
     [formId, deleteField, messageApi, getFormWithFieldsAndLogic, activeFieldId],
   );
+
+  const handleFieldUpdated = useCallback(
+    async (field: UpdateFieldResponseEntity) => {
+      if (!formId) return;
+      setIsFormLoading(true);
+      try {
+        const result = await getFormWithFieldsAndLogic(formId);
+        const orderedFields = result?.fields ?? [];
+        setFormFields(orderedFields);
+        // Keep the updated field as active
+        if (field.id) {
+          setActiveFieldId(field.id);
+        }
+      } catch (error) {
+        console.error("Failed to refresh form fields:", error);
+      } finally {
+        setIsFormLoading(false);
+      }
+    },
+    [formId, getFormWithFieldsAndLogic],
+  );
+
+  const handleEditField = useCallback((field: FieldWithLogicResponseEntity) => {
+    setEditingField(field);
+    setIsEditFieldModalOpen(true);
+  }, []);
+
+  const handleOpenPublishModal = useCallback(() => {
+    setIsPublishModalOpen(true);
+  }, []);
+
+  const handleClosePublishModal = useCallback(() => {
+    setIsPublishModalOpen(false);
+  }, []);
+
+  const handleConfirmPublish = useCallback(async () => {
+    if (!formId) {
+      messageApi.error("Không tìm thấy form");
+      return;
+    }
+    setIsPublishing(true);
+    try {
+      const success = await updateFormPublishedStatus({
+        formId,
+        isPublished: true,
+      });
+      if (success) {
+        messageApi.success("Đã publish form thành công!");
+        setIsPublishModalOpen(false);
+      } else {
+        messageApi.error("Không thể publish form");
+      }
+    } catch (error) {
+      console.error("Publish form error:", error);
+      messageApi.error("Có lỗi xảy ra khi publish form");
+    } finally {
+      setIsPublishing(false);
+    }
+  }, [formId, updateFormPublishedStatus, messageApi]);
 
   const mutedText = isDarkMode ? "text-slate-400" : "text-slate-500";
   const panelSurface = isDarkMode
@@ -321,6 +608,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
               <Button
                 type="default"
                 icon={<UploadOutlined />}
+                onClick={handleOpenPublishModal}
                 className={`rounded-full px-4 font-medium ${
                   isDarkMode
                     ? "border-slate-700 text-slate-100"
@@ -449,7 +737,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
             <div
               className={`flex h-full max-h-[720px] flex-col overflow-hidden rounded-2xl border p-4 shadow-sm ${panelSurface}`}
             >
-              <div className="flex-1 space-y-3 overflow-y-auto pr-2">
+              <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden pr-2">
                 {isFormLoading && !formFields.length && (
                   <div
                     className={`rounded-2xl border px-3 py-2 text-sm ${panelSurface}`}
@@ -464,81 +752,34 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                     No questions yet.
                   </div>
                 )}
-                {formFields.map((field, index) => {
-                  const tone = getFieldTone(field.type);
-                  const badgeTone =
-                    tone === "rose"
-                      ? isDarkMode
-                        ? "bg-rose-500/20 text-rose-200"
-                        : "bg-rose-100 text-rose-700"
-                      : isDarkMode
-                        ? "bg-indigo-500/20 text-indigo-200"
-                        : "bg-indigo-100 text-indigo-700";
-                  const rowActive = field.id && field.id === activeFieldId;
-                  const label = field.title?.trim() || `Question ${index + 1}`;
-                  const order = field.order ?? index + 1;
-                  return (
-                    <div
-                      key={field.id ?? `field-${index}`}
-                      className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-2 transition-colors ${
-                        rowActive
-                          ? isDarkMode
-                            ? "bg-slate-800/70"
-                            : "bg-slate-100"
-                          : "bg-transparent hover:bg-slate-50"
-                      } ${isDarkMode ? "hover:bg-slate-800/50" : ""}`}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => field.id && setActiveFieldId(field.id)}
-                        disabled={!field.id}
-                        className="flex flex-1 items-center gap-3 text-left"
-                      >
-                        <div
-                          className={`flex h-10 w-16 items-center justify-center gap-1 rounded-xl ${badgeTone}`}
-                        >
-                          {getFieldIcon(field.type)}
-                          <span className="text-sm font-semibold">{order}</span>
-                        </div>
-                        <span
-                          className={`flex-1 text-sm font-medium ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
-                        >
-                          {label}
-                          {field.isRequired && (
-                            <span className="text-rose-500"> *</span>
-                          )}
-                        </span>
-                      </button>
-                      {field.id && (
-                        <Popconfirm
-                          title="Delete this field?"
-                          description="This action cannot be undone."
-                          onConfirm={() => handleDeleteField(field.id!)}
-                          okText="Delete"
-                          cancelText="Cancel"
-                          okButtonProps={{
-                            danger: true,
-                            loading: isDeletingField,
-                          }}
-                        >
-                          <Tooltip title="Delete field">
-                            <button
-                              type="button"
-                              className={`flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100 ${
-                                isDarkMode
-                                  ? "text-slate-400 hover:bg-red-500/20 hover:text-red-400"
-                                  : "text-slate-400 hover:bg-red-50 hover:text-red-500"
-                              }`}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <DeleteOutlined />
-                            </button>
-                          </Tooltip>
-                        </Popconfirm>
+                {formFields.length > 0 && (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={formFields.map(
+                        (f) => f.id ?? `field-${formFields.indexOf(f)}`,
                       )}
-                    </div>
-                  );
-                })}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      {formFields.map((field, index) => (
+                        <SortableFieldItem
+                          key={field.id ?? `field-${index}`}
+                          field={field}
+                          index={index}
+                          isActive={field.id === activeFieldId}
+                          isDarkMode={isDarkMode}
+                          isDeletingField={isDeletingField}
+                          onSelect={setActiveFieldId}
+                          onEdit={handleEditField}
+                          onDelete={handleDeleteField}
+                        />
+                      ))}
+                    </SortableContext>
+                  </DndContext>
+                )}
               </div>
 
               <div className="mt-6">
@@ -697,6 +938,47 @@ export default function FormEditorPage({ params }: EditorPageProps) {
         onClose={() => setIsAddContentModalOpen(false)}
         onCreated={handleFieldCreated}
       />
+
+      <EditFieldModal
+        open={isEditFieldModalOpen}
+        field={editingField}
+        onClose={() => {
+          setIsEditFieldModalOpen(false);
+          setEditingField(null);
+        }}
+        onUpdated={handleFieldUpdated}
+      />
+
+      <Modal
+        open={isPublishModalOpen}
+        title="Xác nhận Publish Form"
+        onCancel={handleClosePublishModal}
+        footer={[
+          <Button key="cancel" onClick={handleClosePublishModal}>
+            Hủy
+          </Button>,
+          <Button
+            key="publish"
+            type="primary"
+            loading={isPublishing}
+            onClick={handleConfirmPublish}
+            className="bg-violet-600 hover:bg-violet-700"
+          >
+            Publish
+          </Button>,
+        ]}
+        centered
+      >
+        <div className="py-4">
+          <p className="text-base">
+            Bạn có chắc chắn muốn publish form này không?
+          </p>
+          <p className="mt-2 text-sm text-gray-500">
+            Sau khi publish, form sẽ được công khai và người dùng có thể truy
+            cập.
+          </p>
+        </div>
+      </Modal>
     </>
   );
 }

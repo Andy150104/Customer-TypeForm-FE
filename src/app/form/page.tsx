@@ -12,10 +12,13 @@ import {
   AppstoreOutlined,
   UnorderedListOutlined,
   DeleteOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 import { useRouter } from "next/navigation";
+import { EditFormModal } from "EduSmart/components/Modal/EditFormModal";
+import { FormResponseEntity } from "EduSmart/api/api-auth-service";
 
 const { Title, Text } = Typography;
 
@@ -28,6 +31,10 @@ export default function HomePage() {
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [sortBy, setSortBy] = useState<SortOption>("dateCreated");
   const [deletingFormId, setDeletingFormId] = useState<string | null>(null);
+  const [isEditFormModalOpen, setIsEditFormModalOpen] = useState(false);
+  const [editingForm, setEditingForm] = useState<FormResponseEntity | null>(
+    null,
+  );
   const router = useRouter();
   const messageApi = useNotification();
 
@@ -80,6 +87,12 @@ export default function HomePage() {
     } finally {
       setDeletingFormId(null);
     }
+  };
+
+  const handleEditForm = (form: FormResponseEntity, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setEditingForm(form);
+    setIsEditFormModalOpen(true);
   };
 
   return (
@@ -593,6 +606,17 @@ export default function HomePage() {
                             menu={{
                               items: [
                                 {
+                                  key: "edit",
+                                  label: (
+                                    <span
+                                      className="flex items-center gap-2"
+                                      onClick={(e) => handleEditForm(form, e)}
+                                    >
+                                      <EditOutlined /> Sửa form
+                                    </span>
+                                  ),
+                                },
+                                {
                                   key: "delete",
                                   label: (
                                     <Popconfirm
@@ -661,6 +685,17 @@ export default function HomePage() {
                       <Dropdown
                         menu={{
                           items: [
+                            {
+                              key: "edit",
+                              label: (
+                                <span
+                                  className="flex items-center gap-2"
+                                  onClick={(e) => handleEditForm(form, e)}
+                                >
+                                  <EditOutlined /> Sửa form
+                                </span>
+                              ),
+                            },
                             {
                               key: "delete",
                               label: (
@@ -741,6 +776,15 @@ export default function HomePage() {
           )}
         </div>
       </div>
+
+      <EditFormModal
+        open={isEditFormModalOpen}
+        form={editingForm}
+        onClose={() => {
+          setIsEditFormModalOpen(false);
+          setEditingForm(null);
+        }}
+      />
     </BaseScreenAdmin>
   );
 }

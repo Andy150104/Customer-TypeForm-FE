@@ -251,6 +251,35 @@ export interface FieldOptionResponseEntity {
   order?: number;
 }
 
+export interface FieldOverviewResponseEntity {
+  /** @format uuid */
+  fieldId?: string;
+  title?: string | null;
+  type?: string | null;
+  isRequired?: boolean;
+  /** @format int32 */
+  answeredCount?: number;
+  /** @format int32 */
+  emptyCount?: number;
+  /** @format double */
+  emptyRate?: number;
+  /** @format int32 */
+  answerCount?: number;
+  optionTrends?: OptionTrendResponseEntity[] | null;
+  topValues?: ValueTrendResponseEntity[] | null;
+}
+
+export interface FieldQualityResponseEntity {
+  /** @format uuid */
+  fieldId?: string;
+  title?: string | null;
+  type?: string | null;
+  /** @format int32 */
+  emptyCount?: number;
+  /** @format double */
+  emptyRate?: number;
+}
+
 export interface FieldResponseEntity {
   /** @format uuid */
   id?: string;
@@ -308,6 +337,22 @@ export interface FormResponseEntity {
   updatedAt?: string | null;
 }
 
+export interface FormSubmissionsOverviewResponseEntity {
+  /** @format uuid */
+  formId?: string;
+  formTitle?: string | null;
+  /** @format int32 */
+  totalSubmissions?: number;
+  /** @format int32 */
+  totalFields?: number;
+  /** @format int32 */
+  answeredCount?: number;
+  /** @format double */
+  completionRate?: number;
+  mostEmptyField?: FieldQualityResponseEntity;
+  fields?: FieldOverviewResponseEntity[] | null;
+}
+
 export interface FormWithFieldsAndLogicResponseEntity {
   /** @format uuid */
   id?: string;
@@ -321,6 +366,14 @@ export interface FormWithFieldsAndLogicResponseEntity {
   /** @format date-time */
   updatedAt?: string | null;
   fields?: FieldWithLogicResponseEntity[] | null;
+}
+
+export interface GetDetailSubmissionsQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: SubmissionResponseEntity[] | null;
 }
 
 export interface GetFieldsByFormIdQueryResponse {
@@ -379,12 +432,12 @@ export interface GetSubmissionByIdQueryResponse {
   response?: SubmissionDetailResponseEntity;
 }
 
-export interface GetSubmissionsQueryResponse {
+export interface GetSubmissionsOverviewQueryResponse {
   success?: boolean;
   messageId?: string | null;
   message?: string | null;
   detailErrors?: DetailError[] | null;
-  response?: SubmissionResponseEntity[] | null;
+  response?: FormSubmissionsOverviewResponseEntity;
 }
 
 export interface LogicResponseEntity {
@@ -432,6 +485,17 @@ export interface NextQuestionResponseEntity {
   isEndOfForm?: boolean;
   /** @format uuid */
   appliedLogicId?: string | null;
+}
+
+export interface OptionTrendResponseEntity {
+  /** @format uuid */
+  fieldOptionId?: string | null;
+  label?: string | null;
+  value?: string | null;
+  /** @format int32 */
+  count?: number;
+  /** @format double */
+  rate?: number;
 }
 
 export interface RegisterApplicationCommand {
@@ -672,6 +736,14 @@ export interface UserRegisterCommand {
   googleId?: string | null;
   /** @format uuid */
   roleId?: string | null;
+}
+
+export interface ValueTrendResponseEntity {
+  value?: string | null;
+  /** @format int32 */
+  count?: number;
+  /** @format double */
+  rate?: number;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -1313,11 +1385,11 @@ export class Api<
       }),
 
     /**
-     * @description Lấy tất cả submissions (câu trả lời) của form, bao gồm answers. Chỉ owner của form mới xem được.
+     * @description Overview analytics derived from submissions (no per-answer detail). Only form owner can access.
      *
      * @tags Forms
      * @name V1FormsGetSubmissionsList
-     * @summary Lấy danh sách submissions của form
+     * @summary Get submissions overview
      * @request GET:/api/v1/Forms/GetSubmissions
      * @secure
      */
@@ -1328,8 +1400,33 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<GetSubmissionsQueryResponse, any>({
+      this.request<GetSubmissionsOverviewQueryResponse, any>({
         path: `/api/v1/Forms/GetSubmissions`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description All submissions with answers. Only form owner can access.
+     *
+     * @tags Forms
+     * @name V1FormsGetDetailSubmissionsList
+     * @summary Get detail submissions
+     * @request GET:/api/v1/Forms/GetDetailSubmissions
+     * @secure
+     */
+    v1FormsGetDetailSubmissionsList: (
+      query?: {
+        /** @format uuid */
+        formId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetDetailSubmissionsQueryResponse, any>({
+        path: `/api/v1/Forms/GetDetailSubmissions`,
         method: "GET",
         query: query,
         secure: true,

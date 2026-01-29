@@ -19,6 +19,7 @@ import {
   Slider,
   TimePicker,
   Upload,
+  Image as AntdImage,
 } from "antd";
 import { createStyles } from "antd-style";
 import {
@@ -35,13 +36,14 @@ import { useTheme } from "EduSmart/Provider/ThemeProvider";
 
 const useGradientButtonStyles = createStyles(({ prefixCls, css }) => ({
   gradientButton: css`
-    &.${prefixCls}-btn-primary:not([disabled]):not(.${prefixCls}-btn-dangerous) {
+    &.${prefixCls}-btn-primary:not([disabled]):not(
+        .${prefixCls}-btn-dangerous
+      ) {
       position: relative;
       overflow: hidden;
 
       > span,
-      .${prefixCls}-btn-icon,
-      .${prefixCls}-btn-loading-icon {
+      .${prefixCls}-btn-icon, .${prefixCls}-btn-loading-icon {
         position: relative;
         z-index: 1;
       }
@@ -254,7 +256,9 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
   const actionBarRef = useRef<HTMLDivElement | null>(null);
   const navigationRef = useRef<"next" | "back" | null>(null);
   const isControlled = controlledFieldId !== undefined;
-  const activeFieldId = isControlled ? controlledFieldId ?? null : internalFieldId;
+  const activeFieldId = isControlled
+    ? (controlledFieldId ?? null)
+    : internalFieldId;
   const setActiveFieldId = useCallback(
     (nextId: string | null) => {
       if (isControlled) {
@@ -291,8 +295,8 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
   const isActive = !isInputLocked && (isFocused || value.length > 0);
   const inputValue = value;
   const titleText = currentField?.title ?? "Your email";
-  const descriptionText =
-    currentField?.description ?? "Description (optional)";
+  const descriptionText = currentField?.description ?? "Description (optional)";
+  const imageUrl = currentField?.imageUrl ?? null;
   const placeholderValue =
     typeof currentField?.properties?.placeholder === "string"
       ? currentField.properties.placeholder
@@ -373,7 +377,9 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
   useEffect(() => {
     if (!hasFields) return;
     const firstId = orderedFields[0]?.id ?? null;
-    const hasCurrent = orderedFields.some((field) => field.id === activeFieldId);
+    const hasCurrent = orderedFields.some(
+      (field) => field.id === activeFieldId,
+    );
     if (!activeFieldId || !hasCurrent) {
       setActiveFieldId(firstId);
     }
@@ -546,7 +552,10 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
     }
     setCheckboxValue(checked);
     setValue(checked ? "true" : "false");
-    persistAnswerState({ checkboxValue: checked, value: checked ? "true" : "false" });
+    persistAnswerState({
+      checkboxValue: checked,
+      value: checked ? "true" : "false",
+    });
   };
 
   const handleYesNo = (nextValue: "Yes" | "No") => {
@@ -694,13 +703,14 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
     <div className="mx-auto flex w-[86%] flex-col gap-3 pt-6 sm:w-[90%]">
       {fieldOptions.map((option, index) => {
         const optionValue = option.value ?? option.label ?? `${index + 1}`;
-        const optionLabel = option.label ?? option.value ?? `Option ${index + 1}`;
-        const optionValueDisplay = option.value ?? option.label ?? `${index + 1}`;
+        const optionLabel =
+          option.label ?? option.value ?? `Option ${index + 1}`;
         const isSelected =
           mode === "multiselect"
             ? multiValues.includes(optionValue)
             : selectedValue === optionValue;
         const isDisabled = isInputLocked;
+        const letterIndex = String.fromCharCode(65 + index); // A, B, C, D...
         return (
           <button
             key={option.id ?? `${optionValue}-${index}`}
@@ -725,7 +735,7 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
                   isSelected ? optionChipActive : optionChipBase
                 }`}
               >
-                {optionLabel}
+                {letterIndex}
               </span>
             )}
             {mode === "multiselect" && (
@@ -747,8 +757,8 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
                   isSelected
                     ? "border-indigo-500"
                     : isDarkMode
-                    ? "border-slate-500"
-                    : "border-slate-300"
+                      ? "border-slate-500"
+                      : "border-slate-300"
                 }`}
               >
                 {isSelected && (
@@ -757,7 +767,7 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
               </span>
             )}
             <span className={`text-sm font-medium ${optionTextColor}`}>
-              {optionValueDisplay}
+              {optionLabel}
             </span>
           </button>
         );
@@ -1004,7 +1014,9 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
       case "checkbox":
         return (
           <div className="pt-4">
-            <label className={`flex items-center gap-3 text-sm ${optionTextColor}`}>
+            <label
+              className={`flex items-center gap-3 text-sm ${optionTextColor}`}
+            >
               <Checkbox
                 checked={checkboxValue}
                 disabled={isInputLocked}
@@ -1086,7 +1098,9 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
               </Button>
             </Upload>
             {fileName && (
-              <div className={`mt-2 text-xs ${optionMutedText}`}>{fileName}</div>
+              <div className={`mt-2 text-xs ${optionMutedText}`}>
+                {fileName}
+              </div>
             )}
           </div>
         );
@@ -1158,9 +1172,39 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
                   </span>
                   {isRequired && <span className="text-rose-500"> *</span>}
                 </div>
+
                 <div className={`text-sm italic ${descriptionColor}`}>
                   {currentField ? descriptionText : placeholderDescription}
                 </div>
+                {imageUrl && (
+                  <div className="my-4">
+                    <AntdImage
+                      src={imageUrl}
+                      alt={titleText}
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: 280,
+                        objectFit: "contain",
+                        borderRadius: 12,
+                      }}
+                      className={`shadow-md ${
+                        isDarkMode
+                          ? "shadow-slate-900/50"
+                          : "shadow-slate-200/70"
+                      }`}
+                      placeholder={
+                        <div
+                          className={`flex h-40 w-full items-center justify-center rounded-xl ${
+                            isDarkMode ? "bg-slate-800" : "bg-slate-100"
+                          }`}
+                        >
+                          <span className={descriptionColor}>Loading...</span>
+                        </div>
+                      }
+                    />
+                  </div>
+                )}
+
                 {renderFieldInput()}
                 {isEndOfForm && (
                   <div className={`text-xs font-medium ${descriptionColor}`}>
@@ -1177,29 +1221,29 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
               <div
                 className={`flex items-center gap-3 rounded-2xl border px-3 py-3 shadow-xl backdrop-blur-sm ${actionBarClass}`}
               >
-              <Button
-                type="default"
-                icon={
-                  <ArrowLeftOutlined className="transition-transform duration-200 group-hover:-translate-x-0.5" />
-                }
-                onClick={handleBack}
-                disabled={!history.length}
-                className={`group h-12 min-w-[120px] gap-2 rounded-full px-5 text-base font-semibold transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${backButtonClass}`}
-              >
-                Back
-              </Button>
-              <Button
-                type="primary"
-                icon={
-                  <ArrowRightOutlined className="transition-transform duration-200 group-hover:translate-x-0.5" />
-                }
-                onClick={handleNext}
-                disabled={!canAdvance}
-                loading={isNavigating}
-                className={`group h-12 flex-1 gap-2 rounded-full text-base font-semibold transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${okButtonClass} ${styles.gradientButton}`}
-              >
-                Next
-              </Button>
+                <Button
+                  type="default"
+                  icon={
+                    <ArrowLeftOutlined className="transition-transform duration-200 group-hover:-translate-x-0.5" />
+                  }
+                  onClick={handleBack}
+                  disabled={!history.length}
+                  className={`group h-12 min-w-[120px] gap-2 rounded-full px-5 text-base font-semibold transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${backButtonClass}`}
+                >
+                  Back
+                </Button>
+                <Button
+                  type="primary"
+                  icon={
+                    <ArrowRightOutlined className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                  }
+                  onClick={handleNext}
+                  disabled={!canAdvance}
+                  loading={isNavigating}
+                  className={`group h-12 flex-1 gap-2 rounded-full text-base font-semibold transition-all duration-200 ease-out hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] ${okButtonClass} ${styles.gradientButton}`}
+                >
+                  Next
+                </Button>
               </div>
             </div>
           </div>

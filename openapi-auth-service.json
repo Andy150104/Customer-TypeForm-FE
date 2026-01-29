@@ -643,8 +643,8 @@
     "/api/v1/Forms/GetSubmissions": {
       "get": {
         "tags": ["Forms"],
-        "summary": "Lấy danh sách submissions của form",
-        "description": "Lấy tất cả submissions (câu trả lời) của form, bao gồm answers. Chỉ owner của form mới xem được.",
+        "summary": "Get submissions overview",
+        "description": "Overview analytics derived from submissions (no per-answer detail). Only form owner can access.",
         "parameters": [
           {
             "name": "formId",
@@ -661,17 +661,56 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetSubmissionsQueryResponse"
+                  "$ref": "#/components/schemas/GetSubmissionsOverviewQueryResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetSubmissionsQueryResponse"
+                  "$ref": "#/components/schemas/GetSubmissionsOverviewQueryResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GetSubmissionsQueryResponse"
+                  "$ref": "#/components/schemas/GetSubmissionsOverviewQueryResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/Forms/GetDetailSubmissions": {
+      "get": {
+        "tags": ["Forms"],
+        "summary": "Get detail submissions",
+        "description": "All submissions with answers. Only form owner can access.",
+        "parameters": [
+          {
+            "name": "formId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailSubmissionsQueryResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailSubmissionsQueryResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetDetailSubmissionsQueryResponse"
                 }
               }
             }
@@ -1587,6 +1626,83 @@
         },
         "additionalProperties": false
       },
+      "FieldOverviewResponseEntity": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
+          "answeredCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "emptyCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "emptyRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "answerCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "optionTrends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OptionTrendResponseEntity"
+            },
+            "nullable": true
+          },
+          "topValues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValueTrendResponseEntity"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "FieldQualityResponseEntity": {
+        "type": "object",
+        "properties": {
+          "fieldId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "emptyCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "emptyRate": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
       "FieldResponseEntity": {
         "type": "object",
         "properties": {
@@ -1752,6 +1868,46 @@
         },
         "additionalProperties": false
       },
+      "FormSubmissionsOverviewResponseEntity": {
+        "type": "object",
+        "properties": {
+          "formId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "formTitle": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalSubmissions": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "totalFields": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "answeredCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "completionRate": {
+            "type": "number",
+            "format": "double"
+          },
+          "mostEmptyField": {
+            "$ref": "#/components/schemas/FieldQualityResponseEntity"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldOverviewResponseEntity"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "FormWithFieldsAndLogicResponseEntity": {
         "type": "object",
         "properties": {
@@ -1789,6 +1945,37 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/FieldWithLogicResponseEntity"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetDetailSubmissionsQueryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionResponseEntity"
             },
             "nullable": true
           }
@@ -1982,7 +2169,7 @@
         },
         "additionalProperties": false
       },
-      "GetSubmissionsQueryResponse": {
+      "GetSubmissionsOverviewQueryResponse": {
         "type": "object",
         "properties": {
           "success": {
@@ -2004,11 +2191,7 @@
             "nullable": true
           },
           "response": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/SubmissionResponseEntity"
-            },
-            "nullable": true
+            "$ref": "#/components/schemas/FormSubmissionsOverviewResponseEntity"
           }
         },
         "additionalProperties": false
@@ -2135,6 +2318,33 @@
             "type": "string",
             "format": "uuid",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "OptionTrendResponseEntity": {
+        "type": "object",
+        "properties": {
+          "fieldOptionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rate": {
+            "type": "number",
+            "format": "double"
           }
         },
         "additionalProperties": false
@@ -2826,6 +3036,24 @@
             "type": "string",
             "format": "uuid",
             "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "ValueTrendResponseEntity": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "rate": {
+            "type": "number",
+            "format": "double"
           }
         },
         "additionalProperties": false

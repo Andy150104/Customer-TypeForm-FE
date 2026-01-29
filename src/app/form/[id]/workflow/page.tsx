@@ -13,6 +13,7 @@ import {
   Button,
   Card,
   DatePicker,
+  Drawer,
   Empty,
   Form,
   Input,
@@ -317,6 +318,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
   const [editingConnection, setEditingConnection] =
     useState<FlowConnection | null>(null);
   const [isEditRuleModalOpen, setIsEditRuleModalOpen] = useState(false);
+  const [isWorkflowDrawerOpen, setIsWorkflowDrawerOpen] = useState(false);
 
   const activeTabIndex = Math.max(0, tabs.indexOf("Workflow"));
   const tabGridTemplate: CSSProperties = {
@@ -818,26 +820,76 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
           })}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          <div
-            className={`flex h-full max-h-[720px] flex-col overflow-hidden rounded-3xl border p-4 shadow-sm ${
-              isDarkMode
-                ? "border-slate-800 bg-slate-900/60"
-                : "border-slate-200 bg-white"
-            }`}
-          >
-            <div className="mb-3 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-semibold m-0">Questions</p>
-                <p
-                  className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
-                >
-                  Select a question to define branching logic.
-                </p>
-              </div>
-              <Tag icon={<ApartmentOutlined />}>Steps {formFields.length}</Tag>
+        {/* Full-width Flow Builder Card */}
+        <Card
+          title={
+            <div className="flex items-center gap-2">
+              <NodeExpandOutlined />
+              <span>Flow builder</span>
+              <Tag color="purple" icon={<BranchesOutlined />}>
+                Logic + Map
+              </Tag>
             </div>
-            <div className="flex-1 space-y-3 overflow-y-auto pr-2">
+          }
+          extra={
+            <Button
+              icon={<ApartmentOutlined />}
+              onClick={() => setIsWorkflowDrawerOpen(true)}
+              type="primary"
+              style={{ backgroundColor: brandColor }}
+            >
+              Questions & Logic ({formFields.length})
+            </Button>
+          }
+          className={`rounded-3xl border ${
+            isDarkMode ? "border-slate-800 bg-slate-900/70" : "border-slate-200"
+          }`}
+        >
+          {!flowNodes.length ? (
+            <Empty
+              description="No questions to visualize"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ) : (
+            <div className="min-h-[680px]">
+              <FlowVisualizer
+                nodes={flowNodes}
+                connections={flowConnections}
+                isDarkMode={isDarkMode}
+                activeNodeId={activeFieldId}
+                onNodeSelect={setActiveFieldId}
+                onCreateConnection={handleCreateConnectionFromMap}
+                onDeleteConnection={handleDeleteConnection}
+                onEditConnection={handleEditConnection}
+                onEditNode={handleEditNode}
+                formFields={formFields}
+              />
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* Combined Questions & Logic Drawer */}
+      <Drawer
+        title={
+          <div className="flex items-center gap-2">
+            <ApartmentOutlined />
+            <span>Questions & Logic</span>
+            <Tag>{formFields.length} steps</Tag>
+          </div>
+        }
+        placement="right"
+        width={480}
+        onClose={() => setIsWorkflowDrawerOpen(false)}
+        open={isWorkflowDrawerOpen}
+      >
+        <div className="flex flex-col gap-4">
+          {/* Questions List */}
+          <div>
+            <p className="m-0 mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Select a question
+            </p>
+            <div className="max-h-[280px] space-y-2 overflow-y-auto pr-1">
               {isFormLoading && (
                 <div className="rounded-2xl border border-dashed px-3 py-2 text-sm text-center">
                   Loading questions...
@@ -863,23 +915,21 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                   <button
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors ${
                       isActive
-                        ? isDarkMode
-                          ? "bg-slate-800"
-                          : "bg-slate-100"
-                        : "bg-transparent"
+                        ? "bg-violet-100 border-2 border-violet-400"
+                        : "bg-transparent hover:bg-slate-50 border-2 border-transparent"
                     }`}
                     type="button"
                     key={field.id ?? `field-${index}`}
                     onClick={() => setActiveFieldId(field.id ?? null)}
                   >
                     <div
-                      className={`flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-semibold ${badgeTone}`}
+                      className={`flex h-9 w-9 items-center justify-center rounded-xl text-xs font-semibold ${badgeTone}`}
                     >
                       {getFieldInitials(field.title)}
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p
-                        className={`m-0 text-sm font-medium ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+                        className={`m-0 text-sm font-medium truncate ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
                       >
                         {field.title || `Question ${index + 1}`}
                       </p>
@@ -889,338 +939,272 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                         {field.type ?? "unknown"}
                       </p>
                     </div>
+                    {isActive && (
+                      <Tag color="#6B46C1" className="ml-auto">
+                        Active
+                      </Tag>
+                    )}
                   </button>
                 );
               })}
             </div>
           </div>
 
-          <div className="flex flex-col gap-4">
-            <Card
-              title={
-                <div className="flex items-center gap-2">
-                  <NodeExpandOutlined />
-                  <span>Flow builder</span>
-                  <Tag color="purple" icon={<BranchesOutlined />}>
-                    Logic + Map
-                  </Tag>
-                </div>
-              }
-              className={`rounded-3xl border ${
-                isDarkMode
-                  ? "border-slate-800 bg-slate-900/70"
-                  : "border-slate-200"
-              }`}
-            >
-              {!flowNodes.length ? (
-                <Empty
-                  description="No questions to visualize"
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
-              ) : (
-                <div className="flex flex-col gap-5 xl:flex-row">
-                  <div className="flex-1 min-h-[520px]">
-                    <FlowVisualizer
-                      nodes={flowNodes}
-                      connections={flowConnections}
-                      isDarkMode={isDarkMode}
-                      activeNodeId={activeFieldId}
-                      onNodeSelect={setActiveFieldId}
-                      onCreateConnection={handleCreateConnectionFromMap}
-                      onDeleteConnection={handleDeleteConnection}
-                      onEditConnection={handleEditConnection}
-                      onEditNode={handleEditNode}
-                      formFields={formFields}
-                    />
+          {/* Divider */}
+          <div className="border-t border-slate-200" />
+
+          {/* Logic Rules Section */}
+          {!activeField ? (
+            <div className="rounded-2xl border border-dashed px-3 py-6 text-center text-sm text-slate-500">
+              Select a question above to configure logic rules.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="rounded-2xl bg-violet-50 p-3 border border-violet-200">
+                <p className="m-0 text-xs uppercase tracking-wide text-violet-600">
+                  Logic for
+                </p>
+                <p className="m-0 text-base font-semibold text-violet-900">
+                  {activeField?.title ?? "Select from map"}
+                </p>
+                <p className="m-0 text-xs text-violet-600 mt-1">
+                  Default → {defaultNextField?.title ?? "End of form"}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Existing rules ({activeLogicRules.length})
+                </p>
+                {activeLogicRules.length === 0 && (
+                  <div className="rounded-2xl border border-dashed px-3 py-2 text-xs text-slate-500">
+                    No custom rules yet.
                   </div>
-                  <div
-                    className={`w-full rounded-3xl border px-4 py-3 shadow-sm xl:w-[320px] ${
-                      isDarkMode
-                        ? "border-slate-800 bg-slate-950/60"
-                        : "border-slate-100 bg-slate-50"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <p className="m-0 text-xs uppercase tracking-wide text-slate-500">
-                          Active question
-                        </p>
-                        <p className="m-0 text-base font-semibold">
-                          {activeField?.title ?? "Select from map"}
-                        </p>
-                      </div>
-                      {activeField && (
-                        <Tag color="#6B46C1">
-                          Step {activeField.order ?? "-"}
-                        </Tag>
-                      )}
+                )}
+                {activeLogicRules.map((rule) => {
+                  const copy = conditionCopy[rule.condition ?? ""] ?? {
+                    title: rule.condition ?? "Condition",
+                    helper: "",
+                  };
+                  const destination = rule.destinationFieldId
+                    ? formFields.find(
+                        (field) => field.id === rule.destinationFieldId,
+                      )
+                    : null;
+                  return (
+                    <div
+                      key={rule.id}
+                      className={`rounded-2xl border px-3 py-2 text-xs ${
+                        isDarkMode
+                          ? "border-slate-800 bg-slate-900/60"
+                          : "border-slate-200 bg-white"
+                      }`}
+                    >
+                      <p className="m-0 font-semibold">{copy.title}</p>
+                      <p className="m-0 text-slate-500">
+                        {copy.helper}
+                        {rule.value ? `: "${rule.value}"` : ""}
+                      </p>
+                      <span className="text-[11px] font-semibold text-[#6B46C1]">
+                        Go to {destination?.title ?? "End of form"}
+                      </span>
                     </div>
-                    {!activeField && (
-                      <div className="mt-6 rounded-2xl border border-dashed px-3 py-6 text-center text-sm text-slate-500">
-                        Tap a node to start creating logic.
-                      </div>
-                    )}
-                    {activeField && (
-                      <div className="mt-4 flex flex-col gap-4">
-                        <div>
-                          <p className="m-0 text-xs font-semibold text-slate-500">
-                            Default fall-through
-                          </p>
-                          <p className="m-0 text-sm text-slate-700">
-                            {defaultNextField?.title ?? "End of form"}
-                          </p>
-                        </div>
-                        <div className="max-h-48 space-y-3 overflow-y-auto pr-1">
-                          {activeLogicRules.length === 0 && (
-                            <div className="rounded-2xl border border-dashed px-3 py-2 text-xs text-slate-500">
-                              No custom rules yet.
-                            </div>
-                          )}
-                          {activeLogicRules.map((rule) => {
-                            const copy = conditionCopy[
-                              rule.condition ?? ""
-                            ] ?? {
-                              title: rule.condition ?? "Condition",
-                              helper: "",
-                            };
-                            const destination = rule.destinationFieldId
-                              ? formFields.find(
-                                  (field) =>
-                                    field.id === rule.destinationFieldId,
-                                )
-                              : null;
-                            return (
-                              <div
-                                key={rule.id}
-                                className={`rounded-2xl border px-3 py-2 text-xs ${
-                                  isDarkMode
-                                    ? "border-slate-800 bg-slate-900/60"
-                                    : "border-white bg-white"
-                                }`}
-                              >
-                                <p className="m-0 font-semibold">
-                                  {copy.title}
-                                </p>
-                                <p className="m-0 text-slate-500">
-                                  {copy.helper}
-                                  {rule.value ? `: "${rule.value}"` : ""}
-                                </p>
-                                <span className="text-[11px] font-semibold text-[#6B46C1]">
-                                  Go to {destination?.title ?? "End of form"}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                        <Form
-                          form={logicForm}
-                          layout="vertical"
-                          initialValues={{ condition: LogicCondition.Is }}
-                          onFinish={handleLogicSubmit}
-                        >
-                          <div className="flex items-center justify-between">
-                            <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                              New rule
-                            </p>
-                            {!canCreateLogic && (
-                              <Tag color="orange" icon={<InfoCircleOutlined />}>
-                                Need 2+ questions
-                              </Tag>
-                            )}
-                          </div>
-                          <Form.Item
-                            className="mb-2"
-                            name="condition"
-                            rules={[
-                              { required: true, message: "Pick condition" },
-                            ]}
-                          >
-                            <Select
-                              size="small"
-                              options={filteredConditionOptions}
-                              disabled={!canCreateLogic}
-                            />
-                          </Form.Item>
-                          <Form.Item
-                            className="mb-2"
-                            name="value"
-                            label={valueLabel}
-                            dependencies={["condition"]}
-                            rules={[
-                              ({ getFieldValue }) => ({
-                                validator(_, value) {
-                                  const condition = getFieldValue("condition");
-                                  if (condition === LogicCondition.Always)
-                                    return Promise.resolve();
-                                  if (
-                                    value === undefined ||
-                                    value === null ||
-                                    value === ""
-                                  )
-                                    return Promise.reject(
-                                      new Error("Provide a value"),
-                                    );
-                                  if (
-                                    Array.isArray(value) &&
-                                    value.length === 0
-                                  )
-                                    return Promise.reject(
-                                      new Error("Select at least one option"),
-                                    );
-                                  return Promise.resolve();
-                                },
-                              }),
-                            ]}
-                          >
-                            {/* Text, Email, Phone, Textarea */}
-                            {["text", "email", "phone", "textarea"].includes(
-                              activeFieldCategory,
-                            ) && (
-                              <Input
-                                size="small"
-                                placeholder={
-                                  activeFieldCategory === "email"
-                                    ? "example@mail.com"
-                                    : activeFieldCategory === "phone"
-                                      ? "+84..."
-                                      : "Enter text..."
-                                }
-                                disabled={!canCreateLogic}
-                              />
-                            )}
-                            {/* Number */}
-                            {activeFieldCategory === "number" && (
-                              <InputNumber
-                                size="small"
-                                className="w-full"
-                                placeholder="Enter number"
-                                disabled={!canCreateLogic}
-                              />
-                            )}
-                            {/* Rating */}
-                            {activeFieldCategory === "rating" && (
-                              <Rate disabled={!canCreateLogic} allowHalf />
-                            )}
-                            {/* Scale */}
-                            {activeFieldCategory === "scale" && (
-                              <Slider
-                                min={1}
-                                max={10}
-                                marks={{ 1: "1", 5: "5", 10: "10" }}
-                                disabled={!canCreateLogic}
-                              />
-                            )}
-                            {/* Date */}
-                            {activeFieldCategory === "date" && (
-                              <DatePicker
-                                size="small"
-                                className="w-full"
-                                format="YYYY-MM-DD"
-                                disabled={!canCreateLogic}
-                              />
-                            )}
-                            {/* Time */}
-                            {activeFieldCategory === "time" && (
-                              <TimePicker
-                                size="small"
-                                className="w-full"
-                                format="HH:mm"
-                                disabled={!canCreateLogic}
-                              />
-                            )}
-                            {/* DateTime */}
-                            {activeFieldCategory === "datetime" && (
-                              <DatePicker
-                                size="small"
-                                className="w-full"
-                                showTime={{ format: "HH:mm" }}
-                                format="YYYY-MM-DD HH:mm"
-                                disabled={!canCreateLogic}
-                              />
-                            )}
-                            {/* Select, Radio */}
-                            {["select", "radio"].includes(
-                              activeFieldCategory,
-                            ) && (
-                              <Select
-                                size="small"
-                                placeholder="Pick an option"
-                                options={choiceOptions}
-                                disabled={
-                                  !canCreateLogic || choiceOptions.length === 0
-                                }
-                                notFoundContent="No options configured"
-                              />
-                            )}
-                            {/* MultiSelect, Checkbox */}
-                            {["multiselect", "checkbox"].includes(
-                              activeFieldCategory,
-                            ) && (
-                              <Select
-                                size="small"
-                                mode="multiple"
-                                placeholder="Pick options"
-                                options={choiceOptions}
-                                disabled={
-                                  !canCreateLogic || choiceOptions.length === 0
-                                }
-                                notFoundContent="No options configured"
-                              />
-                            )}
-                            {/* YesNo */}
-                            {activeFieldCategory === "yesno" && (
-                              <Select
-                                size="small"
-                                placeholder="Yes or No"
-                                options={yesNoOptions}
-                                disabled={!canCreateLogic}
-                              />
-                            )}
-                            {/* File */}
-                            {activeFieldCategory === "file" && (
-                              <Select
-                                size="small"
-                                placeholder="File status"
-                                options={fileStatusOptions}
-                                disabled={!canCreateLogic}
-                              />
-                            )}
-                          </Form.Item>
-                          <Form.Item
-                            className="mb-3"
-                            name="destinationFieldId"
-                            rules={[{ required: true, message: "Destination" }]}
-                          >
-                            <Select
-                              size="small"
-                              placeholder="Jump to question"
-                              disabled={!canCreateLogic}
-                              options={destinationOptions.map((field) => ({
-                                value: field.id!,
-                                label: field.title || "Untitled",
-                              }))}
-                            />
-                          </Form.Item>
-                          <Button
-                            type="primary"
-                            htmlType="submit"
-                            block
-                            size="middle"
-                            loading={isSavingLogic}
-                            disabled={!canCreateLogic}
-                          >
-                            Add rule
-                          </Button>
-                        </Form>
-                      </div>
-                    )}
-                  </div>
+                  );
+                })}
+              </div>
+
+              <Form
+                form={logicForm}
+                layout="vertical"
+                initialValues={{ condition: LogicCondition.Is }}
+                onFinish={handleLogicSubmit}
+              >
+                <div className="flex items-center justify-between">
+                  <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Add new rule
+                  </p>
+                  {!canCreateLogic && (
+                    <Tag color="orange" icon={<InfoCircleOutlined />}>
+                      Need 2+ questions
+                    </Tag>
+                  )}
                 </div>
-              )}
-            </Card>
-          </div>
+                <Form.Item
+                  className="mb-2"
+                  name="condition"
+                  rules={[{ required: true, message: "Pick condition" }]}
+                >
+                  <Select
+                    size="small"
+                    options={filteredConditionOptions}
+                    disabled={!canCreateLogic}
+                  />
+                </Form.Item>
+                <Form.Item
+                  className="mb-2"
+                  name="value"
+                  label={valueLabel}
+                  dependencies={["condition"]}
+                  rules={[
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        const condition = getFieldValue("condition");
+                        if (condition === LogicCondition.Always)
+                          return Promise.resolve();
+                        if (
+                          value === undefined ||
+                          value === null ||
+                          value === ""
+                        )
+                          return Promise.reject(new Error("Provide a value"));
+                        if (Array.isArray(value) && value.length === 0)
+                          return Promise.reject(
+                            new Error("Select at least one option"),
+                          );
+                        return Promise.resolve();
+                      },
+                    }),
+                  ]}
+                >
+                  {/* Text, Email, Phone, Textarea */}
+                  {["text", "email", "phone", "textarea"].includes(
+                    activeFieldCategory,
+                  ) && (
+                    <Input
+                      size="small"
+                      placeholder={
+                        activeFieldCategory === "email"
+                          ? "example@mail.com"
+                          : activeFieldCategory === "phone"
+                            ? "+84..."
+                            : "Enter text..."
+                      }
+                      disabled={!canCreateLogic}
+                    />
+                  )}
+                  {/* Number */}
+                  {activeFieldCategory === "number" && (
+                    <InputNumber
+                      size="small"
+                      className="w-full"
+                      placeholder="Enter number"
+                      disabled={!canCreateLogic}
+                    />
+                  )}
+                  {/* Rating */}
+                  {activeFieldCategory === "rating" && (
+                    <Rate disabled={!canCreateLogic} allowHalf />
+                  )}
+                  {/* Scale */}
+                  {activeFieldCategory === "scale" && (
+                    <Slider
+                      min={1}
+                      max={10}
+                      marks={{ 1: "1", 5: "5", 10: "10" }}
+                      disabled={!canCreateLogic}
+                    />
+                  )}
+                  {/* Date */}
+                  {activeFieldCategory === "date" && (
+                    <DatePicker
+                      size="small"
+                      className="w-full"
+                      format="YYYY-MM-DD"
+                      disabled={!canCreateLogic}
+                    />
+                  )}
+                  {/* Time */}
+                  {activeFieldCategory === "time" && (
+                    <TimePicker
+                      size="small"
+                      className="w-full"
+                      format="HH:mm"
+                      disabled={!canCreateLogic}
+                    />
+                  )}
+                  {/* DateTime */}
+                  {activeFieldCategory === "datetime" && (
+                    <DatePicker
+                      size="small"
+                      className="w-full"
+                      showTime={{ format: "HH:mm" }}
+                      format="YYYY-MM-DD HH:mm"
+                      disabled={!canCreateLogic}
+                    />
+                  )}
+                  {/* Select, Radio */}
+                  {["select", "radio"].includes(activeFieldCategory) && (
+                    <Select
+                      size="small"
+                      placeholder="Pick an option"
+                      options={choiceOptions}
+                      disabled={!canCreateLogic || choiceOptions.length === 0}
+                      notFoundContent="No options configured"
+                    />
+                  )}
+                  {/* MultiSelect, Checkbox */}
+                  {["multiselect", "checkbox"].includes(
+                    activeFieldCategory,
+                  ) && (
+                    <Select
+                      size="small"
+                      mode="multiple"
+                      placeholder="Pick options"
+                      options={choiceOptions}
+                      disabled={!canCreateLogic || choiceOptions.length === 0}
+                      notFoundContent="No options configured"
+                    />
+                  )}
+                  {/* YesNo */}
+                  {activeFieldCategory === "yesno" && (
+                    <Select
+                      size="small"
+                      placeholder="Yes or No"
+                      options={yesNoOptions}
+                      disabled={!canCreateLogic}
+                    />
+                  )}
+                  {/* File */}
+                  {activeFieldCategory === "file" && (
+                    <Select
+                      size="small"
+                      placeholder="File status"
+                      options={fileStatusOptions}
+                      disabled={!canCreateLogic}
+                    />
+                  )}
+                </Form.Item>
+                <Form.Item
+                  className="mb-3"
+                  name="destinationFieldId"
+                  rules={[{ required: true, message: "Destination" }]}
+                >
+                  <Select
+                    size="small"
+                    placeholder="Jump to question"
+                    disabled={!canCreateLogic}
+                    options={destinationOptions.map((field) => ({
+                      value: field.id!,
+                      label: field.title || "Untitled",
+                    }))}
+                  />
+                </Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  block
+                  size="middle"
+                  loading={isSavingLogic}
+                  disabled={!canCreateLogic}
+                  style={{ backgroundColor: brandColor }}
+                >
+                  Add rule
+                </Button>
+              </Form>
+            </div>
+          )}
         </div>
-      </div>
+      </Drawer>
 
       {/* Edit Rule Modal */}
       <Modal
@@ -1690,7 +1674,7 @@ function FlowVisualizer({
   return (
     <div
       ref={reactFlowWrapper}
-      className={`relative h-[520px] w-full overflow-hidden rounded-3xl border ${
+      className={`relative h-[680px] w-full overflow-hidden rounded-3xl border ${
         isDarkMode
           ? "border-slate-800 bg-slate-950/50"
           : "border-slate-200 bg-white"
