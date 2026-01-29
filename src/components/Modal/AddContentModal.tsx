@@ -11,7 +11,10 @@ import {
   Button,
   Typography,
   Tag,
+  Upload,
+  Image as AntdImage,
 } from "antd";
+import type { UploadFile, UploadProps } from "antd";
 import {
   BarsOutlined,
   NumberOutlined,
@@ -30,6 +33,7 @@ import {
   QuestionCircleOutlined,
   PlusOutlined,
   DeleteOutlined,
+  PictureOutlined,
 } from "@ant-design/icons";
 import {
   CreateFieldCommand,
@@ -39,6 +43,7 @@ import {
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useNotification } from "EduSmart/Provider/NotificationProvider";
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
+import { getBase64 } from "EduSmart/utils/commonFunction";
 
 type OptionFormValue = {
   label?: string;
@@ -291,6 +296,9 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [propertyPreview, setPropertyPreview] =
     useState<FieldPropertyBag | null>(getPropertiesForType(FieldType.Value0));
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageFileList, setImageFileList] = useState<UploadFile[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const messageApi = useNotification();
   const createField = useFormsStore((state) => state.createField);
   const autoPlaceholder =
@@ -315,6 +323,8 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
     });
     setSelectedType(FieldType.Value0);
     setPropertyPreview(getPropertiesForType(FieldType.Value0));
+    setImageUrl(null);
+    setImageFileList([]);
   }, [form]);
 
   useEffect(() => {
@@ -349,6 +359,35 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
     setPropertyPreview(getPropertiesForType(type));
   };
 
+  const handleImageChange: UploadProps["onChange"] = async ({
+    fileList: newFileList,
+  }) => {
+    setImageFileList(newFileList);
+    if (newFileList.length === 0) {
+      setImageUrl(null);
+      return;
+    }
+    const file = newFileList[0];
+    if (file.originFileObj) {
+      const base64 = await getBase64(file.originFileObj);
+      setImageUrl(base64);
+    } else if (file.url) {
+      setImageUrl(file.url);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl(null);
+    setImageFileList([]);
+  };
+
+  const uploadButton = (
+    <div className="flex flex-col items-center justify-center p-4">
+      <PlusOutlined />
+      <div className="mt-2 text-sm">Upload Image</div>
+    </div>
+  );
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
@@ -373,6 +412,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
         formId,
         title: values.title?.trim() ?? "",
         description: values.description?.trim() || null,
+        imageUrl: imageUrl,
         type: selectedType,
         isRequired: Boolean(values.isRequired),
         properties: propertiesPayload ?? null,
@@ -600,6 +640,51 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                   placeholder="Optional context, tips, or sample answers"
                   disabled={isSubmitting}
                 />
+              </Form.Item>
+
+              <Form.Item label="Question Image (optional)">
+                <div className="flex flex-col gap-3">
+                  {imageUrl ? (
+                    <div className="relative inline-block">
+                      <AntdImage
+                        src={imageUrl}
+                        alt="Question image"
+                        width={180}
+                        height={120}
+                        style={{ objectFit: "cover", borderRadius: 12 }}
+                        preview={{
+                          visible: previewOpen,
+                          onVisibleChange: setPreviewOpen,
+                        }}
+                      />
+                      <Button
+                        type="primary"
+                        danger
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        className="absolute top-2 right-2"
+                        onClick={handleRemoveImage}
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                  ) : (
+                    <Upload
+                      listType="picture-card"
+                      fileList={imageFileList}
+                      onChange={handleImageChange}
+                      beforeUpload={() => false}
+                      accept="image/*"
+                      maxCount={1}
+                      disabled={isSubmitting}
+                    >
+                      {imageFileList.length === 0 && uploadButton}
+                    </Upload>
+                  )}
+                  <Typography.Text type="secondary" className="text-xs">
+                    <PictureOutlined className="mr-1" />
+                    Upload an image to display with your question
+                  </Typography.Text>
+                </div>
               </Form.Item>
 
               <Form.Item label="Answer">
