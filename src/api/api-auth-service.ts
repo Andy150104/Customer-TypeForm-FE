@@ -88,6 +88,7 @@ export interface CreateFieldCommand {
   formId?: string;
   title?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   type?: FieldType;
   properties?: any;
   isRequired?: boolean;
@@ -109,6 +110,7 @@ export interface CreateFieldResponseEntity {
   formId?: string;
   title?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   type?: string | null;
   properties?: any;
   isRequired?: boolean;
@@ -228,6 +230,7 @@ export interface DetailError {
 export interface FieldDataDto {
   title?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   type?: FieldType;
   properties?: any;
   isRequired?: boolean;
@@ -255,6 +258,7 @@ export interface FieldResponseEntity {
   formId?: string;
   title?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   type?: string | null;
   properties?: any;
   isRequired?: boolean;
@@ -274,6 +278,7 @@ export interface FieldWithLogicResponseEntity {
   formId?: string;
   title?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   type?: string | null;
   properties?: any;
   isRequired?: boolean;
@@ -526,6 +531,7 @@ export interface UpdateFieldCommand {
   fieldId?: string;
   title?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   type?: FieldType;
   properties?: any;
   isRequired?: boolean | null;
@@ -563,6 +569,7 @@ export interface UpdateFieldResponseEntity {
   formId?: string;
   title?: string | null;
   description?: string | null;
+  imageUrl?: string | null;
   type?: string | null;
   properties?: any;
   isRequired?: boolean;

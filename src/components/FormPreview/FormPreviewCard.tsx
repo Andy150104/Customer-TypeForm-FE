@@ -695,6 +695,7 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
       {fieldOptions.map((option, index) => {
         const optionValue = option.value ?? option.label ?? `${index + 1}`;
         const optionLabel = option.label ?? option.value ?? `Option ${index + 1}`;
+        const optionValueDisplay = option.value ?? option.label ?? `${index + 1}`;
         const isSelected =
           mode === "multiselect"
             ? multiValues.includes(optionValue)
@@ -724,7 +725,7 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
                   isSelected ? optionChipActive : optionChipBase
                 }`}
               >
-                {String.fromCharCode(65 + index)}
+                {optionLabel}
               </span>
             )}
             {mode === "multiselect" && (
@@ -756,7 +757,7 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
               </span>
             )}
             <span className={`text-sm font-medium ${optionTextColor}`}>
-              {optionLabel}
+              {optionValueDisplay}
             </span>
           </button>
         );

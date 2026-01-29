@@ -1,7 +1,7 @@
 // (auth)/action.ts
 "use server";
 
-import { destroySession, exchangePassword, exchangeGoogle, getAccessTokenFromCookie, getSidFromCookie, hasRefreshToken, readSidCookiePayload, refreshTokens, revokeRefreshLocal } from "EduSmart/lib/authServer";
+import { clearAppCookies, destroySession, exchangePassword, exchangeGoogle, getAccessTokenFromCookie, getSidFromCookie, hasRefreshToken, readSidCookiePayload, refreshTokens, revokeRefreshLocal } from "EduSmart/lib/authServer";
 
 const OTHERSYSTEM_URL = process.env.OTHER_SYSTEM_URL;
 
@@ -84,43 +84,42 @@ export async function loginGoogleAction({
 }
 
 export async function refreshAction() {
+  let sid: string | null = null;
   try {
-    // Thử đọc sid từ cookie, nếu không có thì thử từ cookie payload
-    let sid = await getSidFromCookie();
-    
-    // Fallback: nếu sid null, thử đọc trực tiếp từ cookie payload
+    // Try to read sid from cookie (payload or legacy)
+    sid = await getSidFromCookie();
+
+    // Fallback: if sid is null, try from cookie payload
     if (!sid) {
       const payload = await readSidCookiePayload();
       if (payload?.sid) {
         sid = payload.sid;
       }
     }
-    
+
     if (!sid) {
       console.warn("[refreshAction] No sid found in cookie");
+      await clearAppCookies();
       return { ok: false, error: "No session" };
     }
-    
-    // Check xem token có sắp hết hạn không trước khi refresh
-    // Nếu token vẫn còn valid (còn hơn 5 giây), không cần refresh
+
+    // If token still valid, return current access token
     const payload = await readSidCookiePayload();
     if (payload && payload.expAt && Date.now() < payload.expAt - 5000) {
-      // Token vẫn còn valid, trả về token hiện tại
       console.log("[refreshAction] Token still valid, returning current token");
       return { ok: true, accessToken: payload.access };
     }
-    
-    // Refresh tokens - sẽ cập nhật cookie
+
+    // Refresh tokens - will update cookie
     await refreshTokens(sid);
-    
-    // Đảm bảo lấy access token mới từ cookie sau khi refresh
+
     const accessToken = await getAccessTokenFromCookie();
-    
     if (!accessToken) {
       console.error("[refreshAction] Failed to get access token after refresh");
+      await destroySession(sid);
       return { ok: false, error: "Failed to get access token" };
     }
-    
+
     return { ok: true, accessToken };
   } catch (e: unknown) {
     console.error("[refreshAction] Error:", e);
@@ -128,15 +127,24 @@ export async function refreshAction() {
       typeof e === "object" && e && "message" in e
         ? (e as { message?: string }).message
         : undefined;
-    return { ok: false, error: msg ?? "Đăng nhập thất bại" };
+
+    if (sid) {
+      await destroySession(sid);
+    } else {
+      await clearAppCookies();
+    }
+
+    return { ok: false, error: msg ?? "??ng nh?p th?t b?i" };
   }
 }
 
 export async function logoutAction() {
   const sid = await getSidFromCookie();
-  console.log("logout action sid", sid)
+  console.log("logout action sid", sid);
   if (sid) {
-    await destroySession(sid);  // xóa session + cookie sid
+    await destroySession(sid);
+  } else {
+    await clearAppCookies();
   }
   return { ok: true };
 }

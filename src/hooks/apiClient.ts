@@ -108,8 +108,6 @@ axiosInstance.interceptors.response.use(
       // Bắt đầu refresh token
       isRefreshing = true;
       
-      // Lưu token hiện tại trước khi refresh (để có thể retry nếu refresh fail do "No session")
-      const tokenBeforeRefresh = useAuthStore.getState().token;
       
       try {
         await useAuthStore.getState().refreshToken();
@@ -131,7 +129,7 @@ axiosInstance.interceptors.response.use(
           onRefreshed(null);
           
           if (!isPaymentPage) {
-            useAuthStore.getState().logout();
+            await useAuthStore.getState().logout();
             useValidateStore.getState().setInValid(true);
           }
           return Promise.reject(error);
@@ -139,36 +137,30 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError: unknown) {
         console.error("Refresh token failed:", refreshError);
         
-        // Kiểm tra xem error có phải là "No session" không
-        const errorMessage = refreshError instanceof Error ? refreshError.message : String(refreshError);
-        const isNoSessionError = errorMessage.includes("No session") || errorMessage.includes("Session not found");
+        // Check if error is "No session"
+        const errorMessage =
+          refreshError instanceof Error ? refreshError.message : String(refreshError);
+        const isNoSessionError =
+          errorMessage.includes("No session") ||
+          errorMessage.includes("Session not found") ||
+          errorMessage.includes("No sid found");
         
-        // Nếu là "No session" error nhưng vẫn có token trước đó
-        // (có thể cookie chỉ tạm thời không có do race condition), 
-        // không logout ngay mà retry với token cũ một lần
-        if (isNoSessionError && tokenBeforeRefresh) {
-          console.warn("Refresh failed with 'No session' but had token before, retrying request with previous token");
-          
-          // Restore token trong store bằng cách set lại
-          useAuthStore.setState({ token: tokenBeforeRefresh });
-          apiClient.authEduService.setSecurityData({ token: tokenBeforeRefresh });
-          
-          onRefreshed(tokenBeforeRefresh);
-          
-          // Retry với token trước đó (có thể vẫn còn valid)
-          originalRequest.headers = axios.AxiosHeaders.from(
-            originalRequest.headers,
-          );
-          originalRequest.headers.set("Authorization", `Bearer ${tokenBeforeRefresh}`);
-          originalRequest.headers.set("ngrok-skip-browser-warning", "true");
-          return axiosInstance(originalRequest);
+        // "No session" = missing/expired sid cookie -> logout and go to login
+        if (isNoSessionError) {
+          onRefreshed(null);
+        
+          if (!isPaymentPage) {
+            await useAuthStore.getState().logout();
+            useValidateStore.getState().setInValid(true);
+          }
+          return Promise.reject(error);
         }
         
         onRefreshed(null);
         
         // Logout chỉ khi không phải payment page
         if (!isPaymentPage) {
-          useAuthStore.getState().logout();
+          await useAuthStore.getState().logout();
           useValidateStore.getState().setInValid(true);
         }
         return Promise.reject(error);
@@ -203,7 +195,7 @@ axiosInstance.interceptors.response.use(
           onRefreshed(null);
           // Chỉ logout nếu không phải payment page
       if (!isPaymentPage) {
-        useAuthStore.getState().logout();
+        await useAuthStore.getState().logout();
         useValidateStore.getState().setInValid(true);
           }
         }
@@ -220,7 +212,7 @@ axiosInstance.interceptors.response.use(
               resolve(axiosInstance(originalRequest));
             } else {
               if (!isPaymentPage) {
-                useAuthStore.getState().logout();
+                void useAuthStore.getState().logout();
                 useValidateStore.getState().setInValid(true);
               }
               reject(error);

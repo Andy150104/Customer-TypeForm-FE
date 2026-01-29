@@ -12,7 +12,8 @@ const PUBLIC_PATHS = [
 
 const PROTECTED_PREFIXES = [
   "/User",
-  "/dashboard"
+  "/dashboard",
+  "/form",
 ];
 
 /** Kiểm tra xem pathname có nằm trong PUBLIC_PATHS không */
@@ -107,7 +108,7 @@ export async function middleware(req: NextRequest) {
   // 4) Protected path mà chưa login → redirect về /login
   if (!sid) {
     const url = req.nextUrl.clone();
-    url.pathname = "/404"; // hoặc "/login" tùy UX của bạn
+    url.pathname = "/Login";
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }

@@ -13,6 +13,7 @@ const CID = process.env.CLIENT_ID!;
 const CSECRET = process.env.CLIENT_SECRET!;
 const isProd = process.env.NODE_ENV === "production";
 const SID_NAME = isProd ? "__Host-sid" : "sid"; // dev không dùng __Host-
+const ALT_SID_NAME = SID_NAME === "__Host-sid" ? "sid" : "__Host-sid";
 const mustSecure = SID_NAME.startsWith("__Host-");
 
 const agent = new Agent({ connect: { rejectUnauthorized: false } });
@@ -111,6 +112,16 @@ function isCookiePayload(x: unknown): x is CookiePayload {
   return true;
 }
 
+function getRawSidCookie(jar: Awaited<ReturnType<typeof cookies>>) {
+  const primary = jar.get(SID_NAME);
+  if (primary?.value) return { name: SID_NAME, value: primary.value };
+
+  const alt = jar.get(ALT_SID_NAME);
+  if (alt?.value) return { name: ALT_SID_NAME, value: alt.value };
+
+  return null;
+}
+
 /** Ghi cookie: giá trị là base64url(JSON payload) */
 async function setSidCookie(payload: CookiePayload) {
   const jar = await cookies();
@@ -130,7 +141,7 @@ async function setSidCookie(payload: CookiePayload) {
 /** Đọc cookie và parse payload; hỗ trợ legacy (raw sid) bằng cách trả null */
 export async function readSidCookiePayload(): Promise<CookiePayload | null> {
   const jar = await cookies();
-  const raw = jar.get(SID_NAME)?.value;
+  const raw = getRawSidCookie(jar)?.value;
   if (!raw) return null;
 
   const asJson = ub64url(raw);
@@ -371,15 +382,18 @@ export async function getBearerForSid(sid: string) {
 /** ===== Cookie ops ===== */
 export async function clearSidCookie() {
   const jar = await cookies();
-  jar.set({
-    name: SID_NAME,
-    value: "",
-    httpOnly: true,
-    secure: mustSecure || isProd,
-    sameSite: "strict",
-    path: "/",
-    maxAge: 0,
-  });
+  const names = [SID_NAME, ALT_SID_NAME];
+  for (const name of names) {
+    jar.set({
+      name,
+      value: "",
+      httpOnly: true,
+      secure: name.startsWith("__Host-") || isProd,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 0,
+    });
+  }
 }
 
 export async function clearAppCookies() {
@@ -420,7 +434,8 @@ export async function getSidFromCookie(): Promise<string | null> {
 
   // legacy fallback: nếu cookie là raw sid (cũ)
   const jar = await cookies();
-  return jar.get(SID_NAME)?.value ?? null;
+  const raw = getRawSidCookie(jar)?.value;
+  return raw ?? null;
 }
 
 /** Trả về true nếu refresh-token tồn tại trong session store (hoặc cookie) */
