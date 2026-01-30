@@ -42,12 +42,11 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
     return () => cancelAnimationFrame(id);
   }, []);
 
-
   if (invalid) return <NotFound />;
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 flex items-center justify-center">
+      <div className="min-h-screen bg-amber-50 dark:bg-amber-950/80 flex items-center justify-center">
         <Spin size="large" />
       </div>
     );
@@ -67,9 +66,11 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
       <Layout className="flex flex-col h-screen min-h-0 overflow-hidden">
         <header
           className={`${
-            isDarkMode ? "bg-slate-950" : "bg-white"
+            isDarkMode
+              ? "bg-amber-950/90"
+              : "bg-gradient-to-r from-amber-50 to-orange-50/80"
           } px-6 flex flex-col shadow-sm sticky top-0 z-10 flex-shrink-0 border-b overflow-hidden ${
-            isDarkMode ? "border-gray-800" : "border-gray-200"
+            isDarkMode ? "border-amber-800/30" : "border-amber-200/60"
           }`}
         >
           {/* Top row: User info and icons */}
@@ -127,12 +128,12 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
         {/* VÙNG CUỘN: wrapper này mới là scroll container */}
         <div
           className={`flex-1 min-h-0 overflow-auto px-6 py-4 relative ${
-            isDarkMode ? "bg-slate-950" : "bg-slate-50"
+            isDarkMode ? "bg-amber-950/70" : "bg-amber-50/50"
           }`}
           style={{
             backgroundImage: isDarkMode
-              ? "linear-gradient(180deg, #0b1220 0%, #0f172a 45%, #0b1220 100%), radial-gradient(70% 60% at 50% -10%, rgba(99, 102, 241, 0.28) 0%, transparent 60%), radial-gradient(60% 55% at 50% 110%, rgba(14, 165, 233, 0.18) 0%, transparent 65%), linear-gradient(to right, rgba(148, 163, 184, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(148, 163, 184, 0.05) 1px, transparent 1px)"
-              : "linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f8fafc 100%), radial-gradient(70% 60% at 50% -10%, rgba(99, 102, 241, 0.2) 0%, transparent 60%), radial-gradient(60% 55% at 50% 110%, rgba(14, 165, 233, 0.12) 0%, transparent 65%), linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px)",
+              ? "linear-gradient(180deg, #1c1208 0%, #271a0a 45%, #1c1208 100%), radial-gradient(70% 60% at 50% -10%, rgba(245, 158, 11, 0.18) 0%, transparent 60%), radial-gradient(60% 55% at 50% 110%, rgba(251, 146, 60, 0.12) 0%, transparent 65%), linear-gradient(to right, rgba(245, 158, 11, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(245, 158, 11, 0.05) 1px, transparent 1px)"
+              : "linear-gradient(180deg, #fffbeb 0%, #fef3c7 45%, #fffbeb 100%), radial-gradient(70% 60% at 50% -10%, rgba(245, 158, 11, 0.15) 0%, transparent 60%), radial-gradient(60% 55% at 50% 110%, rgba(251, 146, 60, 0.1) 0%, transparent 65%), linear-gradient(to right, rgba(180, 83, 9, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(180, 83, 9, 0.03) 1px, transparent 1px)",
             backgroundSize:
               "100% 100%, 100% 100%, 100% 100%, 56px 56px, 56px 56px",
           }}
@@ -147,23 +148,23 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
         <Footer
           className={`relative flex items-center justify-center flex-shrink-0 py-4 border-t text-[13px] ${
             isDarkMode
-              ? "bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 border-slate-800 text-slate-400"
-              : "bg-gradient-to-r from-violet-50 via-indigo-50 to-slate-50 border-slate-200 text-slate-500"
+              ? "bg-gradient-to-r from-amber-950/90 via-orange-950/80 to-amber-950/90 border-amber-800/30 text-amber-200/70"
+              : "bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border-amber-200/60 text-amber-700/70"
           }`}
         >
           <div
             className={`absolute left-6 right-6 top-0 h-px ${
               isDarkMode
-                ? "bg-gradient-to-r from-transparent via-indigo-400/35 to-transparent"
-                : "bg-gradient-to-r from-transparent via-indigo-400/25 to-transparent"
+                ? "bg-gradient-to-r from-transparent via-amber-400/35 to-transparent"
+                : "bg-gradient-to-r from-transparent via-amber-400/25 to-transparent"
             }`}
           />
           <div className="flex items-center gap-2">
             <span
               className={`font-semibold ${
                 isDarkMode
-                  ? "text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 to-purple-200"
-                  : "text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600"
+                  ? "text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-orange-200"
+                  : "text-transparent bg-clip-text bg-gradient-to-r from-amber-600 to-orange-600"
               }`}
             >
               Uniwrap
@@ -171,7 +172,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
             <span className="opacity-70">©{new Date().getFullYear()}</span>
             <span
               className={`h-1 w-1 rounded-full ${
-                isDarkMode ? "bg-indigo-300/70" : "bg-indigo-500/60"
+                isDarkMode ? "bg-amber-300/70" : "bg-amber-500/60"
               }`}
             />
             <span className="opacity-80">

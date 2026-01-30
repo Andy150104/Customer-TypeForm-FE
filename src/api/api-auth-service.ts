@@ -133,6 +133,34 @@ export interface CreateFormCommandResponse {
   response?: CreateFormResponseEntity;
 }
 
+export interface CreateFormFromTemplateCommand {
+  /** @format uuid */
+  templateId?: string;
+  title?: string | null;
+}
+
+export interface CreateFormFromTemplateCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CreateFormFromTemplateResponseEntity;
+}
+
+export interface CreateFormFromTemplateResponseEntity {
+  /** @format uuid */
+  formId?: string;
+  /** @format uuid */
+  templateId?: string;
+  title?: string | null;
+  slug?: string | null;
+  isPublished?: boolean;
+  /** @format int32 */
+  fieldCount?: number;
+  /** @format date-time */
+  createdAt?: string;
+}
+
 export interface CreateFormResponseEntity {
   /** @format uuid */
   id?: string;
@@ -176,6 +204,35 @@ export interface CreateOrUpdateLogicCommandResponse {
   response?: LogicResponseEntity;
 }
 
+export interface CreateTemplateCommand {
+  title?: string | null;
+  description?: string | null;
+  themeConfig?: any;
+  settings?: any;
+  fields?: TemplateFieldDataDto[] | null;
+}
+
+export interface CreateTemplateCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: CreateTemplateResponseEntity;
+}
+
+export interface CreateTemplateResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  userId?: string;
+  title?: string | null;
+  description?: string | null;
+  /** @format int32 */
+  fieldCount?: number;
+  /** @format date-time */
+  createdAt?: string;
+}
+
 export interface DeleteFieldCommandResponse {
   success?: boolean;
   messageId?: string | null;
@@ -215,6 +272,21 @@ export interface DeleteLogicCommandResponse {
 }
 
 export interface DeleteLogicResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format date-time */
+  updatedAt?: string;
+}
+
+export interface DeleteTemplateCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: DeleteTemplateResponseEntity;
+}
+
+export interface DeleteTemplateResponseEntity {
   /** @format uuid */
   id?: string;
   /** @format date-time */
@@ -416,6 +488,14 @@ export interface GetNextQuestionQueryResponse {
   response?: NextQuestionResponseEntity;
 }
 
+export interface GetNotificationsQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: NotificationResponseEntity[] | null;
+}
+
 export interface GetPublishedFormWithFieldsAndLogicQueryResponse {
   success?: boolean;
   messageId?: string | null;
@@ -438,6 +518,22 @@ export interface GetSubmissionsOverviewQueryResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: FormSubmissionsOverviewResponseEntity;
+}
+
+export interface GetTemplateWithFieldsQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: TemplateWithFieldsResponseEntity;
+}
+
+export interface GetTemplatesQueryResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: TemplateSummaryResponseEntity[] | null;
 }
 
 export interface LogicResponseEntity {
@@ -485,6 +581,27 @@ export interface NextQuestionResponseEntity {
   isEndOfForm?: boolean;
   /** @format uuid */
   appliedLogicId?: string | null;
+}
+
+export interface NotificationResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  formId?: string;
+  /** @format uuid */
+  latestSubmissionId?: string | null;
+  message?: string | null;
+  /** @format int32 */
+  count?: number;
+  /** @format date-time */
+  firstSubmissionAt?: string | null;
+  /** @format date-time */
+  lastSubmissionAt?: string | null;
+  isRead?: boolean;
+  /** @format date-time */
+  createdAt?: string | null;
+  /** @format date-time */
+  updatedAt?: string | null;
 }
 
 export interface OptionTrendResponseEntity {
@@ -571,6 +688,68 @@ export interface SubmitFormResponseEntity {
   formId?: string;
   /** @format date-time */
   createdAt?: string;
+}
+
+export interface TemplateFieldDataDto {
+  title?: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
+  type?: FieldType;
+  properties?: any;
+  isRequired?: boolean;
+  options?: TemplateFieldOptionDto[] | null;
+}
+
+export interface TemplateFieldOptionDto {
+  label?: string | null;
+  value?: string | null;
+}
+
+export interface TemplateFieldResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  templateId?: string;
+  title?: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
+  type?: string | null;
+  properties?: any;
+  isRequired?: boolean;
+  /** @format int32 */
+  order?: number;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+  options?: FieldOptionResponseEntity[] | null;
+}
+
+export interface TemplateSummaryResponseEntity {
+  /** @format uuid */
+  id?: string;
+  title?: string | null;
+  description?: string | null;
+  /** @format int32 */
+  fieldCount?: number;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+}
+
+export interface TemplateWithFieldsResponseEntity {
+  /** @format uuid */
+  id?: string;
+  title?: string | null;
+  description?: string | null;
+  themeConfig?: any;
+  settings?: any;
+  /** @format date-time */
+  createdAt?: string;
+  /** @format date-time */
+  updatedAt?: string | null;
+  fields?: TemplateFieldResponseEntity[] | null;
 }
 
 export interface TokenVerifyResponse {
@@ -724,6 +903,86 @@ export interface UpdateLogicResponseEntity {
   order?: number;
   /** @format uuid */
   logicGroupId?: string | null;
+  /** @format date-time */
+  updatedAt?: string;
+}
+
+export interface UpdateTemplateCommand {
+  /** @format uuid */
+  templateId?: string;
+  title?: string | null;
+  description?: string | null;
+}
+
+export interface UpdateTemplateCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: UpdateTemplateResponseEntity;
+}
+
+export interface UpdateTemplateFieldCommand {
+  /** @format uuid */
+  templateFieldId?: string;
+  title?: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
+  type?: FieldType;
+  properties?: any;
+  isRequired?: boolean | null;
+  options?: UpdateTemplateFieldOptionDto[] | null;
+}
+
+export interface UpdateTemplateFieldCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: UpdateTemplateFieldResponseEntity;
+}
+
+export interface UpdateTemplateFieldOptionDto {
+  /** @format uuid */
+  id?: string | null;
+  label?: string | null;
+  value?: string | null;
+}
+
+export interface UpdateTemplateFieldOptionResponseEntity {
+  /** @format uuid */
+  id?: string;
+  label?: string | null;
+  value?: string | null;
+  /** @format int32 */
+  order?: number;
+}
+
+export interface UpdateTemplateFieldResponseEntity {
+  /** @format uuid */
+  id?: string;
+  /** @format uuid */
+  templateId?: string;
+  title?: string | null;
+  description?: string | null;
+  imageUrl?: string | null;
+  type?: string | null;
+  properties?: any;
+  isRequired?: boolean;
+  /** @format int32 */
+  order?: number;
+  /** @format date-time */
+  updatedAt?: string;
+  options?: UpdateTemplateFieldOptionResponseEntity[] | null;
+}
+
+export interface UpdateTemplateResponseEntity {
+  /** @format uuid */
+  id?: string;
+  title?: string | null;
+  description?: string | null;
+  themeConfig?: any;
+  settings?: any;
   /** @format date-time */
   updatedAt?: string;
 }
@@ -1594,6 +1853,199 @@ export class Api<
       this.request<ReorderFieldsCommandResponse, any>({
         path: `/api/v1/Forms/ReorderFields`,
         method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Notifications
+     * @name V1NotificationsStreamList
+     * @request GET:/api/v1/Notifications/stream
+     * @secure
+     */
+    v1NotificationsStreamList: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/v1/Notifications/stream`,
+        method: "GET",
+        secure: true,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Notifications
+     * @name V1NotificationsGetNotificationsList
+     * @request GET:/api/v1/Notifications/GetNotifications
+     * @secure
+     */
+    v1NotificationsGetNotificationsList: (params: RequestParams = {}) =>
+      this.request<GetNotificationsQueryResponse, any>({
+        path: `/api/v1/Notifications/GetNotifications`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Create template with fields
+     *
+     * @tags Templates
+     * @name V1TemplatesCreateTemplateCreate
+     * @summary Create new template
+     * @request POST:/api/v1/Templates/CreateTemplate
+     * @secure
+     */
+    v1TemplatesCreateTemplateCreate: (
+      data: CreateTemplateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateTemplateCommandResponse, any>({
+        path: `/api/v1/Templates/CreateTemplate`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Auto create form and fields from template
+     *
+     * @tags Templates
+     * @name V1TemplatesCreateFormFromTemplateCreate
+     * @summary Create form from template
+     * @request POST:/api/v1/Templates/CreateFormFromTemplate
+     * @secure
+     */
+    v1TemplatesCreateFormFromTemplateCreate: (
+      data: CreateFormFromTemplateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<CreateFormFromTemplateCommandResponse, any>({
+        path: `/api/v1/Templates/CreateFormFromTemplate`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get all templates for current user
+     *
+     * @tags Templates
+     * @name V1TemplatesGetTemplatesList
+     * @summary Get templates
+     * @request GET:/api/v1/Templates/GetTemplates
+     * @secure
+     */
+    v1TemplatesGetTemplatesList: (params: RequestParams = {}) =>
+      this.request<GetTemplatesQueryResponse, any>({
+        path: `/api/v1/Templates/GetTemplates`,
+        method: "GET",
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get template and fields by TemplateId
+     *
+     * @tags Templates
+     * @name V1TemplatesGetTemplateWithFieldsList
+     * @summary Get template with fields
+     * @request GET:/api/v1/Templates/GetTemplateWithFields
+     * @secure
+     */
+    v1TemplatesGetTemplateWithFieldsList: (
+      query?: {
+        /** @format uuid */
+        templateId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<GetTemplateWithFieldsQueryResponse, any>({
+        path: `/api/v1/Templates/GetTemplateWithFields`,
+        method: "GET",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update template information. Only provided fields will be updated.
+     *
+     * @tags Templates
+     * @name V1TemplatesUpdateTemplateUpdate
+     * @summary Update template
+     * @request PUT:/api/v1/Templates/UpdateTemplate
+     * @secure
+     */
+    v1TemplatesUpdateTemplateUpdate: (
+      data: UpdateTemplateCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateTemplateCommandResponse, any>({
+        path: `/api/v1/Templates/UpdateTemplate`,
+        method: "PUT",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Soft delete template by setting IsActive = false.
+     *
+     * @tags Templates
+     * @name V1TemplatesDeleteTemplateDelete
+     * @summary Delete template (soft delete)
+     * @request DELETE:/api/v1/Templates/DeleteTemplate
+     * @secure
+     */
+    v1TemplatesDeleteTemplateDelete: (
+      query?: {
+        /** @format uuid */
+        templateId?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DeleteTemplateCommandResponse, any>({
+        path: `/api/v1/Templates/DeleteTemplate`,
+        method: "DELETE",
+        query: query,
+        secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update template field information. Only provided fields will be updated.
+     *
+     * @tags Templates
+     * @name V1TemplatesUpdateTemplateFieldUpdate
+     * @summary Update template field
+     * @request PUT:/api/v1/Templates/UpdateTemplateField
+     * @secure
+     */
+    v1TemplatesUpdateTemplateFieldUpdate: (
+      data: UpdateTemplateFieldCommand,
+      params: RequestParams = {},
+    ) =>
+      this.request<UpdateTemplateFieldCommandResponse, any>({
+        path: `/api/v1/Templates/UpdateTemplateField`,
+        method: "PUT",
         body: data,
         secure: true,
         type: ContentType.Json,

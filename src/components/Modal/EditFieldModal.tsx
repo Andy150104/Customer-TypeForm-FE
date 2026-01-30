@@ -231,6 +231,10 @@ export const EditFieldModal: React.FC<EditFieldModalProps> = ({
           }))
         : undefined;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const existingProps = (field.properties as any) ?? {};
+      const propertiesPayload = { ...existingProps };
+
       const payload: UpdateFieldCommand = {
         fieldId: field.id,
         title: values.title?.trim() ?? "",
@@ -238,6 +242,7 @@ export const EditFieldModal: React.FC<EditFieldModalProps> = ({
         imageUrl: imageUrl,
         isRequired: Boolean(values.isRequired),
         options: optionsPayload,
+        properties: propertiesPayload,
       };
 
       const response = await updateField(payload);

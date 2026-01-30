@@ -87,7 +87,10 @@ body {
   height: 42px;
   line-height: 42px;
   position: relative;
-  transition: background 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
 }
 
 .admin-sidebar-menu:not(.ant-menu-inline-collapsed) .ant-menu-item {
@@ -103,7 +106,9 @@ body {
   width: 3px;
   border-radius: 999px;
   opacity: 0;
-  transition: opacity 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .admin-sidebar-menu .ant-menu-item .ant-menu-title-content {
@@ -121,26 +126,26 @@ body {
 .admin-sidebar-menu.ant-menu-light .ant-menu-item-selected {
   background: linear-gradient(
     90deg,
-    rgba(59, 130, 246, 0.18),
-    rgba(99, 102, 241, 0.08)
+    rgba(245, 158, 11, 0.18),
+    rgba(251, 146, 60, 0.08)
   ) !important;
-  border: 1px solid rgba(59, 130, 246, 0.28);
-  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.12);
-  color: #1d4ed8 !important;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  box-shadow: 0 8px 16px rgba(245, 158, 11, 0.12);
+  color: #b45309 !important;
 }
 
 .admin-sidebar-menu.ant-menu-light .ant-menu-item-selected::before {
-  background: #4f46e5;
+  background: #f59e0b;
   opacity: 1;
-  box-shadow: 0 0 8px rgba(79, 70, 229, 0.5);
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
 }
 
 .admin-sidebar-menu.ant-menu-light .ant-menu-item-selected .anticon {
-  color: #2563eb;
+  color: #d97706;
 }
 
 .admin-sidebar-menu.ant-menu-light .ant-menu-item:hover {
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(245, 158, 11, 0.08);
 }
 
 .admin-sidebar-menu.ant-menu-dark .ant-menu-item {
@@ -154,26 +159,26 @@ body {
 .admin-sidebar-menu.ant-menu-dark .ant-menu-item-selected {
   background: linear-gradient(
     90deg,
-    rgba(59, 130, 246, 0.2),
-    rgba(59, 130, 246, 0.08)
+    rgba(245, 158, 11, 0.2),
+    rgba(245, 158, 11, 0.08)
   ) !important;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.25);
   box-shadow: none;
-  color: #f8fafc !important;
+  color: #fef3c7 !important;
 }
 
 .admin-sidebar-menu.ant-menu-dark .ant-menu-item-selected::before {
-  background: #93c5fd;
+  background: #fbbf24;
   opacity: 1;
-  box-shadow: 0 0 10px rgba(147, 197, 253, 0.5);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }
 
 .admin-sidebar-menu.ant-menu-dark .ant-menu-item-selected .anticon {
-  color: #f8fafc;
+  color: #fbbf24;
 }
 
 .admin-sidebar-menu.ant-menu-dark .ant-menu-item:hover {
-  background: rgba(59, 130, 246, 0.12);
+  background: rgba(245, 158, 11, 0.12);
 }
 
 .admin-sidebar-menu.ant-menu-inline-collapsed .ant-menu-item .anticon {

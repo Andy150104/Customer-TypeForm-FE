@@ -1,9 +1,13 @@
 /* ===== Segmented pill switch cho Auth ===== */
 .auth-segmented {
-  --track: linear-gradient(180deg, #eef8ff, #f2f6ff);
-  --thumb: linear-gradient(135deg, #22d3ee, #3b82f6); /* teal→blue như button */
-  --muted: #64748b; /* slate-500 */
-  --shadow: 0 10px 24px rgba(59, 130, 246, 0.22);
+  --track: linear-gradient(
+    180deg,
+    #fff9e3,
+    #fff6c1
+  ); /* warm vanilla to lemon cream */
+  --thumb: linear-gradient(135deg, #f59e0b, #f97316); /* amber-500→orange-500 */
+  --muted: #78716c; /* stone-500 */
+  --shadow: 0 10px 24px rgba(245, 158, 11, 0.22);
 
   background: var(--track);
   border-radius: 9999px;
@@ -46,17 +50,21 @@
   color: #fff;
   border-radius: 9999px;
   box-shadow:
-    0 10px 24px rgba(59, 130, 246, 0.22),
+    0 10px 24px rgba(245, 158, 11, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .auth-segmented {
-  --thumb: linear-gradient(135deg, #14b8a6, #2563eb); /* teal-500 → blue-600 */
+  --thumb: linear-gradient(
+    135deg,
+    #f59e0b,
+    #ea580c
+  ); /* amber-500 → orange-600 */
 }
 
 /* hover nhẹ cho item chưa active */
 .auth-segmented .ant-segmented-item:not(.ant-segmented-item-selected):hover {
-  background: rgba(59, 130, 246, 0.06);
+  background: rgba(245, 158, 11, 0.08);
   border-radius: 9999px;
 }
 
@@ -70,7 +78,9 @@
 /* Google Login Button Wrapper */
 .google-login-wrapper {
   display: inline-flex;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    filter 0.2s ease;
 }
 
 .google-login-wrapper:hover {
@@ -111,7 +121,8 @@
 }
 
 @keyframes subtle-pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 0.6;
   }
   50% {
@@ -125,7 +136,7 @@
 }
 
 .dashboard-preview-field::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -150,7 +161,8 @@
 }
 
 @keyframes gradient-shift {
-  0%, 100% {
+  0%,
+  100% {
     background-position: 0% 50%;
   }
   50% {

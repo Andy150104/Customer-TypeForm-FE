@@ -104,7 +104,6 @@ export default function LoginPage() {
     return () => clearInterval(interval);
   }, [isOtherSystem]);
 
-
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => {
       const nav = performance.getEntriesByType("navigation")[0] as
@@ -156,7 +155,7 @@ export default function LoginPage() {
 
       useLoadingStore.getState().showLoading();
       const payload = decodeJwtPayload(idToken);
-      
+
       if (!payload.sub || !payload.email) {
         messageApi.error("Không thể lấy thông tin từ Google");
         useLoadingStore.getState().hideLoading();
@@ -219,16 +218,20 @@ export default function LoginPage() {
       className="relative w-full max-w-md isolate"
     >
       <BubbleBackground />
-      <div className="relative z-10 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-slate-200/60 dark:border-slate-700/60 p-10 sm:p-12 overflow-hidden">
+      <div className="relative z-10 bg-white dark:bg-gray-900 rounded-3xl shadow-2xl border border-amber-200/60 dark:border-amber-700/60 p-10 sm:p-12 overflow-hidden">
         {/* Decorative gradient accent */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-500" />
-        
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400" />
+
         {/* Subtle background pattern */}
         <div className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)',
-            backgroundSize: '24px 24px'
-          }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)",
+              backgroundSize: "24px 24px",
+            }}
+          />
         </div>
 
         {/* Title with Lobster font */}
@@ -243,9 +246,17 @@ export default function LoginPage() {
           </h1>
           {/* Trust badge */}
           <div className="flex justify-center mb-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-violet-50 dark:bg-violet-900/20 border border-violet-200/50 dark:border-violet-800/30 text-xs font-medium text-violet-700 dark:text-violet-300">
-              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-800/30 text-xs font-medium text-amber-700 dark:text-amber-300">
+              <svg
+                className="w-3.5 h-3.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                  clipRule="evenodd"
+                />
               </svg>
               Bảo mật cao
             </span>
@@ -268,22 +279,32 @@ export default function LoginPage() {
         </div>
 
         {/* Dashboard Preview Section */}
-        <div className="dashboard-preview-container relative rounded-2xl bg-gradient-to-br from-violet-50/95 via-fuchsia-50/95 to-cyan-50/95 dark:from-slate-800/95 dark:via-slate-700/95 dark:to-slate-800/95 border border-violet-200/70 dark:border-slate-600/70 shadow-xl p-7 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:shadow-2xl">
+        <div className="dashboard-preview-container relative rounded-2xl bg-gradient-to-br from-amber-50/95 via-yellow-50/95 to-orange-50/95 dark:from-slate-800/95 dark:via-slate-700/95 dark:to-slate-800/95 border border-amber-200/70 dark:border-amber-600/40 shadow-xl p-7 backdrop-blur-sm overflow-hidden transition-all duration-300 hover:shadow-2xl">
           {/* Animated background gradient */}
-          <div className="absolute inset-0 opacity-30 dashboard-preview-gradient bg-gradient-to-br from-violet-200/20 via-fuchsia-200/20 to-cyan-200/20 dark:from-violet-900/10 dark:via-fuchsia-900/10 dark:to-cyan-900/10" />
-          
+          <div className="absolute inset-0 opacity-30 dashboard-preview-gradient bg-gradient-to-br from-amber-200/20 via-yellow-200/20 to-orange-200/20 dark:from-amber-900/10 dark:via-yellow-900/10 dark:to-orange-900/10" />
+
           {/* Decorative corner accent */}
-          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-violet-400/10 via-fuchsia-400/5 to-transparent rounded-bl-3xl" />
-          
+          <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-amber-400/10 via-yellow-400/5 to-transparent rounded-bl-3xl" />
+
           {/* Subtle shine effect */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/50 to-transparent" />
-          
+
           {/* Header with icon */}
           <div className="dashboard-preview-header relative mb-5">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <div className="p-1.5 rounded-lg bg-violet-100/80 dark:bg-violet-900/30 transition-transform duration-300 hover:scale-110">
-                <svg className="w-4 h-4 text-violet-600 dark:text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <div className="p-1.5 rounded-lg bg-amber-100/80 dark:bg-amber-900/30 transition-transform duration-300 hover:scale-110">
+                <svg
+                  className="w-4 h-4 text-amber-600 dark:text-amber-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
                 </svg>
               </div>
               <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-600 dark:text-slate-400">
@@ -295,27 +316,27 @@ export default function LoginPage() {
               Tạo form theo ý của bạn
             </p>
           </div>
-          
+
           {/* Placeholder Elements */}
           <div className="relative space-y-3.5">
             {/* Title placeholder */}
             <div className="dashboard-preview-title-bar h-3 bg-gradient-to-r from-slate-300/70 via-slate-400/70 to-slate-300/70 dark:from-slate-600/50 dark:via-slate-500/50 dark:to-slate-600/50 rounded-full w-2/3 mx-auto dashboard-preview-placeholder" />
-            
+
             {/* Form fields with icons */}
             <div className="space-y-3">
-              <div className="dashboard-preview-field-1 dashboard-preview-field relative h-12 bg-white/98 dark:bg-slate-700/98 rounded-xl border border-slate-200/80 dark:border-slate-600/80 shadow-md backdrop-blur-sm flex items-center px-4 gap-3 transition-all duration-200 hover:shadow-lg hover:border-violet-300/50 dark:hover:border-violet-500/30">
+              <div className="dashboard-preview-field-1 dashboard-preview-field relative h-12 bg-white/98 dark:bg-slate-700/98 rounded-xl border border-slate-200/80 dark:border-slate-600/80 shadow-md backdrop-blur-sm flex items-center px-4 gap-3 transition-all duration-200 hover:shadow-lg hover:border-amber-300/50 dark:hover:border-amber-500/30">
                 <div className="w-4 h-4 rounded bg-slate-200/60 dark:bg-slate-600/60 dashboard-preview-placeholder" />
                 <div className="flex-1 h-3 bg-slate-100/80 dark:bg-slate-600/40 rounded dashboard-preview-placeholder" />
               </div>
-              <div className="dashboard-preview-field-2 dashboard-preview-field relative h-12 bg-white/98 dark:bg-slate-700/98 rounded-xl border border-slate-200/80 dark:border-slate-600/80 shadow-md backdrop-blur-sm flex items-center px-4 gap-3 transition-all duration-200 hover:shadow-lg hover:border-violet-300/50 dark:hover:border-violet-500/30">
+              <div className="dashboard-preview-field-2 dashboard-preview-field relative h-12 bg-white/98 dark:bg-slate-700/98 rounded-xl border border-slate-200/80 dark:border-slate-600/80 shadow-md backdrop-blur-sm flex items-center px-4 gap-3 transition-all duration-200 hover:shadow-lg hover:border-amber-300/50 dark:hover:border-amber-500/30">
                 <div className="w-4 h-4 rounded bg-slate-200/60 dark:bg-slate-600/60 dashboard-preview-placeholder" />
                 <div className="flex-1 h-3 bg-slate-100/80 dark:bg-slate-600/40 rounded dashboard-preview-placeholder" />
               </div>
             </div>
-            
+
             {/* Action buttons */}
             <div className="dashboard-preview-buttons flex gap-3 pt-1">
-              <div className="dashboard-preview-gradient flex-1 h-10 bg-gradient-to-r from-violet-500/90 via-fuchsia-500/90 to-cyan-500/90 dark:from-violet-600/70 dark:via-fuchsia-600/70 dark:to-cyan-600/70 rounded-lg shadow-md border border-violet-300/40 dark:border-violet-600/30 flex items-center justify-center transition-all duration-200 hover:shadow-lg hover:scale-[1.02]">
+              <div className="dashboard-preview-gradient flex-1 h-10 bg-gradient-to-r from-amber-400/90 via-yellow-400/90 to-orange-400/90 dark:from-amber-600/70 dark:via-yellow-600/70 dark:to-orange-600/70 rounded-lg shadow-md border border-amber-300/40 dark:border-amber-600/30 flex items-center justify-center transition-all duration-200 hover:shadow-lg hover:scale-[1.02]">
                 <div className="h-2.5 w-16 bg-white/40 dark:bg-white/20 rounded-full dashboard-preview-placeholder" />
               </div>
               <div className="w-24 h-10 bg-white/90 dark:bg-slate-700/90 rounded-lg border border-slate-200/70 dark:border-slate-600/70 shadow-md flex items-center justify-center transition-all duration-200 hover:shadow-lg hover:scale-[1.02]">
@@ -341,11 +362,11 @@ export default function LoginPage() {
             opacity: wipeStyles.y.to([100, 0, -100], [0, 1, 0]), // fade in/out
           }}
         >
-          <div className="relative h-dvh w-full overflow-hidden rounded-b-[80px] shadow-[0_20px_60px_rgba(168,85,247,.35)]">
+          <div className="relative h-dvh w-full overflow-hidden rounded-b-[80px] shadow-[0_20px_60px_rgba(251,191,36,.35)]">
             {/* Gradient động */}
             <div
               className="absolute inset-0 bg-[length:300%_300%] animate-gradient-flow 
-                          bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-500"
+                          bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400"
             />
 
             {/* Overlay cinematic */}
@@ -397,9 +418,9 @@ export default function LoginPage() {
           <div
             className="
             absolute -inset-[1px] rounded-3xl 
-            bg-gradient-to-br from-violet-400/35 via-fuchsia-400/25 to-cyan-500/35 
+            bg-gradient-to-br from-amber-400/35 via-yellow-400/25 to-orange-400/35 
             opacity-80 blur-md
-            dark:from-violet-400/60 dark:via-fuchsia-400/40 dark:to-cyan-500/60
+            dark:from-amber-400/60 dark:via-yellow-400/40 dark:to-orange-400/60
           "
           />
 
@@ -410,7 +431,7 @@ export default function LoginPage() {
             dark:bg-slate-900/90 dark:border-slate-700/70 dark:shadow-[0_18px_60px_rgba(15,23,42,0.85)]
           "
           >
-            <p className="text-xs font-semibold tracking-[0.25em] uppercase text-violet-600 dark:text-violet-300 mb-3">
+            <p className="text-xs font-semibold tracking-[0.25em] uppercase text-amber-600 dark:text-amber-300 mb-3">
               Đang chuyển hướng
             </p>
 
@@ -428,8 +449,8 @@ export default function LoginPage() {
               <div className="inline-flex items-center gap-3">
                 {/* Vòng tròn loading + ping */}
                 <span className="relative flex h-8 w-8">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400/35 dark:bg-violet-400/40" />
-                  <span className="relative inline-flex rounded-full h-8 w-8 border-2 border-violet-500 border-t-transparent animate-spin" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400/35 dark:bg-amber-400/40" />
+                  <span className="relative inline-flex rounded-full h-8 w-8 border-2 border-amber-500 border-t-transparent animate-spin" />
                 </span>
 
                 <div className="text-left">
@@ -445,7 +466,7 @@ export default function LoginPage() {
               {/* Thanh progress giả để đỡ trống */}
               <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden mt-2">
                 <div
-                  className="h-full bg-gradient-to-r from-violet-400 via-fuchsia-400 to-cyan-500 transition-all duration-500"
+                  className="h-full bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 transition-all duration-500"
                   style={{
                     width: `${Math.min(100, (waitingSeconds % 10) * 10)}%`,
                   }}
@@ -467,7 +488,7 @@ export default function LoginPage() {
     <>
       <div
         ref={transitionLayerRef}
-        className="fixed inset-0 z-[70] bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-600 pointer-events-none"
+        className="fixed inset-0 z-[70] bg-gradient-to-br from-amber-400 via-yellow-400 to-orange-400 pointer-events-none"
         style={{ transform: "scaleY(0)", transformOrigin: "top", opacity: 0 }}
       />
       {/* Back floating button */}
@@ -490,9 +511,9 @@ export default function LoginPage() {
               "bg-white/70 dark:bg-slate-900/60 backdrop-blur-md",
               "ring-1 ring-black/5 dark:ring-white/10 shadow-lg hover:shadow-xl",
               "transition-all duration-200 active:scale-[0.98]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/60",
               "before:absolute before:inset-0 before:rounded-full",
-              "before:bg-gradient-to-r before:from-violet-400/20 before:via-fuchsia-400/20 before:to-cyan-400/20",
+              "before:bg-gradient-to-r before:from-amber-400/20 before:via-yellow-400/20 before:to-orange-400/20",
               "before:opacity-0 hover:before:opacity-100 before:transition-opacity",
             ].join(" ")}
             icon={
@@ -525,14 +546,16 @@ export default function LoginPage() {
             sizes="100vw"
             className="object-cover object-right brightness-90 dark:brightness-75"
           />
-          <div className="absolute inset-0 bg-gradient-to-tr from-violet-500 via-fuchsia-400 to-cyan-400 opacity-50 dark:opacity-40" />
-          <div className={`${outfit.variable} absolute bottom-8 left-6 md:bottom-12 md:left-12 z-10 font-[family-name:var(--font-outfit)]`}>
+          <div className="absolute inset-0 bg-gradient-to-tr from-amber-400 via-yellow-400 to-orange-400 opacity-50 dark:opacity-40" />
+          <div
+            className={`${outfit.variable} absolute bottom-8 left-6 md:bottom-12 md:left-12 z-10 font-[family-name:var(--font-outfit)]`}
+          >
             <p
-              className={`hidden xs:block text-3xl sm:text-4xl md:text-5xl font-black tracking-[-0.02em] !m-2 lg:m-4 bg-gradient-to-r from-white via-violet-100 to-fuchsia-100 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(0,0,0,0.3),0_4px_16px_rgba(139,92,246,0.2)]`}
+              className={`hidden xs:block text-3xl sm:text-4xl md:text-5xl font-black tracking-[-0.02em] !m-2 lg:m-4 bg-gradient-to-r from-white via-amber-100 to-yellow-100 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(0,0,0,0.3),0_4px_16px_rgba(251,191,36,0.2)]`}
             >
               Uniwrap
             </p>
-            <p className="mt-2 sm:mt-3 text-base sm:text-lg md:text-xl font-semibold text-white/98 drop-shadow-[0_1px_4px_rgba(0,0,0,0.3),0_2px_8px_rgba(139,92,246,0.15)] tracking-[0.01em]">
+            <p className="mt-2 sm:mt-3 text-base sm:text-lg md:text-xl font-semibold text-white/98 drop-shadow-[0_1px_4px_rgba(0,0,0,0.3),0_2px_8px_rgba(251,191,36,0.15)] tracking-[0.01em]">
               Nền tảng tạo form khảo sát chuyên nghiệp{" "}
               <span className="pl-4">
                 {" "}
@@ -554,7 +577,7 @@ export default function LoginPage() {
         {/* Desktop */}
         <div
           className="hidden md:flex flex-1 items-center justify-center
-             bg-gradient-to-br from-violet-50 to-fuchsia-50
+             bg-gradient-to-br from-amber-50 to-yellow-50
              dark:from-gray-900 dark:to-gray-800"
         >
           <div className="relative w-full h-full">
