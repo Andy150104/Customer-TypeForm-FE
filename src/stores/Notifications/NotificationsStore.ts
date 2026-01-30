@@ -9,6 +9,7 @@ interface NotificationsState {
   streaming: boolean;
   streamTick: number;
   fetchNotifications: () => Promise<void>;
+  markReadNotifications: (ids: string[]) => Promise<void>;
   startStream: () => void;
   stopStream: () => void;
 }
@@ -67,6 +68,36 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
       console.error("fetchNotifications error:", error);
     } finally {
       set({ loading: false });
+    }
+  },
+  markReadNotifications: async (ids: string[]) => {
+    const filtered = Array.from(
+      new Set(ids.filter((id): id is string => Boolean(id))),
+    );
+    if (filtered.length === 0) return;
+
+    try {
+      const response =
+        await apiClient.authEduService.api.v1NotificationsReadNotificationsCreate(
+          filtered,
+        );
+      const success = response.data?.success ?? true;
+      if (!success) {
+        console.warn(
+          "markReadNotifications failed:",
+          response.data?.message ?? "unknown error",
+        );
+        return;
+      }
+      set((state) => ({
+        notifications: state.notifications.map((item) =>
+          item.id && filtered.includes(item.id)
+            ? { ...item, isRead: true }
+            : item,
+        ),
+      }));
+    } catch (error) {
+      console.error("markReadNotifications error:", error);
     }
   },
   startStream: () => {

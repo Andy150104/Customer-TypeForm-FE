@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo } from "react";
-import { Button, Empty, List, Tag, Typography } from "antd";
+import React, { useEffect, useMemo, useState } from "react";
+import { Button, Checkbox, Empty, List, Tag, Typography } from "antd";
 import { ReloadOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import BaseScreenAdmin from "EduSmart/layout/BaseScreenAdmin";
 import { useNotificationsStore } from "EduSmart/stores/Notifications/NotificationsStore";
@@ -39,9 +39,11 @@ const buildDescription = (item: NotificationResponseEntity) => {
 };
 
 export default function NotificationPage() {
-  const { notifications, loading, fetchNotifications } =
+  const { notifications, loading, fetchNotifications, markReadNotifications } =
     useNotificationsStore();
   const { isDarkMode } = useTheme();
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [marking, setMarking] = useState(false);
 
   useEffect(() => {
     void fetchNotifications();
@@ -61,6 +63,58 @@ export default function NotificationPage() {
   const latestTime = sortedNotifications.length
     ? formatDateTime(getNotificationTime(sortedNotifications[0]))
     : "-";
+
+  const selectableIds = useMemo(
+    () =>
+      sortedNotifications
+        .filter((item) => item.id)
+        .map((item) => item.id as string),
+    [sortedNotifications],
+  );
+
+  const unreadIdSet = useMemo(() => {
+    return new Set(
+      sortedNotifications
+        .filter((item) => !item.isRead && item.id)
+        .map((item) => item.id as string),
+    );
+  }, [sortedNotifications]);
+
+  const allSelected =
+    selectedIds.length > 0 &&
+    selectableIds.length > 0 &&
+    selectableIds.every((id) => selectedIds.includes(id));
+  const indeterminate =
+    selectedIds.length > 0 && !allSelected && selectableIds.length > 0;
+
+  useEffect(() => {
+    setSelectedIds((prev) =>
+      prev.filter((id) => selectableIds.includes(id)),
+    );
+  }, [selectableIds]);
+
+  const toggleSelect = (id?: string) => {
+    if (!id) return;
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    setSelectedIds(checked ? selectableIds : []);
+  };
+
+  const handleMarkRead = async () => {
+    const idsToMark = selectedIds.filter((id) => unreadIdSet.has(id));
+    if (idsToMark.length === 0) {
+      setSelectedIds([]);
+      return;
+    }
+    setMarking(true);
+    await markReadNotifications(idsToMark);
+    setMarking(false);
+    setSelectedIds([]);
+  };
 
   return (
     <BaseScreenAdmin>
@@ -210,107 +264,146 @@ export default function NotificationPage() {
                 />
               </div>
             ) : (
-              <List
-                loading={loading}
-                split={false}
-                dataSource={sortedNotifications}
-                className="relative space-y-6 pb-2"
-                renderItem={(item) => {
-                  const itemTime = formatDateTime(getNotificationTime(item));
-                  const unread = !item.isRead;
-                  return (
-                    <List.Item className="!px-0 !py-0 mb-2">
-                      <div
-                        className={`group w-full rounded-2xl p-[1px] transition-all duration-200 hover:-translate-y-0.5 ${
-                          unread
-                            ? isDarkMode
-                              ? "bg-gradient-to-r from-blue-500/60 via-cyan-400/40 to-blue-500/20"
-                              : "bg-gradient-to-r from-blue-400/60 via-cyan-300/40 to-blue-400/30"
-                            : isDarkMode
-                              ? "bg-slate-800/70"
-                              : "bg-gray-200/80"
-                        }`}
-                      >
+              <div className="relative space-y-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      indeterminate={indeterminate}
+                      checked={allSelected}
+                      onChange={(event) =>
+                        handleSelectAll(event.target.checked)
+                      }
+                    >
+                      Chọn tất cả
+                    </Checkbox>
+                    <Text className="text-xs text-slate-500">
+                      Đã chọn {selectedIds.length} thông báo
+                    </Text>
+                  </div>
+                  <Button
+                    type="primary"
+                    disabled={selectedIds.length === 0}
+                    loading={marking}
+                    onClick={() => void handleMarkRead()}
+                  >
+                    Đánh dấu đã đọc
+                  </Button>
+                </div>
+                <List
+                  loading={loading}
+                  split={false}
+                  dataSource={sortedNotifications}
+                  className="relative space-y-6 pb-2"
+                  renderItem={(item) => {
+                    const itemTime = formatDateTime(getNotificationTime(item));
+                    const unread = !item.isRead;
+                    const itemId = item.id;
+                    const checked = itemId
+                      ? selectedIds.includes(itemId)
+                      : false;
+                    return (
+                      <List.Item className="!px-0 !py-0 mb-2">
                         <div
-                          className={`relative w-full rounded-2xl border p-6 shadow-sm transition-all duration-200 group-hover:shadow-xl ${
+                          className={`group w-full rounded-2xl p-[1px] transition-all duration-200 hover:-translate-y-0.5 ${
                             unread
                               ? isDarkMode
-                                ? "border-blue-500/40 bg-gradient-to-r from-blue-500/15 via-slate-900/70 to-slate-900/30"
-                                : "border-blue-200 bg-gradient-to-r from-blue-50 via-white to-white"
+                                ? "bg-gradient-to-r from-blue-500/60 via-cyan-400/40 to-blue-500/20"
+                                : "bg-gradient-to-r from-blue-400/60 via-cyan-300/40 to-blue-400/30"
                               : isDarkMode
-                                ? "border-slate-800 bg-slate-900/40"
-                                : "border-gray-100 bg-white"
+                                ? "bg-slate-800/70"
+                                : "bg-gray-200/80"
                           }`}
                         >
                           <div
-                            className={`absolute left-0 top-0 h-full w-1 rounded-l-2xl ${
+                            className={`relative w-full rounded-2xl border p-6 shadow-sm transition-all duration-200 group-hover:shadow-xl ${
                               unread
                                 ? isDarkMode
-                                  ? "bg-gradient-to-b from-blue-400 to-cyan-400"
-                                  : "bg-gradient-to-b from-blue-500 to-cyan-400"
+                                  ? "border-blue-500/40 bg-gradient-to-r from-blue-500/15 via-slate-900/70 to-slate-900/30"
+                                  : "border-blue-200 bg-gradient-to-r from-blue-50 via-white to-white"
                                 : isDarkMode
-                                  ? "bg-slate-700"
-                                  : "bg-gray-200"
+                                  ? "border-slate-800 bg-slate-900/40"
+                                  : "border-gray-100 bg-white"
                             }`}
-                          />
-                          <div className="absolute inset-0 rounded-2xl ring-1 ring-transparent transition group-hover:ring-blue-400/30" />
-                          <List.Item.Meta
-                            avatar={
-                              <div
-                                className={`flex h-11 w-11 items-center justify-center rounded-full shadow-sm transition group-hover:scale-105 ${
-                                  isDarkMode
-                                    ? "bg-blue-500/20 text-blue-300"
-                                    : "bg-blue-100 text-blue-600"
-                                }`}
-                              >
-                                <InfoCircleOutlined />
-                              </div>
-                            }
-                            title={
-                              <div className="flex flex-wrap items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                  <Text
-                                    className={`font-semibold ${
+                          >
+                            <div
+                              className={`absolute left-0 top-0 h-full w-1 rounded-l-2xl ${
+                                unread
+                                  ? isDarkMode
+                                    ? "bg-gradient-to-b from-blue-400 to-cyan-400"
+                                    : "bg-gradient-to-b from-blue-500 to-cyan-400"
+                                  : isDarkMode
+                                    ? "bg-slate-700"
+                                    : "bg-gray-200"
+                              }`}
+                            />
+                            <div className="absolute inset-0 rounded-2xl ring-1 ring-transparent transition group-hover:ring-blue-400/30" />
+                            <div className="flex items-start gap-4">
+                              <Checkbox
+                                checked={checked}
+                                disabled={!itemId}
+                                onChange={() => toggleSelect(itemId)}
+                              />
+                              <List.Item.Meta
+                                avatar={
+                                  <div
+                                    className={`flex h-11 w-11 items-center justify-center rounded-full shadow-sm transition group-hover:scale-105 ${
                                       isDarkMode
-                                        ? "text-slate-100"
-                                        : "text-gray-900"
+                                        ? "bg-blue-500/20 text-blue-300"
+                                        : "bg-blue-100 text-blue-600"
                                     }`}
                                   >
-                                    Thông báo mới
-                                  </Text>
-                                  {unread ? (
-                                    <Tag color="blue">Chưa đọc</Tag>
-                                  ) : (
-                                    <Tag color="default">Đã đọc</Tag>
-                                  )}
-                                </div>
-                                <span
-                                  className={`text-xs ${
-                                    isDarkMode
-                                      ? "text-slate-500"
-                                      : "text-gray-400"
-                                  }`}
-                                >
-                                  {itemTime}
-                                </span>
-                              </div>
-                            }
-                            description={
-                              <Text
-                                className={
-                                  isDarkMode ? "text-slate-300" : "text-gray-600"
+                                    <InfoCircleOutlined />
+                                  </div>
                                 }
-                              >
-                                {buildDescription(item)}
-                              </Text>
-                            }
-                          />
+                                title={
+                                  <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2">
+                                      <Text
+                                        className={`font-semibold ${
+                                          isDarkMode
+                                            ? "text-slate-100"
+                                            : "text-gray-900"
+                                        }`}
+                                      >
+                                        Thông báo mới
+                                      </Text>
+                                      {unread ? (
+                                        <Tag color="blue">Chưa đọc</Tag>
+                                      ) : (
+                                        <Tag color="default">Đã đọc</Tag>
+                                      )}
+                                    </div>
+                                    <span
+                                      className={`text-xs ${
+                                        isDarkMode
+                                          ? "text-slate-500"
+                                          : "text-gray-400"
+                                      }`}
+                                    >
+                                      {itemTime}
+                                    </span>
+                                  </div>
+                                }
+                                description={
+                                  <Text
+                                    className={
+                                      isDarkMode
+                                        ? "text-slate-300"
+                                        : "text-gray-600"
+                                    }
+                                  >
+                                    {buildDescription(item)}
+                                  </Text>
+                                }
+                              />
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </List.Item>
-                  );
-                }}
-              />
+                      </List.Item>
+                    );
+                  }}
+                />
+              </div>
             )}
           </div>
         </div>
