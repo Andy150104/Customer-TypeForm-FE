@@ -8,6 +8,7 @@ import {
   PlusOutlined,
   FolderOutlined,
   CloseOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Menu, Layout, theme, Button, Divider, Grid } from "antd";
@@ -53,6 +54,13 @@ const navItems: NavMenuItem[] = [
     <FolderOutlined />,
     undefined,
     "/templates",
+  ),
+  getItem(
+    "Notifications",
+    "notifications",
+    <BellOutlined />,
+    undefined,
+    "/notification",
   ),
 
   getItem("Logout", "logout", <LogoutOutlined />),

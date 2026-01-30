@@ -14,6 +14,7 @@ const PROTECTED_PREFIXES = [
   "/User",
   "/dashboard",
   "/form",
+  "/notification",
 ];
 
 /** Kiểm tra xem pathname có nằm trong PUBLIC_PATHS không */

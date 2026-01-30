@@ -1699,6 +1699,80 @@
         },
         "additionalProperties": false
       },
+      "CreateFormFromTemplateCommand": {
+        "type": "object",
+        "properties": {
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateFormFromTemplateCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CreateFormFromTemplateResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateFormFromTemplateResponseEntity": {
+        "type": "object",
+        "properties": {
+          "formId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "slug": {
+            "type": "string",
+            "nullable": true
+          },
+          "isPublished": {
+            "type": "boolean"
+          },
+          "fieldCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "CreateFormResponseEntity": {
         "type": "object",
         "properties": {
@@ -1909,6 +1983,90 @@
         },
         "additionalProperties": false
       },
+      "CreateTemplateCommand": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeConfig": {
+            "nullable": true
+          },
+          "settings": {
+            "nullable": true
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateFieldDataDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateTemplateCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/CreateTemplateResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "CreateTemplateResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "fieldCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
       "DeleteFieldCommandResponse": {
         "type": "object",
         "properties": {
@@ -2019,6 +2177,47 @@
         "additionalProperties": false
       },
       "DeleteLogicResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteTemplateCommandResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/DeleteTemplateResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DeleteTemplateResponseEntity": {
         "type": "object",
         "properties": {
           "id": {
@@ -2681,6 +2880,37 @@
         },
         "additionalProperties": false
       },
+      "GetNotificationsQueryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationResponseEntity"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "GetPublishedFormWithFieldsAndLogicQueryResponse": {
         "type": "object",
         "properties": {
@@ -2758,6 +2988,64 @@
           },
           "response": {
             "$ref": "#/components/schemas/FormSubmissionsOverviewResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTemplateWithFieldsQueryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "$ref": "#/components/schemas/TemplateWithFieldsResponseEntity"
+          }
+        },
+        "additionalProperties": false
+      },
+      "GetTemplatesQueryResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "detailErrors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DetailError"
+            },
+            "nullable": true
+          },
+          "response": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateSummaryResponseEntity"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -2941,6 +3229,56 @@
           "appliedLogicId": {
             "type": "string",
             "format": "uuid",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "NotificationResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "formId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "latestSubmissionId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true
+          },
+          "count": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "firstSubmissionAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastSubmissionAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "isRead": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         },
@@ -3246,6 +3584,181 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateFieldDataDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "$ref": "#/components/schemas/FieldType"
+          },
+          "properties": {
+            "nullable": true
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateFieldOptionDto"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateFieldOptionDto": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateFieldResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "templateId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "imageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "properties": {
+            "nullable": true
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
+          "order": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FieldOptionResponseEntity"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateSummaryResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "fieldCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TemplateWithFieldsResponseEntity": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "themeConfig": {
+            "nullable": true
+          },
+          "settings": {
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TemplateFieldResponseEntity"
+            },
+            "nullable": true
           }
         },
         "additionalProperties": false
