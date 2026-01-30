@@ -56,14 +56,44 @@ function extractUserFromIdToken(idt: string): BasicUser | null {
   const preferredName = (jwtDecode.preferred_username ?? "") as string;
 
   const looksBroken = (value?: string) =>
-    !value || /�|\?/.test(value) || /[ÃÂÄÆÐØÞ]/.test(value);
+    !value ||
+    /[\uFFFD]/.test(value) ||
+    /\?/.test(value) ||
+    /[\u00c3\u00c2\u00c4\u00c6\u00d0\u00d8\u00de]/.test(value) ||
+    /[\u00b0\u00ba\u00aa]/.test(value);
 
-  let nameCandidate = rawName || fallbackName || preferredName || "";
+  const normalizeTokenName = (value: string) => {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+    if (looksBroken(trimmed)) {
+      try {
+        return decodeURIComponent(escape(trimmed));
+      } catch {
+        return trimmed;
+      }
+    }
+    return trimmed;
+  };
 
-  if (looksBroken(nameCandidate) && fallbackName && !looksBroken(fallbackName)) {
-    nameCandidate = fallbackName;
-  } else if (looksBroken(nameCandidate) && preferredName && !looksBroken(preferredName)) {
-    nameCandidate = preferredName;
+  const normalizedRawName = normalizeTokenName(rawName);
+  const normalizedFallbackName = normalizeTokenName(fallbackName);
+  const normalizedPreferredName = normalizeTokenName(preferredName);
+
+  let nameCandidate =
+    normalizedRawName || normalizedFallbackName || normalizedPreferredName || "";
+
+  if (
+    looksBroken(nameCandidate) &&
+    normalizedFallbackName &&
+    !looksBroken(normalizedFallbackName)
+  ) {
+    nameCandidate = normalizedFallbackName;
+  } else if (
+    looksBroken(nameCandidate) &&
+    normalizedPreferredName &&
+    !looksBroken(normalizedPreferredName)
+  ) {
+    nameCandidate = normalizedPreferredName;
   }
 
   const name = nameCandidate || "";

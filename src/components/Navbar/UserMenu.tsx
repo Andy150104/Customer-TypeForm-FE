@@ -12,6 +12,7 @@ import {
 import { ThemeSwitch } from "../Themes/Theme";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useRouter } from "next/navigation";
+import { normalizeDisplayName } from "EduSmart/utils/normalizeDisplayName";
 
 
 interface UserMenuProps {
@@ -24,6 +25,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
   const { logout } = useAuthStore();
   const router = useRouter();
   const scrollYRef = useRef(0);
+  const displayName = normalizeDisplayName(name, email);
   const prevRef = useRef({
     bodyOverflow: "",
     bodyPaddingRight: "",
@@ -115,7 +117,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ email, name }) => {
         >
           <Avatar size={48} src="https://i.pravatar.cc/150?img=3" />
           <div style={{ marginLeft: 12 }}>
-            <div style={{ fontWeight: 600 }}>{name}</div>
+            <div style={{ fontWeight: 600 }}>{displayName}</div>
             <div style={{ fontSize: 13, color: "#aaa" }}>{email}</div>
             <a
               href="/dashboard/my-profile"

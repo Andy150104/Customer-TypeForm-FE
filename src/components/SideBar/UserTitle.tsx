@@ -5,6 +5,7 @@ import { Tooltip, Avatar, theme } from "antd";
 import { useRouter } from "next/navigation";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
+import { normalizeDisplayName } from "EduSmart/utils/normalizeDisplayName";
 
 type UserTitleProps = {
   collapsed: boolean;
@@ -19,39 +20,6 @@ const initialsFrom = (name: string) =>
     .join("")
     .toUpperCase();
 
-const hasBrokenChars = (value: string) =>
-  /�|\?/.test(value) || /[ÃÂÄÆÐØÞ]/.test(value);
-
-const normalizeDisplayName = (name?: string, email?: string) => {
-  if (!name && !email) return "Người dùng";
-  let next = (name ?? "").trim();
-
-  // Try to fix common mojibake (latin1 -> utf8) cases.
-  if (/[ÃÂÄÆÐØÞ]/.test(next)) {
-    try {
-      next = decodeURIComponent(escape(next));
-    } catch {
-      // ignore decode errors, fallback below
-    }
-  }
-
-  const cleaned = next.replace(/\?/g, "").replace(/\s+/g, " ").trim();
-  if (cleaned && cleaned !== next) {
-    next = cleaned;
-  }
-
-  // If still contains replacement chars, fallback to email local-part.
-  if (!next || hasBrokenChars(next)) {
-    const local = (email ?? "").split("@")[0] ?? "";
-    if (local) {
-      next = local
-        .replace(/[._-]+/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-    }
-  }
-
-  return next || "Người dùng";
-};
 
 export const UserTitle: React.FC<UserTitleProps> = ({ collapsed }) => {
   const router = useRouter();
