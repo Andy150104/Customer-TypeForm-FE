@@ -1,0 +1,127 @@
+/* SSE notification toast styling */
+.es-stream-noti-root {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+  z-index: 9999;
+}
+
+.es-stream-noti-root .ant-notification-notice.es-stream-noti,
+.es-stream-noti-root .ant-notification-notice-wrapper.es-stream-noti,
+.es-stream-noti-root
+  .ant-notification-notice-wrapper.es-stream-noti
+  .ant-notification-notice,
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti
+  .ant-notification-notice-content,
+.es-stream-noti-root
+  .ant-notification-notice-wrapper.es-stream-noti
+  .ant-notification-notice-content {
+  background: linear-gradient(180deg, #e8f0ff 0%, #dfe7ff 100%) !important;
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  border-radius: 16px;
+  padding: 14px 18px;
+  box-shadow:
+    0 14px 30px rgba(15, 23, 42, 0.14),
+    0 4px 10px rgba(15, 23, 42, 0.08);
+  max-width: 380px;
+  position: relative;
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti
+  .ant-notification-notice-message {
+  font-weight: 600;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti
+  .ant-notification-notice-description {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti
+  .ant-notification-notice-progress {
+  background: rgba(37, 99, 235, 0.15);
+  height: 3px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti
+  .ant-notification-notice-progress-bar {
+  background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.35);
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti
+  .ant-notification-notice-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti
+  .ant-notification-notice-close {
+  color: #94a3b8;
+}
+
+.es-stream-noti-root .ant-notification-notice.es-stream-noti-dark,
+.es-stream-noti-root .ant-notification-notice-wrapper.es-stream-noti-dark,
+.es-stream-noti-root
+  .ant-notification-notice-wrapper.es-stream-noti-dark
+  .ant-notification-notice,
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti-dark
+  .ant-notification-notice-content,
+.es-stream-noti-root
+  .ant-notification-notice-wrapper.es-stream-noti-dark
+  .ant-notification-notice-content {
+  background: linear-gradient(180deg, #0b1220 0%, #111827 100%) !important;
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow:
+    0 18px 40px rgba(2, 6, 23, 0.6),
+    0 2px 8px rgba(2, 6, 23, 0.4);
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti-dark
+  .ant-notification-notice-message {
+  color: #e2e8f0;
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti-dark
+  .ant-notification-notice-description {
+  color: #94a3b8;
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti-dark
+  .ant-notification-notice-progress {
+  background: rgba(96, 165, 250, 0.18);
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti-dark
+  .ant-notification-notice-progress-bar {
+  background: linear-gradient(90deg, #60a5fa 0%, #38bdf8 100%);
+  box-shadow: 0 0 10px rgba(96, 165, 250, 0.45);
+}
+
+.es-stream-noti-root
+  .ant-notification-notice.es-stream-noti-dark
+  .ant-notification-notice-icon {
+  background: rgba(96, 165, 250, 0.18);
+}

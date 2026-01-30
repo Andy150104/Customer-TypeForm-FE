@@ -11,6 +11,8 @@ import NotFound from "EduSmart/app/404/page";
 import { useSidebarStore } from "EduSmart/stores/SideBar/SideBarStore";
 import { GlobalMessage } from "EduSmart/components/Common/Message/GlobalMessage";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
+import { NotificationBell } from "EduSmart/components/Notifications/NotificationBell";
+import { NotificationToast } from "EduSmart/components/Notifications/NotificationToast";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 
 const { Content, Footer } = Layout;
@@ -62,6 +64,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
         defaultSelectedKeys={defaultSelectedKeys}
       />
       <GlobalMessage />
+      <NotificationToast />
       {/* Cột phải: flex column */}
       <Layout className="flex flex-col h-screen min-h-0 overflow-hidden">
         <header
@@ -118,6 +121,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
               )}
             </div>
             <div className="flex items-center gap-3">
+              <NotificationBell />
               <ThemeSwitch />
             </div>
           </div>
