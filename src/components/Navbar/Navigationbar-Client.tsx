@@ -10,6 +10,7 @@ import { Kaushan_Script } from "next/font/google";
 import UserMenu from "EduSmart/components/Navbar/UserMenu";
 import "@ant-design/v5-patch-for-react-19";
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
+import { normalizeDisplayName } from "EduSmart/utils/normalizeDisplayName";
 
 const kaushan = Kaushan_Script({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function NavigationbarClient({ isAuthed }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const { logout } = useAuthStore();
   const user = useAuthStore((state) => state.user);
+  const displayName = normalizeDisplayName(user?.name, user?.email);
   // const isAuthed = Boolean(token);
 
   // Temp
@@ -231,7 +233,7 @@ export default function NavigationbarClient({ isAuthed }: Props) {
           </div>
           {isAuthed ? (
             <div className="hidden xl:block">
-              <UserMenu name={user ? user.name : ""} email={user ? user.email : ""} />
+              <UserMenu name={displayName} email={user?.email ?? ""} />
             </div>
           ) : (
             <div className="hidden xl:flex items-center gap-2 ml-6 flex-nowrap">
@@ -316,7 +318,7 @@ export default function NavigationbarClient({ isAuthed }: Props) {
                     />
                     <div className="leading-tight">
                       <div className="text-slate-900 dark:text-white font-semibold">
-                        {user?.name}
+                        {displayName}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
                         {user?.email}

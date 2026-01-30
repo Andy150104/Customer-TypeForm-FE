@@ -23,6 +23,7 @@ import {
 
 import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import UserMenu from "../UserMenu";
+import { normalizeDisplayName } from "EduSmart/utils/normalizeDisplayName";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 
 // -- Font
@@ -47,6 +48,7 @@ export default function CourseNavigationbar({
   // Auth
   const isAuthed = useAuthStore((s) => s.isAuthen);
   const getAuthen = useAuthStore((s) => s.getAuthen);
+  const displayName = normalizeDisplayName(user?.name, user?.email);
 
   const [authReady, setAuthReady] = useState(false);
   useEffect(() => {
@@ -270,10 +272,7 @@ export default function CourseNavigationbar({
               </div>
             ) : isAuthed ? (
               <div className="hidden xl:block">
-                <UserMenu
-                  name={user ? user.name : ""}
-                  email={user ? user.email : ""}
-                />
+                <UserMenu name={displayName} email={user?.email ?? ""} />
               </div>
             ) : (
               <div className="hidden lg:flex items-center space-x-2 ml-1">
@@ -377,10 +376,7 @@ export default function CourseNavigationbar({
                 <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse" />
               ) : isAuthed ? (
                 <div className="flex justify-end">
-                  <UserMenu
-                    name={user ? user.name : ""}
-                    email={user ? user.email : ""}
-                  />
+                  <UserMenu name={displayName} email={user?.email ?? ""} />
                 </div>
               ) : (
                 <div className="flex items-center justify-end gap-2">
