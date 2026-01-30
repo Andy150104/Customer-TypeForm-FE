@@ -45,6 +45,12 @@ type ResultsPageProps = {
 };
 
 const tabs = ["Content", "Workflow", "Share", "Results"];
+const tabLabels: Record<string, string> = {
+  Content: "Nội dung",
+  Workflow: "Luồng",
+  Share: "Chia sẻ",
+  Results: "Kết quả",
+};
 
 export default function FormResultsPage({ params }: ResultsPageProps) {
   const { isDarkMode } = useTheme();
@@ -172,7 +178,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
           fetchDetailSubmissions(formId),
         ]);
         if (!isActive) return;
-        setFormTitle(result?.title ?? "Untitled Form");
+        setFormTitle(result?.title ?? "Biểu mẫu chưa đặt tên");
       } catch (error) {
         console.error("Failed to load form:", error);
       } finally {
@@ -268,7 +274,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
     // Prepare pie chart data for options
     const pieChartData =
       field.optionTrends?.map((option, idx) => ({
-        type: option.label || option.value || `Option ${idx + 1}`,
+        type: option.label || option.value || `Lựa chọn ${idx + 1}`,
         value: option.count ?? 0,
       })) ?? [];
 
@@ -326,14 +332,14 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                   isDarkMode ? "text-white" : "text-slate-900"
                 }`}
               >
-                {field.title || "Untitled Field"}
+                {field.title || "Câu hỏi chưa đặt tên"}
               </h4>
               <div className="flex items-center gap-2">
                 <Tag
                   color={hasOptions ? "orange" : "blue"}
                   className="!rounded-full !px-2.5 !py-0.5 !text-xs"
                 >
-                  {field.type || "text"}
+                  {field.type || "văn bản"}
                 </Tag>
                 {field.isRequired && (
                   <Tag
@@ -502,10 +508,10 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                 isDarkMode ? "text-white" : "text-slate-900"
               }`}
             >
-              {answer.fieldTitle || "Untitled Question"}
+              {answer.fieldTitle || "Câu hỏi chưa đặt tên"}
             </h4>
             <Tag className="mb-2 !bg-amber-500/20 !text-amber-600 !border-amber-500/30">
-              {answer.fieldType || "text"}
+              {answer.fieldType || "văn bản"}
             </Tag>
             <div
               className={`text-sm ${
@@ -559,7 +565,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                     isActive ? "text-white" : tabInactiveClass
                   }`}
                 >
-                  {tab}
+                  {tabLabels[tab] ?? tab}
                 </button>
               );
             })}
@@ -584,11 +590,11 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                     <BarChartOutlined className="text-2xl text-white" />
                   </div>
                   <h1 className="text-2xl md:text-3xl font-bold text-white m-0">
-                    {formTitle || "Form Results"}
+                    {formTitle || "Kết quả biểu mẫu"}
                   </h1>
                 </div>
                 <p className="text-white/80 text-sm md:text-base">
-                  📊 Xem và phân tích kết quả form của bạn
+                  📊 Xem và phân tích kết quả biểu mẫu của bạn
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -869,7 +875,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                                       : "text-slate-700"
                                   }`}
                                 >
-                                  {index + 1}. {field.title || "Untitled"}
+                                  {index + 1}. {field.title || "Chưa đặt tên"}
                                 </span>
                               </Tooltip>
                               <span
@@ -1077,7 +1083,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                       isDarkMode ? "text-slate-400" : "text-slate-500"
                     }`}
                   >
-                    Chi tiết phản hồi cho từng câu hỏi trong form
+                    Chi tiết phản hồi cho từng câu hỏi trong biểu mẫu
                   </p>
                 </div>
               </div>
@@ -1129,8 +1135,8 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                   <span
                     className={isDarkMode ? "text-slate-400" : "text-slate-500"}
                   >
-                    Chưa có phản hồi nào. Chia sẻ form để bắt đầu thu thập dữ
-                    liệu.
+                    Chưa có phản hồi nào. Chia sẻ biểu mẫu để bắt đầu thu thập
+                    dữ liệu.
                   </span>
                 }
               >
@@ -1139,7 +1145,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                   className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
                   onClick={() => formId && router.push(`/form/${formId}/share`)}
                 >
-                  Đi đến Share
+                  Đi đến Chia sẻ
                 </Button>
               </Empty>
             )}

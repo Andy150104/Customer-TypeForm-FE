@@ -11,22 +11,16 @@ import React, {
 import type { Dayjs } from "dayjs";
 import {
   Button,
-  Checkbox,
   DatePicker,
   Input,
   InputNumber,
   Rate,
   Slider,
   TimePicker,
-  Upload,
   Image as AntdImage,
 } from "antd";
 import { createStyles } from "antd-style";
-import {
-  ArrowLeftOutlined,
-  ArrowRightOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
+import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import {
   AnswerDto,
   FieldWithLogicResponseEntity,
@@ -65,7 +59,24 @@ const useGradientButtonStyles = createStyles(({ prefixCls, css }) => ({
   `,
 }));
 
-const normalizeText = (value: string) => value.toLowerCase();
+type FieldLogicCategory =
+  | "number"
+  | "rating"
+  | "scale"
+  | "date"
+  | "time"
+  | "datetime"
+  | "select"
+  | "radio"
+  | "yesno"
+  | "multiselect"
+  | "text"
+  | "email"
+  | "phone"
+  | "textarea";
+
+const normalizeText = (value: unknown) =>
+  value === null || value === undefined ? "" : String(value).toLowerCase();
 const parseNumber = (value: unknown) => {
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string" && value !== "") {
@@ -75,19 +86,272 @@ const parseNumber = (value: unknown) => {
   return undefined;
 };
 
+const parseTimeValue = (value: unknown) => {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "object") {
+    const timeLike = value as { hour?: () => number; minute?: () => number; second?: () => number };
+    if (typeof timeLike.hour === "function" && typeof timeLike.minute === "function") {
+      const hours = timeLike.hour();
+      const minutes = timeLike.minute();
+      const seconds = typeof timeLike.second === "function" ? timeLike.second() : 0;
+      if (Number.isFinite(hours) && Number.isFinite(minutes) && Number.isFinite(seconds)) {
+        return hours * 60 + minutes + seconds / 60;
+      }
+    }
+  }
+  const raw = String(value).trim();
+  const match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(raw);
+  if (!match) return undefined;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  const seconds = Number(match[3] ?? 0);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes) || !Number.isFinite(seconds)) {
+    return undefined;
+  }
+  return hours * 60 + minutes + seconds / 60;
+};
+
+const parseDateValue = (value: unknown) => {
+  if (value === null || value === undefined) return undefined;
+  if (
+    typeof value === "object" &&
+    typeof (value as { valueOf?: () => number }).valueOf === "function"
+  ) {
+    const ts = (value as { valueOf: () => number }).valueOf();
+    return Number.isFinite(ts) ? ts : undefined;
+  }
+  const raw = String(value).trim();
+  if (!raw) return undefined;
+
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?$/.exec(
+      raw,
+    );
+  if (match) {
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const hour = Number(match[4] ?? 0);
+    const minute = Number(match[5] ?? 0);
+    const second = Number(match[6] ?? 0);
+    if (
+      [year, month, day, hour, minute, second].every((v) =>
+        Number.isFinite(v),
+      )
+    ) {
+      const dt = new Date(year, month - 1, day, hour, minute, second);
+      const ts = dt.getTime();
+      return Number.isFinite(ts) ? ts : undefined;
+    }
+  }
+
+  const ts = Date.parse(raw);
+  return Number.isFinite(ts) ? ts : undefined;
+};
+
+const normalizeMultiValues = (value: unknown): string[] => {
+  if (value === null || value === undefined) return [];
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item).trim()).filter(Boolean);
+  }
+  const raw = String(value).trim();
+  if (!raw) return [];
+  if (raw.includes("||")) {
+    return raw.split("||").map((item) => item.trim()).filter(Boolean);
+  }
+  if (raw.includes(",")) {
+    return raw.split(",").map((item) => item.trim()).filter(Boolean);
+  }
+  return [raw];
+};
+
+const getLogicFieldCategory = (type?: string | null): FieldLogicCategory => {
+  const normalized = (type ?? "").toLowerCase().trim();
+  if (normalized.includes("datetime")) return "datetime";
+  if (normalized.includes("date")) return "date";
+  if (normalized.includes("time")) return "time";
+  if (normalized.includes("number")) return "number";
+  if (normalized.includes("rating")) return "rating";
+  if (normalized.includes("scale")) return "scale";
+  if (normalized.includes("multiselect") || normalized.includes("multi_select"))
+    return "multiselect";
+  if (normalized.includes("select")) return "select";
+  if (normalized.includes("radio")) return "radio";
+  if (normalized.includes("yesno") || normalized.includes("yes_no"))
+    return "yesno";
+  if (normalized.includes("email")) return "email";
+  if (normalized.includes("phone")) return "phone";
+  if (normalized.includes("textarea")) return "textarea";
+  return "text";
+};
+
 const evaluateLogicCondition = (
   condition: LogicCondition | string | null | undefined,
-  currentValue: string | null | undefined,
+  currentValue: unknown,
   logicValue: string | null | undefined,
+  fieldCategory?: FieldLogicCategory,
 ) => {
-  if (currentValue == null) {
+  const isEmptyValue =
+    currentValue === null ||
+    currentValue === undefined ||
+    (typeof currentValue === "string" && currentValue.trim() === "") ||
+    (Array.isArray(currentValue) && currentValue.length === 0);
+
+  if (isEmptyValue) {
     return condition === LogicCondition.Always || condition === "Always";
   }
 
-  const current = String(currentValue);
   const target = logicValue ?? "";
-  const currentLower = normalizeText(current);
+  const currentLower = normalizeText(currentValue);
   const targetLower = normalizeText(target);
+
+  const category = fieldCategory ?? "text";
+
+  if (category === "multiselect") {
+    const currentList = normalizeMultiValues(currentValue);
+    const targetList = normalizeMultiValues(target);
+    switch (condition) {
+      case LogicCondition.Contains:
+      case "Contains":
+        return (
+          targetList.length > 0 &&
+          currentList.some((item) =>
+            targetList.some(
+              (targetItem) => normalizeText(item) === normalizeText(targetItem),
+            ),
+          )
+        );
+      case LogicCondition.DoesNotContain:
+      case "DoesNotContain":
+        return (
+          targetList.length > 0 &&
+          !currentList.some((item) =>
+            targetList.some(
+              (targetItem) => normalizeText(item) === normalizeText(targetItem),
+            ),
+          )
+        );
+      case LogicCondition.Always:
+      case "Always":
+        return true;
+      case LogicCondition.Is:
+      case "Is":
+        return currentLower === targetLower;
+      case LogicCondition.IsNot:
+      case "IsNot":
+        return currentLower !== targetLower;
+      default:
+        return false;
+    }
+  }
+
+  if (category === "number" || category === "rating" || category === "scale") {
+    const currentNumber = parseNumber(currentValue);
+    const targetNumber = parseNumber(target);
+    switch (condition) {
+      case LogicCondition.Is:
+      case "Is":
+        if (currentNumber !== undefined && targetNumber !== undefined) {
+          return currentNumber === targetNumber;
+        }
+        return currentLower === targetLower;
+      case LogicCondition.IsNot:
+      case "IsNot":
+        if (currentNumber !== undefined && targetNumber !== undefined) {
+          return currentNumber !== targetNumber;
+        }
+        return currentLower !== targetLower;
+      case LogicCondition.GreaterThan:
+      case "GreaterThan":
+        return currentNumber !== undefined && targetNumber !== undefined
+          ? currentNumber > targetNumber
+          : false;
+      case LogicCondition.LessThan:
+      case "LessThan":
+        return currentNumber !== undefined && targetNumber !== undefined
+          ? currentNumber < targetNumber
+          : false;
+      case LogicCondition.GreaterThanOrEqual:
+      case "GreaterThanOrEqual":
+        return currentNumber !== undefined && targetNumber !== undefined
+          ? currentNumber >= targetNumber
+          : false;
+      case LogicCondition.LessThanOrEqual:
+      case "LessThanOrEqual":
+        return currentNumber !== undefined && targetNumber !== undefined
+          ? currentNumber <= targetNumber
+          : false;
+      case LogicCondition.Always:
+      case "Always":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  if (category === "date" || category === "datetime") {
+    const currentDate = parseDateValue(currentValue);
+    const targetDate = parseDateValue(target);
+    switch (condition) {
+      case LogicCondition.Is:
+      case "Is":
+        return currentDate !== undefined && targetDate !== undefined
+          ? currentDate === targetDate
+          : currentLower === targetLower;
+      case LogicCondition.IsNot:
+      case "IsNot":
+        return currentDate !== undefined && targetDate !== undefined
+          ? currentDate !== targetDate
+          : currentLower !== targetLower;
+      case LogicCondition.GreaterThan:
+      case "GreaterThan":
+        return currentDate !== undefined && targetDate !== undefined
+          ? currentDate > targetDate
+          : false;
+      case LogicCondition.LessThan:
+      case "LessThan":
+        return currentDate !== undefined && targetDate !== undefined
+          ? currentDate < targetDate
+          : false;
+      case LogicCondition.Always:
+      case "Always":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  if (category === "time") {
+    const currentTime = parseTimeValue(currentValue);
+    const targetTime = parseTimeValue(target);
+    switch (condition) {
+      case LogicCondition.Is:
+      case "Is":
+        return currentTime !== undefined && targetTime !== undefined
+          ? currentTime === targetTime
+          : currentLower === targetLower;
+      case LogicCondition.IsNot:
+      case "IsNot":
+        return currentTime !== undefined && targetTime !== undefined
+          ? currentTime !== targetTime
+          : currentLower !== targetLower;
+      case LogicCondition.GreaterThan:
+      case "GreaterThan":
+        return currentTime !== undefined && targetTime !== undefined
+          ? currentTime > targetTime
+          : false;
+      case LogicCondition.LessThan:
+      case "LessThan":
+        return currentTime !== undefined && targetTime !== undefined
+          ? currentTime < targetTime
+          : false;
+      case LogicCondition.Always:
+      case "Always":
+        return true;
+      default:
+        return false;
+    }
+  }
 
   switch (condition) {
     case LogicCondition.Is:
@@ -102,38 +366,6 @@ const evaluateLogicCondition = (
     case LogicCondition.DoesNotContain:
     case "DoesNotContain":
       return !currentLower.includes(targetLower);
-    case LogicCondition.GreaterThan:
-    case "GreaterThan": {
-      const currentNumber = Number(current);
-      const targetNumber = Number(target);
-      return Number.isFinite(currentNumber) && Number.isFinite(targetNumber)
-        ? currentNumber > targetNumber
-        : false;
-    }
-    case LogicCondition.LessThan:
-    case "LessThan": {
-      const currentNumber = Number(current);
-      const targetNumber = Number(target);
-      return Number.isFinite(currentNumber) && Number.isFinite(targetNumber)
-        ? currentNumber < targetNumber
-        : false;
-    }
-    case LogicCondition.GreaterThanOrEqual:
-    case "GreaterThanOrEqual": {
-      const currentNumber = Number(current);
-      const targetNumber = Number(target);
-      return Number.isFinite(currentNumber) && Number.isFinite(targetNumber)
-        ? currentNumber >= targetNumber
-        : false;
-    }
-    case LogicCondition.LessThanOrEqual:
-    case "LessThanOrEqual": {
-      const currentNumber = Number(current);
-      const targetNumber = Number(target);
-      return Number.isFinite(currentNumber) && Number.isFinite(targetNumber)
-        ? currentNumber <= targetNumber
-        : false;
-    }
     case LogicCondition.Always:
     case "Always":
       return true;
@@ -145,7 +377,8 @@ const evaluateLogicCondition = (
 const getNextFieldId = (
   currentField: FieldWithLogicResponseEntity,
   orderedFields: FieldWithLogicResponseEntity[],
-  currentValue: string | null,
+  currentValue: unknown,
+  fieldCategory?: FieldLogicCategory,
 ) => {
   let appliedLogicId: string | null = null;
   let nextFieldId: string | null = null;
@@ -165,6 +398,7 @@ const getNextFieldId = (
         logic.condition,
         currentValue,
         logic.value,
+        fieldCategory,
       );
       if (matches) {
         appliedLogicId = logic.id ?? null;
@@ -209,13 +443,11 @@ type FieldAnswerState = {
   numberValue?: number | null;
   selectedValue?: string | null;
   multiValues?: string[];
-  checkboxValue?: boolean;
   ratingValue?: number;
   scaleValue?: number | null;
   dateValue?: Dayjs | null;
   timeValue?: Dayjs | null;
   dateTimeValue?: Dayjs | null;
-  fileName?: string | null;
 };
 
 export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
@@ -239,13 +471,11 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
   const [numberValue, setNumberValue] = useState<number | null>(null);
   const [selectedValue, setSelectedValue] = useState<string | null>(null);
   const [multiValues, setMultiValues] = useState<string[]>([]);
-  const [checkboxValue, setCheckboxValue] = useState(false);
   const [ratingValue, setRatingValue] = useState<number>(0);
   const [scaleValue, setScaleValue] = useState<number | null>(null);
   const [dateValue, setDateValue] = useState<Dayjs | null>(null);
   const [timeValue, setTimeValue] = useState<Dayjs | null>(null);
   const [dateTimeValue, setDateTimeValue] = useState<Dayjs | null>(null);
-  const [fileName, setFileName] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
   const answerStoreRef = useRef<Record<string, FieldAnswerState>>({});
@@ -308,10 +538,6 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
   const scaleMin = parseNumber(currentField?.properties?.min) ?? 1;
   const scaleMax = parseNumber(currentField?.properties?.max) ?? 10;
   const scaleStep = parseNumber(currentField?.properties?.step) ?? 1;
-  const checkboxLabel =
-    typeof currentField?.properties?.label === "string"
-      ? currentField.properties.label
-      : "I agree with the terms";
 
   // Extract design properties
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -351,9 +577,10 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
     normalizedType,
   );
   const totalSteps = orderedFields.length;
-  const stepIndex = isView
-    ? Math.max(1, currentIndex + 1)
-    : Math.min(history.length + 1, totalSteps || 1);
+  const stepIndex =
+    currentIndex >= 0
+      ? currentIndex + 1
+      : Math.min(history.length + 1, totalSteps || 1);
   const progressPercent = totalSteps
     ? Math.min(100, Math.max(6, (stepIndex / totalSteps) * 100))
     : 0;
@@ -429,25 +656,21 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
       setNumberValue(stored.numberValue ?? null);
       setSelectedValue(stored.selectedValue ?? null);
       setMultiValues(stored.multiValues ?? []);
-      setCheckboxValue(stored.checkboxValue ?? false);
       setRatingValue(stored.ratingValue ?? 0);
       setScaleValue(stored.scaleValue ?? null);
       setDateValue(stored.dateValue ?? null);
       setTimeValue(stored.timeValue ?? null);
       setDateTimeValue(stored.dateTimeValue ?? null);
-      setFileName(stored.fileName ?? null);
     } else {
       setValue("");
       setNumberValue(null);
       setSelectedValue(null);
       setMultiValues([]);
-      setCheckboxValue(false);
       setRatingValue(0);
       setScaleValue(null);
       setDateValue(null);
       setTimeValue(null);
       setDateTimeValue(null);
-      setFileName(null);
     }
   }, [activeFieldId]);
 
@@ -492,7 +715,33 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
         setIsNavigating(false);
       }
     } else {
-      const next = getNextFieldId(currentField, orderedFields, value);
+      const fieldCategory = getLogicFieldCategory(currentField.type);
+      const logicValue =
+        normalizedType === "number"
+          ? numberValue ?? value
+          : normalizedType === "rating"
+            ? ratingValue ?? value
+            : normalizedType === "scale"
+              ? scaleValue ?? value
+              : normalizedType === "date"
+                ? dateValue ?? value
+                : normalizedType === "time"
+                  ? timeValue ?? value
+                  : normalizedType === "datetime"
+                    ? dateTimeValue ?? value
+                    : normalizedType === "multiselect"
+                      ? multiValues
+                      : normalizedType === "select" ||
+                          normalizedType === "radio" ||
+                          normalizedType === "yesno"
+                        ? selectedValue ?? value
+                        : value;
+      const next = getNextFieldId(
+        currentField,
+        orderedFields,
+        logicValue,
+        fieldCategory,
+      );
       nextFieldId = next.nextFieldId;
     }
 
@@ -579,18 +828,6 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
     });
   };
 
-  const handleCheckboxToggle = (checked: boolean) => {
-    if (isInputLocked) return;
-    if (isEndOfForm) {
-      setIsEndOfForm(false);
-    }
-    setCheckboxValue(checked);
-    setValue(checked ? "true" : "false");
-    persistAnswerState({
-      checkboxValue: checked,
-      value: checked ? "true" : "false",
-    });
-  };
 
   const handleYesNo = (nextValue: "Yes" | "No") => {
     if (isInputLocked) return;
@@ -679,16 +916,6 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
     });
   };
 
-  const handleFileChange = (file?: File) => {
-    if (isInputLocked) return;
-    if (isEndOfForm) {
-      setIsEndOfForm(false);
-    }
-    const name = file?.name ?? "";
-    setFileName(name || null);
-    setValue(name);
-    persistAnswerState({ fileName: name || null, value: name });
-  };
 
   const optionSurface = isDarkMode
     ? "border-slate-700 bg-slate-900/40"
@@ -843,14 +1070,6 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
           value: optionValue,
           fieldOptionId: getOptionId(optionValue),
         }));
-      case "checkbox":
-        return [
-          {
-            fieldId,
-            value: checkboxValue,
-            fieldOptionId: null,
-          },
-        ];
       case "yesno":
         return selectedValue
           ? [
@@ -882,14 +1101,6 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
           {
             fieldId,
             value: scaleValue ?? value,
-            fieldOptionId: null,
-          },
-        ];
-      case "file":
-        return [
-          {
-            fieldId,
-            value: fileName ?? "",
             fieldOptionId: null,
           },
         ];
@@ -1045,21 +1256,6 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
         return renderOptionList({ mode: "multiselect" });
       case "radio":
         return renderOptionList({ mode: "radio" });
-      case "checkbox":
-        return (
-          <div className="pt-4">
-            <label
-              className={`flex items-center gap-3 text-sm ${optionTextColor}`}
-            >
-              <Checkbox
-                checked={checkboxValue}
-                disabled={isInputLocked}
-                onChange={(event) => handleCheckboxToggle(event.target.checked)}
-              />
-              <span>{checkboxLabel}</span>
-            </label>
-          </div>
-        );
       case "yesno":
         return (
           <div className="flex gap-3 pt-4">
@@ -1110,32 +1306,6 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
               <span>{scaleMin}</span>
               <span>{scaleMax}</span>
             </div>
-          </div>
-        );
-      case "file":
-        return (
-          <div className="pt-4">
-            <Upload
-              beforeUpload={() => false}
-              showUploadList={false}
-              onChange={(info) =>
-                handleFileChange(info.file?.originFileObj as File | undefined)
-              }
-              disabled={isInputLocked}
-            >
-              <Button
-                icon={<UploadOutlined />}
-                className={`rounded-xl ${optionSurface} ${optionTextColor}`}
-                disabled={isInputLocked}
-              >
-                Upload file
-              </Button>
-            </Upload>
-            {fileName && (
-              <div className={`mt-2 text-xs ${optionMutedText}`}>
-                {fileName}
-              </div>
-            )}
           </div>
         );
       case "text":

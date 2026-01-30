@@ -48,11 +48,25 @@ function extractUserFromIdToken(idt: string): BasicUser | null {
   const jwtDecode = decodeJwt<any>(idt);
   if (!jwtDecode) return null;
 
-  const name =
-    (jwtDecode.name ??
-      [jwtDecode.given_name, jwtDecode.family_name].filter(Boolean).join(" ").trim() ??
-      jwtDecode.preferred_username ??
-      "") || "";
+  const rawName = (jwtDecode.name ?? "") as string;
+  const fallbackName = [jwtDecode.given_name, jwtDecode.family_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  const preferredName = (jwtDecode.preferred_username ?? "") as string;
+
+  const looksBroken = (value?: string) =>
+    !value || /�|\?/.test(value) || /[ÃÂÄÆÐØÞ]/.test(value);
+
+  let nameCandidate = rawName || fallbackName || preferredName || "";
+
+  if (looksBroken(nameCandidate) && fallbackName && !looksBroken(fallbackName)) {
+    nameCandidate = fallbackName;
+  } else if (looksBroken(nameCandidate) && preferredName && !looksBroken(preferredName)) {
+    nameCandidate = preferredName;
+  }
+
+  const name = nameCandidate || "";
 
   const email = jwtDecode.email ?? "";
 

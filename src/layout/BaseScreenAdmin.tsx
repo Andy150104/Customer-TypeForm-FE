@@ -87,7 +87,9 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
                     ? "border-white/50 bg-transparent text-white hover:bg-white/10"
                     : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
                 }`}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                aria-label={
+                  collapsed ? "Mở thanh bên" : "Thu gọn thanh bên"
+                }
               >
                 {collapsed ? (
                   <MenuUnfoldOutlined
@@ -107,7 +109,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
                     isDarkMode ? "text-gray-100" : "text-gray-900"
                   }`}
                 >
-                  My workspace
+                  Không gian làm việc
                 </h3>
               ) : (
                 <Breadcrumb

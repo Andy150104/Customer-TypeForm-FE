@@ -27,9 +27,7 @@ import {
   FileTextOutlined,
   FormOutlined,
   AppstoreOutlined,
-  CheckSquareOutlined,
   CheckCircleOutlined,
-  PaperClipOutlined,
   StarOutlined,
   SlidersOutlined,
 } from "@ant-design/icons";
@@ -73,8 +71,6 @@ const getFieldIcon = (type?: string | null) => {
   if (normalized.includes("number")) return <NumberOutlined />;
   if (normalized.includes("rating")) return <StarOutlined />;
   if (normalized.includes("scale")) return <SlidersOutlined />;
-  if (normalized.includes("file")) return <PaperClipOutlined />;
-  if (normalized.includes("checkbox")) return <CheckSquareOutlined />;
   if (normalized.includes("radio") || normalized.includes("yesno")) {
     return <CheckCircleOutlined />;
   }
@@ -94,10 +90,8 @@ const getFieldTypeLabel = (type?: string | null) => {
   if (normalized.includes("number")) return "Number";
   if (normalized.includes("rating")) return "Rating";
   if (normalized.includes("scale")) return "Scale";
-  if (normalized.includes("file")) return "File Upload";
-  if (normalized.includes("checkbox")) return "Checkbox";
   if (normalized.includes("yesno")) return "Yes/No";
-  if (normalized.includes("radio")) return "Multiple Choice";
+  if (normalized.includes("radio")) return "Radio";
   if (normalized.includes("multiselect")) return "Multi Select";
   if (normalized.includes("select")) return "Dropdown";
   if (normalized.includes("textarea")) return "Long Text";
@@ -108,7 +102,6 @@ const needsOptions = (type?: string | null) => {
   const normalized = type?.toLowerCase() ?? "";
   return (
     normalized.includes("select") ||
-    normalized.includes("checkbox") ||
     normalized.includes("radio") ||
     normalized.includes("yesno")
   );

@@ -47,23 +47,10 @@ const getItem = (
 
 // Menu items cho form management
 const navItems: NavMenuItem[] = [
-  getItem("My Forms", "forms", <FileTextOutlined />, undefined, "/form"),
-  getItem(
-    "Templates",
-    "templates",
-    <FolderOutlined />,
-    undefined,
-    "/templates",
-  ),
-  getItem(
-    "Notifications",
-    "notifications",
-    <BellOutlined />,
-    undefined,
-    "/notification",
-  ),
-
-  getItem("Logout", "logout", <LogoutOutlined />),
+  getItem("Biểu mẫu của tôi", "forms", <FileTextOutlined />, undefined, "/form"),
+  getItem("Mẫu", "templates", <FolderOutlined />, undefined, "/templates"),
+  getItem("Thông báo", "notifications", <BellOutlined />, undefined, "/notification"),
+  getItem("Đăng xuất", "logout", <LogoutOutlined />),
 ];
 
 /* ---------- HELPERS ---------- */
@@ -283,7 +270,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 isDarkMode ? "text-slate-400" : "text-slate-500"
               }`}
             >
-              Workspace
+              Không gian làm việc
             </p>
           </div>
           {isMobile && (
@@ -297,7 +284,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   ? "border-white/20 text-gray-200 hover:bg-white/10"
                   : "border-gray-200 text-gray-700 hover:bg-gray-50"
               }`}
-              aria-label="Close sidebar"
+              aria-label="Đóng thanh bên"
             />
           )}
         </div>
@@ -310,7 +297,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           className="!h-11 !rounded-xl !bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600 !font-semibold !shadow-md !shadow-amber-500/20 mb-4"
           onClick={() => setIsModalOpen(true)}
         >
-          Create a new form
+          Tạo biểu mẫu mới
         </Button>
 
         <Divider className="my-4" />

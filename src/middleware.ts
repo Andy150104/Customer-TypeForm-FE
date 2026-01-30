@@ -81,6 +81,19 @@ export async function middleware(req: NextRequest) {
   const sid = getSidFromReq(req);
   console.log("sid" , sid)
 
+  // Normalize common casing issues and make "/" always resolve
+  if (pathname !== "/Login" && pathname.toLowerCase() === "/login") {
+    const url = req.nextUrl.clone();
+    url.pathname = sid ? "/form" : "/Login";
+    return NextResponse.redirect(url);
+  }
+
+  if (pathname === "/") {
+    const url = req.nextUrl.clone();
+    url.pathname = sid ? "/form" : "/Login";
+    return NextResponse.redirect(url);
+  }
+
   // Nếu đã login rồi mà truy cập /login → redirect về /Admin
   if (isPublicPath(pathname)) {
     if (sid && (pathname.toLowerCase() === "/login" || pathname === "/")) {

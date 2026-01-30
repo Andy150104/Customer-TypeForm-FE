@@ -20,9 +20,7 @@ import {
   PhoneOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
-  CheckSquareOutlined,
   CheckCircleOutlined,
-  PaperClipOutlined,
   StarOutlined,
   SlidersOutlined,
   NumberOutlined,
@@ -64,6 +62,12 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const tabs = ["Content", "Workflow", "Share", "Results"];
+const tabLabels: Record<string, string> = {
+  Content: "Nội dung",
+  Workflow: "Luồng",
+  Share: "Chia sẻ",
+  Results: "Kết quả",
+};
 
 const getFieldTone = (type?: string | null) => {
   const normalized = type?.toLowerCase() ?? "";
@@ -82,8 +86,6 @@ const getFieldIcon = (type?: string | null) => {
   if (normalized.includes("number")) return <NumberOutlined />;
   if (normalized.includes("rating")) return <StarOutlined />;
   if (normalized.includes("scale")) return <SlidersOutlined />;
-  if (normalized.includes("file")) return <PaperClipOutlined />;
-  if (normalized.includes("checkbox")) return <CheckSquareOutlined />;
   if (normalized.includes("radio") || normalized.includes("yesno")) {
     return <CheckCircleOutlined />;
   }
@@ -140,7 +142,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
       : isDarkMode
         ? "bg-amber-500/20 text-amber-200"
         : "bg-amber-100 text-amber-700";
-  const label = field.title?.trim() || `Question ${index + 1}`;
+  const label = field.title?.trim() || `Câu hỏi ${index + 1}`;
   const order = field.order ?? index + 1;
 
   return (
@@ -193,7 +195,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
       {/* Actions */}
       {field.id && (
         <div className="flex items-center gap-1">
-          <Tooltip title="Edit field">
+          <Tooltip title="Chỉnh sửa câu hỏi">
             <button
               type="button"
               className={`flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100 ${
@@ -210,17 +212,17 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
             </button>
           </Tooltip>
           <Popconfirm
-            title="Delete this field?"
-            description="This action cannot be undone."
+            title="Xóa câu hỏi này?"
+            description="Thao tác này không thể hoàn tác."
             onConfirm={() => onDelete(field.id!)}
-            okText="Delete"
-            cancelText="Cancel"
+            okText="Xóa"
+            cancelText="Hủy"
             okButtonProps={{
               danger: true,
               loading: isDeletingField,
             }}
           >
-            <Tooltip title="Delete field">
+            <Tooltip title="Xóa câu hỏi">
               <button
                 type="button"
                 className={`flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100 ${
@@ -363,7 +365,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
       try {
         const success = await deleteField(fieldId);
         if (success) {
-          messageApi.success("Field deleted successfully");
+          messageApi.success("Đã xóa câu hỏi thành công");
           // Refresh fields list
           const result = await getFormWithFieldsAndLogic(formId);
           const orderedFields = result?.fields ?? [];
@@ -373,11 +375,11 @@ export default function FormEditorPage({ params }: EditorPageProps) {
             setActiveFieldId(orderedFields[0]?.id ?? null);
           }
         } else {
-          messageApi.error("Failed to delete field");
+          messageApi.error("Xóa câu hỏi thất bại");
         }
       } catch (error) {
         console.error("Delete field error:", error);
-        messageApi.error("Failed to delete field");
+        messageApi.error("Xóa câu hỏi thất bại");
       } finally {
         setIsDeletingField(false);
       }
@@ -431,14 +433,14 @@ export default function FormEditorPage({ params }: EditorPageProps) {
         isPublished: true,
       });
       if (success) {
-        messageApi.success("Đã publish form thành công!");
+        messageApi.success("Đã xuất bản form thành công!");
         setIsPublishModalOpen(false);
       } else {
-        messageApi.error("Không thể publish form");
+        messageApi.error("Không thể xuất bản form");
       }
     } catch (error) {
       console.error("Publish form error:", error);
-      messageApi.error("Có lỗi xảy ra khi publish form");
+      messageApi.error("Có lỗi xảy ra khi xuất bản form");
     } finally {
       setIsPublishing(false);
     }
@@ -606,12 +608,12 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                       isActive ? "text-white" : tabInactiveClass
                     }`}
                   >
-                    {tab}
+                    {tabLabels[tab] ?? tab}
                   </button>
                 );
               })}
             </div>
-            <Tooltip title="Publish edits">
+            <Tooltip title="Xuất bản chỉnh sửa">
               <Button
                 type="default"
                 icon={<UploadOutlined />}
@@ -622,7 +624,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                     : "border-amber-300 text-amber-700 hover:border-amber-400 hover:text-amber-800"
                 }`}
               >
-                Publish edits
+                Xuất bản chỉnh sửa
               </Button>
             </Tooltip>
           </div>
@@ -635,17 +637,17 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                   : "border-amber-200 bg-amber-50/80"
               }`}
             >
-              <Tooltip title="Add content">
+              <Tooltip title="Thêm nội dung">
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
                   className="rounded-full !bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600 px-4"
                   onClick={handleAddContent}
                 >
-                  Add content
+                  Thêm nội dung
                 </Button>
               </Tooltip>
-              <Tooltip title="Design">
+              <Tooltip title="Thiết kế">
                 <Button
                   type="default"
                   icon={<BgColorsOutlined />}
@@ -665,12 +667,12 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                       setEditingField(formFields[0]);
                       setIsDesignModalOpen(true);
                     } else {
-                      messageApi.info("Please add a question first");
+                      messageApi.info("Vui lòng thêm câu hỏi trước");
                     }
                   }}
                   disabled={formFields.length === 0}
                 >
-                  Design
+                  Thiết kế
                 </Button>
               </Tooltip>
               <div
@@ -688,12 +690,12 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                     backgroundColor: brandColor,
                   }}
                 />
-                <Tooltip title="Desktop view">
+                <Tooltip title="Xem trên máy tính">
                   <button
                     type="button"
                     onClick={() => setPreviewMode("desktop")}
                     aria-pressed={previewMode === "desktop"}
-                    aria-label="Desktop preview"
+                    aria-label="Xem trên máy tính"
                     style={
                       previewMode === "desktop"
                         ? { color: "#ffffff" }
@@ -708,12 +710,12 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                     <LaptopOutlined />
                   </button>
                 </Tooltip>
-                <Tooltip title="Mobile view">
+                <Tooltip title="Xem trên điện thoại">
                   <button
                     type="button"
                     onClick={() => setPreviewMode("mobile")}
                     aria-pressed={previewMode === "mobile"}
-                    aria-label="Mobile preview"
+                    aria-label="Xem trên điện thoại"
                     style={
                       previewMode === "mobile"
                         ? { color: "#ffffff" }
@@ -732,25 +734,25 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                   isDarkMode ? "border-amber-800/30" : "border-amber-200"
                 }`}
               >
-                <Tooltip title="Preview">
+                <Tooltip title="Xem trước">
                   <Button
                     type="text"
                     icon={<PlayCircleOutlined />}
                     onClick={openPlayPreview}
                   />
                 </Tooltip>
-                <Tooltip title="Undo">
+                <Tooltip title="Hoàn tác">
                   <Button type="text" icon={<UndoOutlined />} />
                 </Tooltip>
-                <Tooltip title="Redo">
+                <Tooltip title="Làm lại">
                   <Button type="text" icon={<RedoOutlined />} />
                 </Tooltip>
-                <Tooltip title="Settings">
+                <Tooltip title="Cài đặt">
                   <Button type="text" icon={<SettingOutlined />} />
                 </Tooltip>
               </div>
               <span className={`ml-auto text-xs ${mutedText}`}>
-                Form ID: {formId ?? "-"}
+                Mã form: {formId ?? "-"}
               </span>
             </div>
           )}
@@ -764,14 +766,14 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                   <div
                     className={`rounded-2xl border px-3 py-2 text-sm ${panelSurface}`}
                   >
-                    Loading questions...
+                    Đang tải câu hỏi...
                   </div>
                 )}
                 {!isFormLoading && !formFields.length && (
                   <div
                     className={`rounded-2xl border px-3 py-2 text-sm ${panelSurface}`}
                   >
-                    No questions yet.
+                    Chưa có câu hỏi nào.
                   </div>
                 )}
                 {formFields.length > 0 && (
@@ -824,7 +826,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                       <BulbOutlined />
                     </div>
                     <span className="text-sm font-semibold">
-                      Add a Welcome Screen
+                      Thêm màn hình chào
                     </span>
                   </div>
                   <DownOutlined className={mutedText} />
@@ -867,14 +869,14 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                       : "border-amber-200 bg-white/90 text-amber-700"
                   }`}
                 >
-                  <Tooltip title="Close preview">
+                  <Tooltip title="Đóng xem trước">
                     <button
                       type="button"
                       onClick={closePlayPreview}
                       className={`flex h-9 w-9 items-center justify-center rounded-full ${
                         isDarkMode ? "hover:bg-amber-900" : "hover:bg-amber-100"
                       }`}
-                      aria-label="Close preview"
+                      aria-label="Đóng xem trước"
                     >
                       <CloseOutlined />
                     </button>
@@ -897,12 +899,12 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                         backgroundColor: brandColor,
                       }}
                     />
-                    <Tooltip title="Desktop view">
+                    <Tooltip title="Xem trên máy tính">
                       <button
                         type="button"
                         onClick={() => setPreviewMode("desktop")}
                         aria-pressed={previewMode === "desktop"}
-                        aria-label="Desktop preview"
+                        aria-label="Xem trên máy tính"
                         style={
                           previewMode === "desktop"
                             ? { color: "#ffffff" }
@@ -917,12 +919,12 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                         <LaptopOutlined />
                       </button>
                     </Tooltip>
-                    <Tooltip title="Mobile view">
+                    <Tooltip title="Xem trên điện thoại">
                       <button
                         type="button"
                         onClick={() => setPreviewMode("mobile")}
                         aria-pressed={previewMode === "mobile"}
-                        aria-label="Mobile preview"
+                        aria-label="Xem trên điện thoại"
                         style={
                           previewMode === "mobile"
                             ? { color: "#ffffff" }
@@ -983,7 +985,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
 
       <Modal
         open={isPublishModalOpen}
-        title="Xác nhận Publish Form"
+        title="Xác nhận xuất bản form"
         onCancel={handleClosePublishModal}
         footer={[
           <Button key="cancel" onClick={handleClosePublishModal}>
@@ -996,17 +998,17 @@ export default function FormEditorPage({ params }: EditorPageProps) {
             onClick={handleConfirmPublish}
             className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
           >
-            Publish
+            Xuất bản
           </Button>,
         ]}
         centered
       >
         <div className="py-4">
           <p className="text-base">
-            Bạn có chắc chắn muốn publish form này không?
+            Bạn có chắc chắn muốn xuất bản form này không?
           </p>
           <p className="mt-2 text-sm text-gray-500">
-            Sau khi publish, form sẽ được công khai và người dùng có thể truy
+            Sau khi xuất bản, form sẽ được công khai và người dùng có thể truy
             cập.
           </p>
         </div>

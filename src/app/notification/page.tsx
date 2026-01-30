@@ -101,7 +101,7 @@ export default function NotificationPage() {
                     isDarkMode ? "text-gray-100" : "text-gray-900"
                   }`}
                 >
-                  Notifications
+                  Thông báo
                 </Title>
                 <Text
                   className={`block text-sm leading-snug ${
