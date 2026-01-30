@@ -19,6 +19,40 @@ const initialsFrom = (name: string) =>
     .join("")
     .toUpperCase();
 
+const hasBrokenChars = (value: string) =>
+  /�|\?/.test(value) || /[ÃÂÄÆÐØÞ]/.test(value);
+
+const normalizeDisplayName = (name?: string, email?: string) => {
+  if (!name && !email) return "Người dùng";
+  let next = (name ?? "").trim();
+
+  // Try to fix common mojibake (latin1 -> utf8) cases.
+  if (/[ÃÂÄÆÐØÞ]/.test(next)) {
+    try {
+      next = decodeURIComponent(escape(next));
+    } catch {
+      // ignore decode errors, fallback below
+    }
+  }
+
+  const cleaned = next.replace(/\?/g, "").replace(/\s+/g, " ").trim();
+  if (cleaned && cleaned !== next) {
+    next = cleaned;
+  }
+
+  // If still contains replacement chars, fallback to email local-part.
+  if (!next || hasBrokenChars(next)) {
+    const local = (email ?? "").split("@")[0] ?? "";
+    if (local) {
+      next = local
+        .replace(/[._-]+/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+  }
+
+  return next || "Người dùng";
+};
+
 export const UserTitle: React.FC<UserTitleProps> = ({ collapsed }) => {
   const router = useRouter();
   const { isDarkMode } = useTheme();
@@ -28,17 +62,23 @@ export const UserTitle: React.FC<UserTitleProps> = ({ collapsed }) => {
 
   const user = useAuthStore((state) => state.user);
 
-  const displayName = "Maria Kelly";
-  const email = "MariaKlly@email.com";
-  const avatarUrl = null;
+  const displayName = normalizeDisplayName(user?.name, user?.email);
+  const email = user?.email?.trim() || "user@example.com";
+  const avatarUrl =
+    user?.avatarUrl?.trim() ||
+    (user as { avatar?: string })?.avatar?.trim() ||
+    (user as { picture?: string })?.picture?.trim() ||
+    (user as { photoURL?: string })?.photoURL?.trim() ||
+    (user as { photoUrl?: string })?.photoUrl?.trim() ||
+    undefined;
 
   return (
     <Tooltip
       title={
         collapsed ? (
           <div>
-            <div className="font-semibold">{user ? `${user.name}` : displayName}</div>
-            <div className="opacity-80">{user ? `${user.email}` : email}</div>
+            <div className="font-semibold">{displayName}</div>
+            <div className="opacity-80">{email}</div>
           </div>
         ) : null
       }
@@ -60,13 +100,15 @@ export const UserTitle: React.FC<UserTitleProps> = ({ collapsed }) => {
         }}
       >
         <Avatar size={44} src={avatarUrl} className="shrink-0">
-          {initialsFrom(user ? `${user.name}` : displayName)}
+          {initialsFrom(displayName)}
         </Avatar>
 
         {!collapsed && (
           <div className="min-w-0">
-            <div className="font-bold leading-tight truncate">{user ? `${user.name}` : displayName}</div>
-            <div className="text-[13px] opacity-75 truncate">{user ? `${user.email}` : email}</div>
+            <div className="font-bold leading-tight truncate">
+              {displayName}
+            </div>
+            <div className="text-[13px] opacity-75 truncate">{email}</div>
           </div>
         )}
       </div>

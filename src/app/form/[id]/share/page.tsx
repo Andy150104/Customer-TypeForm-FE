@@ -13,6 +13,12 @@ type SharePageProps = {
 };
 
 const tabs = ["Content", "Workflow", "Share", "Results"];
+const tabLabels: Record<string, string> = {
+  Content: "Nội dung",
+  Workflow: "Luồng",
+  Share: "Chia sẻ",
+  Results: "Kết quả",
+};
 
 export default function FormSharePage({ params }: SharePageProps) {
   const { isDarkMode } = useTheme();
@@ -143,7 +149,7 @@ export default function FormSharePage({ params }: SharePageProps) {
                   isActive ? "text-white" : tabInactiveClass
                 }`}
               >
-                {tab}
+                {tabLabels[tab] ?? tab}
               </button>
             );
           })}

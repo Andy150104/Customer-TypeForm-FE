@@ -18,7 +18,7 @@ const formatDateTime = (value?: string | null) => {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString("en-GB", {
+  return date.toLocaleString("vi-VN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -86,7 +86,7 @@ export const NotificationBell: React.FC = () => {
               isDarkMode ? "border-slate-800" : "border-slate-200"
             }`}
           >
-            <span className={`font-semibold ${titleText}`}>Notifications</span>
+            <span className={`font-semibold ${titleText}`}>Thông báo</span>
             <Button
               type="text"
               size="small"
@@ -109,7 +109,7 @@ export const NotificationBell: React.FC = () => {
                 <Empty
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   description={
-                    <span className={mutedText}>No notifications yet</span>
+                    <span className={mutedText}>Chưa có thông báo nào</span>
                   }
                 />
               </div>
@@ -119,10 +119,8 @@ export const NotificationBell: React.FC = () => {
                 const message =
                   item.message ??
                   (typeof item.count === "number"
-                    ? `${item.count} new submission${
-                        item.count === 1 ? "" : "s"
-                      }`
-                    : "New activity");
+                    ? `${item.count} phản hồi mới`
+                    : "Hoạt động mới");
                 const showCount = typeof item.count === "number" && item.count > 1;
                 return (
                   <button
@@ -169,7 +167,7 @@ export const NotificationBell: React.FC = () => {
     >
       <button
         type="button"
-        aria-label="Open notifications"
+        aria-label="Mở thông báo"
         className={`relative flex items-center justify-center w-9 h-9 rounded-md border transition-colors ${
           isDarkMode
             ? "border-white/50 bg-transparent text-white hover:bg-white/10"

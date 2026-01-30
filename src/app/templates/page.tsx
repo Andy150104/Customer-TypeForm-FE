@@ -34,12 +34,10 @@ import {
   PhoneOutlined,
   CalendarOutlined,
   ClockCircleOutlined,
-  CheckSquareOutlined,
   CheckCircleOutlined,
   StarOutlined,
   SlidersOutlined,
   FormOutlined,
-  PaperClipOutlined,
 } from "@ant-design/icons";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useTemplatesStore } from "EduSmart/stores/Templates/TemplatesStore";
@@ -59,96 +57,83 @@ type ViewMode = "list" | "grid";
 const FIELD_TYPES = [
   {
     value: FieldType.Value0,
-    label: "Short Text",
+    label: "Văn bản ngắn",
     icon: <BarsOutlined />,
-    description: "Single line text input",
+    description: "Nhập một dòng",
   },
   {
     value: FieldType.Value1,
-    label: "Long Text",
+    label: "Văn bản dài",
     icon: <FormOutlined />,
-    description: "Multi-line text area",
+    description: "Nhập nhiều dòng",
   },
   {
     value: FieldType.Value2,
-    label: "Number",
+    label: "Số",
     icon: <NumberOutlined />,
-    description: "Numeric input",
+    description: "Nhập số",
   },
   {
     value: FieldType.Value3,
     label: "Email",
     icon: <MailOutlined />,
-    description: "Email address",
+    description: "Địa chỉ email",
   },
   {
     value: FieldType.Value4,
-    label: "Phone",
+    label: "Điện thoại",
     icon: <PhoneOutlined />,
-    description: "Phone number",
+    description: "Số điện thoại",
   },
   {
     value: FieldType.Value5,
-    label: "Date",
+    label: "Ngày",
     icon: <CalendarOutlined />,
-    description: "Date picker",
+    description: "Chọn ngày",
   },
   {
     value: FieldType.Value6,
-    label: "Time",
+    label: "Giờ",
     icon: <ClockCircleOutlined />,
-    description: "Time picker",
+    description: "Chọn giờ",
   },
   {
     value: FieldType.Value7,
-    label: "DateTime",
+    label: "Ngày & giờ",
     icon: <CalendarOutlined />,
-    description: "Date and time",
+    description: "Chọn ngày và giờ",
   },
   {
     value: FieldType.Value8,
-    label: "Multiple Choice",
+    label: "Radio",
     icon: <CheckCircleOutlined />,
-    description: "Select one option",
-    hasOptions: true,
-  },
-  {
-    value: FieldType.Value9,
-    label: "Checkbox",
-    icon: <CheckSquareOutlined />,
-    description: "Select multiple options",
+    description: "Chọn một lựa chọn",
     hasOptions: true,
   },
   {
     value: FieldType.Value10,
-    label: "Dropdown",
+    label: "Danh sách thả xuống",
     icon: <FormOutlined />,
-    description: "Dropdown select",
+    description: "Chọn từ danh sách",
     hasOptions: true,
   },
   {
     value: FieldType.Value11,
-    label: "Rating",
+    label: "Đánh giá",
     icon: <StarOutlined />,
-    description: "Star rating",
+    description: "Đánh giá sao",
   },
   {
     value: FieldType.Value12,
-    label: "Scale",
+    label: "Thang điểm",
     icon: <SlidersOutlined />,
-    description: "Linear scale",
+    description: "Thang điểm tuyến tính",
   },
   {
     value: FieldType.Value13,
-    label: "Yes/No",
+    label: "Có/Không",
     icon: <CheckCircleOutlined />,
-    description: "Yes or No choice",
-  },
-  {
-    value: FieldType.Value14,
-    label: "File Upload",
-    icon: <PaperClipOutlined />,
-    description: "Upload files",
+    description: "Chọn Có hoặc Không",
   },
 ];
 
@@ -196,7 +181,7 @@ export default function TemplatePage() {
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return "-";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", {
+    return date.toLocaleDateString("vi-VN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -302,7 +287,7 @@ export default function TemplatePage() {
 
   const handleCreateTemplate = async () => {
     if (!templateTitle.trim()) {
-      messageApi.error("Vui lòng nhập tên template");
+      messageApi.error("Vui lòng nhập tên mẫu");
       return;
     }
 
@@ -326,10 +311,10 @@ export default function TemplatePage() {
       });
 
       if (result) {
-        messageApi.success("Tạo template thành công!");
+        messageApi.success("Tạo mẫu thành công!");
         handleCloseCreateModal();
       } else {
-        messageApi.error("Tạo template thất bại");
+        messageApi.error("Tạo mẫu thất bại");
       }
     } catch (error) {
       console.error("Create template error:", error);
@@ -344,9 +329,9 @@ export default function TemplatePage() {
     try {
       const success = await deleteTemplate(templateId);
       if (success) {
-        messageApi.success("Đã xóa template");
+        messageApi.success("Đã xóa mẫu");
       } else {
-        messageApi.error("Xóa template thất bại");
+        messageApi.error("Xóa mẫu thất bại");
       }
     } catch (error) {
       console.error("Delete template error:", error);
@@ -363,10 +348,10 @@ export default function TemplatePage() {
       });
 
       if (result?.formId) {
-        messageApi.success("Đã tạo form từ template!");
+        messageApi.success("Đã tạo biểu mẫu từ mẫu!");
         router.push(`/form/${result.formId}/edit`);
       } else {
-        messageApi.error("Tạo form thất bại");
+        messageApi.error("Tạo biểu mẫu thất bại");
       }
     } catch (error) {
       console.error("Use template error:", error);
@@ -381,7 +366,7 @@ export default function TemplatePage() {
 
   const getFieldTypeLabel = (type?: FieldType) => {
     const fieldMeta = FIELD_TYPES.find((f) => f.value === type);
-    return fieldMeta?.label || "Unknown";
+    return fieldMeta?.label || "Không xác định";
   };
 
   const selectedFieldType = Form.useWatch("type", fieldForm);
@@ -399,14 +384,14 @@ export default function TemplatePage() {
               level={2}
               className={`m-0 ${isDarkMode ? "text-amber-50" : "text-amber-900"}`}
             >
-              Form Templates
+              Mẫu biểu mẫu
             </Title>
             <Text
               className={`block text-sm leading-snug ${
                 isDarkMode ? "text-amber-200/60" : "text-amber-700/70"
               }`}
             >
-              Tạo và quản lý các template có sẵn để tái sử dụng cho các form
+              Tạo và quản lý các mẫu có sẵn để tái sử dụng cho các biểu mẫu
               mới.
             </Text>
           </div>
@@ -417,7 +402,7 @@ export default function TemplatePage() {
             onClick={handleOpenCreateModal}
             className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600 !text-white !font-semibold !shadow-lg !shadow-amber-500/25"
           >
-            Tạo Template
+            Tạo mẫu
           </Button>
         </div>
 
@@ -429,7 +414,7 @@ export default function TemplatePage() {
                 isDarkMode ? "text-amber-100" : "text-amber-800"
               }`}
             >
-              Danh sách Templates
+              Danh sách mẫu
             </Text>
             <span
               className={isDarkMode ? "text-amber-500/50" : "text-amber-400"}
@@ -441,7 +426,7 @@ export default function TemplatePage() {
                 isDarkMode ? "text-amber-200/60" : "text-amber-600"
               }`}
             >
-              {templates.length} templates
+              {templates.length} mẫu
             </Text>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -492,7 +477,7 @@ export default function TemplatePage() {
                       isDarkMode ? "text-amber-200/60" : "text-amber-600"
                     }
                   >
-                    Chưa có template nào
+                    Chưa có mẫu nào
                   </Text>
                   <div>
                     <Button
@@ -501,7 +486,7 @@ export default function TemplatePage() {
                       onClick={handleOpenCreateModal}
                       className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
                     >
-                      Tạo template đầu tiên
+                      Tạo mẫu đầu tiên
                     </Button>
                   </div>
                 </div>
@@ -536,7 +521,7 @@ export default function TemplatePage() {
                     </div>
                     <div className="flex gap-1">
                       <Popconfirm
-                        title="Xóa template này?"
+                        title="Xóa mẫu này?"
                         description="Hành động này không thể hoàn tác."
                         onConfirm={() => handleDeleteTemplate(template.id!)}
                         okText="Xóa"
@@ -569,7 +554,7 @@ export default function TemplatePage() {
                         isDarkMode ? "text-amber-50" : "text-amber-900"
                       }`}
                     >
-                      {template.title || "Untitled Template"}
+                      {template.title || "Mẫu chưa đặt tên"}
                     </Text>
                     {template.description && (
                       <Paragraph
@@ -609,7 +594,7 @@ export default function TemplatePage() {
                     onClick={() => handleUseTemplate(template)}
                     className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
                   >
-                    Sử dụng template
+                    Sử dụng mẫu
                   </Button>
                 </Card>
               </Col>
@@ -636,7 +621,7 @@ export default function TemplatePage() {
                     <th
                       className={`text-left p-3 font-medium ${isDarkMode ? "text-amber-200" : "text-amber-800"}`}
                     >
-                      Template
+                      Mẫu
                     </th>
                     <th
                       className={`text-left p-3 font-medium ${isDarkMode ? "text-amber-200" : "text-amber-800"}`}
@@ -685,7 +670,7 @@ export default function TemplatePage() {
                                 isDarkMode ? "text-amber-50" : "text-amber-900"
                               }
                             >
-                              {template.title || "Untitled"}
+                              {template.title || "Chưa đặt tên"}
                             </Text>
                             {template.description && (
                               <Text
@@ -729,7 +714,7 @@ export default function TemplatePage() {
                             Sử dụng
                           </Button>
                           <Popconfirm
-                            title="Xóa template này?"
+                            title="Xóa mẫu này?"
                             onConfirm={() => handleDeleteTemplate(template.id!)}
                             okText="Xóa"
                             cancelText="Hủy"
@@ -758,7 +743,7 @@ export default function TemplatePage() {
         title={
           <div className="flex items-center gap-2">
             <FileTextOutlined className="text-amber-500" />
-            <span>Tạo Template Mới</span>
+            <span>Tạo mẫu mới</span>
           </div>
         }
         open={isCreateModalOpen}
@@ -775,7 +760,7 @@ export default function TemplatePage() {
             onClick={handleCreateTemplate}
             className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
           >
-            Tạo Template
+            Tạo mẫu
           </Button>,
         ]}
       >
@@ -784,10 +769,10 @@ export default function TemplatePage() {
           <div className="space-y-4">
             <div>
               <Text strong className="block mb-2">
-                Tên Template <span className="text-red-500">*</span>
+                Tên mẫu <span className="text-red-500">*</span>
               </Text>
               <Input
-                placeholder="Nhập tên template..."
+                placeholder="Nhập tên mẫu..."
                 value={templateTitle}
                 onChange={(e) => setTemplateTitle(e.target.value)}
                 size="large"
@@ -798,7 +783,7 @@ export default function TemplatePage() {
                 Mô tả
               </Text>
               <TextArea
-                placeholder="Mô tả về template này..."
+                placeholder="Mô tả về mẫu này..."
                 value={templateDescription}
                 onChange={(e) => setTemplateDescription(e.target.value)}
                 rows={3}
@@ -816,7 +801,7 @@ export default function TemplatePage() {
                   Câu hỏi ({templateFields.length})
                 </Text>
                 <Text type="secondary" className="text-xs">
-                  Thêm các câu hỏi cho template
+                  Thêm các câu hỏi cho mẫu
                 </Text>
               </div>
               <Button

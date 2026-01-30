@@ -261,10 +261,6 @@ export default function LoginPage() {
               Bảo mật cao
             </span>
           </div>
-          {/* Subtitle */}
-          <p className="text-base text-slate-500 dark:text-slate-400 text-center leading-relaxed max-w-md mx-auto">
-            Tập trung vào trải nghiệm, phần kết nối cứ để chúng tôi xử lý.
-          </p>
         </div>
 
         {/* Google Login Button */}

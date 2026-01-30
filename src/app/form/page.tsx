@@ -405,7 +405,7 @@ export default function HomePage() {
                               : "bg-gray-100 text-gray-500 border border-gray-200"
                         }`}
                       >
-                        {form.isPublished ? "Published" : "Draft"}
+                        {form.isPublished ? "Xuất bản" : "Nháp"}
                       </span>
                       <Text
                         className={`text-xs ${
@@ -422,7 +422,7 @@ export default function HomePage() {
                         isDarkMode ? "text-white" : "text-gray-800"
                       }`}
                     >
-                      {form.title || "Untitled Form"}
+                      {form.title || "Biểu mẫu chưa đặt tên"}
                     </h3>
 
                     {/* Stats row */}

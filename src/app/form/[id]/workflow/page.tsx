@@ -85,9 +85,7 @@ type FieldCategory =
   | "textarea"
   | "select"
   | "multiselect"
-  | "checkbox"
   | "radio"
-  | "file"
   | "rating"
   | "scale"
   | "yesno";
@@ -104,9 +102,7 @@ const detectFieldCategory = (type?: string | null): FieldCategory => {
   if (normalized.includes("multiselect") || normalized.includes("multi_select"))
     return "multiselect";
   if (normalized.includes("select")) return "select";
-  if (normalized.includes("checkbox")) return "checkbox";
   if (normalized.includes("radio")) return "radio";
-  if (normalized.includes("file")) return "file";
   if (normalized.includes("rating")) return "rating";
   if (normalized.includes("scale")) return "scale";
   if (normalized.includes("yesno") || normalized.includes("yes_no"))
@@ -145,14 +141,11 @@ const getConditionsForCategory = (
     case "yesno":
       return [LogicCondition.Is, LogicCondition.IsNot, LogicCondition.Always];
     case "multiselect":
-    case "checkbox":
       return [
         LogicCondition.Contains,
         LogicCondition.DoesNotContain,
         LogicCondition.Always,
       ];
-    case "file":
-      return [LogicCondition.Is, LogicCondition.IsNot, LogicCondition.Always];
     case "text":
     case "email":
     case "phone":
@@ -171,33 +164,30 @@ const getConditionsForCategory = (
 const getValueLabel = (category: FieldCategory): string => {
   switch (category) {
     case "number":
-      return "Number value";
+      return "Giá trị số";
     case "rating":
-      return "Rating value";
+      return "Giá trị đánh giá";
     case "scale":
-      return "Scale value";
+      return "Giá trị thang điểm";
     case "date":
-      return "Date value";
+      return "Giá trị ngày";
     case "time":
-      return "Time value";
+      return "Giá trị giờ";
     case "datetime":
-      return "Date & Time value";
+      return "Giá trị ngày & giờ";
     case "select":
     case "radio":
-      return "Selected option";
+      return "Lựa chọn đã chọn";
     case "multiselect":
-    case "checkbox":
-      return "Selected options";
+      return "Các lựa chọn đã chọn";
     case "yesno":
-      return "Yes/No value";
-    case "file":
-      return "File status";
+      return "Giá trị Có/Không";
     case "email":
-      return "Email value";
+      return "Giá trị email";
     case "phone":
-      return "Phone value";
+      return "Giá trị số điện thoại";
     default:
-      return "Answer value";
+      return "Giá trị câu trả lời";
   }
 };
 
@@ -206,6 +196,12 @@ type WorkflowPageProps = {
 };
 
 const tabs = ["Content", "Workflow", "Share", "Results"];
+const tabLabels: Record<string, string> = {
+  Content: "Nội dung",
+  Workflow: "Luồng",
+  Share: "Chia sẻ",
+  Results: "Kết quả",
+};
 
 const FLOW_NODE_WIDTH = 210;
 const FLOW_NODE_HEIGHT = 132;
@@ -237,50 +233,50 @@ type FlowConnection = {
 };
 
 const logicConditionOptions = [
-  { value: LogicCondition.Is, label: "Is" },
-  { value: LogicCondition.IsNot, label: "Is not" },
-  { value: LogicCondition.Contains, label: "Contains" },
-  { value: LogicCondition.DoesNotContain, label: "Does not contain" },
-  { value: LogicCondition.GreaterThan, label: "Greater than" },
-  { value: LogicCondition.LessThan, label: "Less than" },
-  { value: LogicCondition.GreaterThanOrEqual, label: "Greater or equal" },
-  { value: LogicCondition.LessThanOrEqual, label: "Less or equal" },
-  { value: LogicCondition.Always, label: "Always" },
+  { value: LogicCondition.Is, label: "Bằng" },
+  { value: LogicCondition.IsNot, label: "Không bằng" },
+  { value: LogicCondition.Contains, label: "Chứa" },
+  { value: LogicCondition.DoesNotContain, label: "Không chứa" },
+  { value: LogicCondition.GreaterThan, label: "Lớn hơn" },
+  { value: LogicCondition.LessThan, label: "Nhỏ hơn" },
+  { value: LogicCondition.GreaterThanOrEqual, label: "Lớn hơn hoặc bằng" },
+  { value: LogicCondition.LessThanOrEqual, label: "Nhỏ hơn hoặc bằng" },
+  { value: LogicCondition.Always, label: "Luôn luôn" },
 ];
 
 const conditionCopy: Record<string, { title: string; helper: string }> = {
-  [LogicCondition.Is]: { title: "If answer is", helper: "Exact match" },
+  [LogicCondition.Is]: { title: "Nếu câu trả lời bằng", helper: "Khớp chính xác" },
   [LogicCondition.IsNot]: {
-    title: "If answer is not",
-    helper: "Exclude specific value",
+    title: "Nếu câu trả lời không bằng",
+    helper: "Loại trừ giá trị cụ thể",
   },
   [LogicCondition.Contains]: {
-    title: "If answer contains",
-    helper: "Partial match",
+    title: "Nếu câu trả lời chứa",
+    helper: "Khớp một phần",
   },
   [LogicCondition.DoesNotContain]: {
-    title: "If answer does not contain",
-    helper: "Text does not include",
+    title: "Nếu câu trả lời không chứa",
+    helper: "Không chứa nội dung",
   },
   [LogicCondition.GreaterThan]: {
-    title: "If answer is greater than",
-    helper: "Numeric comparison",
+    title: "Nếu câu trả lời lớn hơn",
+    helper: "So sánh số",
   },
   [LogicCondition.LessThan]: {
-    title: "If answer is less than",
-    helper: "Numeric comparison",
+    title: "Nếu câu trả lời nhỏ hơn",
+    helper: "So sánh số",
   },
   [LogicCondition.GreaterThanOrEqual]: {
-    title: "If answer is greater or equal",
-    helper: "Numeric comparison",
+    title: "Nếu câu trả lời lớn hơn hoặc bằng",
+    helper: "So sánh số",
   },
   [LogicCondition.LessThanOrEqual]: {
-    title: "If answer is less or equal",
-    helper: "Numeric comparison",
+    title: "Nếu câu trả lời nhỏ hơn hoặc bằng",
+    helper: "So sánh số",
   },
   [LogicCondition.Always]: {
-    title: "Always jump to",
-    helper: "No condition required",
+    title: "Luôn chuyển đến",
+    helper: "Không cần điều kiện",
   },
 };
 
@@ -372,7 +368,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
     [activeFieldCategory],
   );
 
-  // Build choice options for select/radio/checkbox/multiselect
+  // Build choice options for select/radio/multiselect
   const choiceOptions = useMemo(() => {
     if (!activeField?.options?.length) return [];
     return activeField.options
@@ -380,20 +376,16 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((opt) => ({
         value: opt.value ?? opt.label ?? "",
-        label: opt.label ?? opt.value ?? "Option",
+        label: opt.label ?? opt.value ?? "Lựa chọn",
       }))
       .filter((opt) => opt.value);
   }, [activeField?.options]);
 
   const yesNoOptions = [
-    { value: "yes", label: "Yes" },
-    { value: "no", label: "No" },
+    { value: "yes", label: "Có" },
+    { value: "no", label: "Không" },
   ];
 
-  const fileStatusOptions = [
-    { value: "uploaded", label: "File uploaded" },
-    { value: "not_uploaded", label: "No file" },
-  ];
 
   const flowNodes = useMemo<FlowNode[]>(() => {
     return orderedFields
@@ -409,7 +401,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
           getFieldTone(field.type) === "rose" ? "rose" : "violet";
         return {
           id: field.id,
-          title: field.title || `Question ${index + 1}`,
+          title: field.title || `Câu hỏi ${index + 1}`,
           type: field.type ?? undefined,
           orderIndex: index + 1,
           x,
@@ -435,7 +427,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
           label:
             rule.value ||
             conditionCopy[rule.condition ?? ""]?.title ||
-            "Condition",
+            "Điều kiện",
           value: rule.value ?? undefined,
           condition: (rule.condition as LogicCondition) ?? undefined,
           ruleId: rule.id ?? undefined,
@@ -447,7 +439,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
           id: `${field.id}-default`,
           sourceId: field.id,
           targetId: field.defaultNextFieldId,
-          label: "Default",
+          label: "Mặc định",
           isDefault: true,
         });
       }
@@ -544,11 +536,11 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
     destinationFieldId?: string;
   }) => {
     if (!formId || !activeFieldId) {
-      messageApi.warning("Form data is not ready yet.");
+      messageApi.warning("Dữ liệu form chưa sẵn sàng.");
       return;
     }
     if (!values.destinationFieldId) {
-      messageApi.warning("Please select a destination question.");
+      messageApi.warning("Vui lòng chọn câu hỏi đích.");
       return;
     }
     setIsSavingLogic(true);
@@ -561,15 +553,15 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
       };
       const result = await createOrUpdateLogic(payload);
       if (!result) {
-        messageApi.error("Failed to save logic. Please try again.");
+        messageApi.error("Không thể lưu logic. Vui lòng thử lại.");
         return;
       }
-      messageApi.success("Logic rule saved.");
+      messageApi.success("Đã lưu luật logic.");
       logicForm.setFieldsValue({ value: "" });
       await loadFormFields();
     } catch (error) {
       console.error("create logic error", error);
-      messageApi.error("Failed to save logic. Please try again.");
+      messageApi.error("Không thể lưu logic. Vui lòng thử lại.");
     } finally {
       setIsSavingLogic(false);
     }
@@ -594,12 +586,12 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
         };
         const result = await createOrUpdateLogic(payload);
         if (result) {
-          messageApi.success("Quick connection created (Always jump)");
+          messageApi.success("Đã tạo kết nối nhanh (Luôn chuyển)");
           await loadFormFields();
         }
       } catch (error) {
         console.error("Quick connect error:", error);
-        messageApi.error("Failed to create connection");
+        messageApi.error("Không thể tạo kết nối");
       } finally {
         setIsSavingLogic(false);
       }
@@ -611,27 +603,27 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
   const handleDeleteConnection = useCallback(
     async (connectionId: string, ruleId?: string) => {
       if (!ruleId) {
-        messageApi.warning("Cannot delete default connections");
+        messageApi.warning("Không thể xóa kết nối mặc định");
         return;
       }
       // Find the source field ID from connectionId (format: fieldId-rule-ruleId)
       const sourceFieldId = connectionId.split("-rule-")[0];
       if (!sourceFieldId) {
-        messageApi.error("Invalid connection");
+        messageApi.error("Kết nối không hợp lệ");
         return;
       }
       setIsSavingLogic(true);
       try {
         const success = await deleteLogic(sourceFieldId, ruleId);
         if (success) {
-          messageApi.success("Logic rule deleted successfully");
+          messageApi.success("Đã xóa luật logic");
           await loadFormFields();
         } else {
-          messageApi.error("Failed to delete logic rule");
+          messageApi.error("Không thể xóa luật logic");
         }
       } catch (error) {
         console.error("Delete logic error:", error);
-        messageApi.error("Failed to delete logic rule");
+        messageApi.error("Không thể xóa luật logic");
       } finally {
         setIsSavingLogic(false);
       }
@@ -690,7 +682,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
       .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
       .map((opt) => ({
         value: opt.value ?? opt.label ?? "",
-        label: opt.label ?? opt.value ?? "Option",
+        label: opt.label ?? opt.value ?? "Lựa chọn",
       }))
       .filter((opt) => opt.value);
   }, [editingConnection, orderedFields]);
@@ -710,11 +702,11 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
     destinationFieldId?: string;
   }) => {
     if (!formId || !editingConnection) {
-      messageApi.warning("Form data is not ready yet.");
+      messageApi.warning("Dữ liệu form chưa sẵn sàng.");
       return;
     }
     if (!values.destinationFieldId) {
-      messageApi.warning("Please select a destination question.");
+      messageApi.warning("Vui lòng chọn câu hỏi đích.");
       return;
     }
     setIsSavingLogic(true);
@@ -736,7 +728,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
           );
           if (!deleted) {
             messageApi.error(
-              "Failed to update rule. Could not remove old rule.",
+              "Không thể cập nhật luật. Không xóa được luật cũ.",
             );
             return;
           }
@@ -752,17 +744,17 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
       };
       const result = await createOrUpdateLogic(payload);
       if (!result) {
-        messageApi.error("Failed to update rule. Please try again.");
+        messageApi.error("Không thể cập nhật luật. Vui lòng thử lại.");
         return;
       }
-      messageApi.success("Rule updated successfully.");
+      messageApi.success("Đã cập nhật luật.");
       setIsEditRuleModalOpen(false);
       setEditingConnection(null);
       editRuleForm.resetFields();
       await loadFormFields();
     } catch (error) {
       console.error("Update rule error:", error);
-      messageApi.error("Failed to update rule. Please try again.");
+      messageApi.error("Không thể cập nhật luật. Vui lòng thử lại.");
     } finally {
       setIsSavingLogic(false);
     }
@@ -814,7 +806,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                   isActive ? "text-white" : tabInactiveClass
                 }`}
               >
-                {tab}
+                {tabLabels[tab] ?? tab}
               </button>
             );
           })}
@@ -825,12 +817,12 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
           title={
             <div className="flex items-center gap-2">
               <NodeExpandOutlined />
-              <span>Flow builder</span>
+              <span>Sơ đồ luồng</span>
               <Tag
                 className="!bg-amber-500/20 !text-amber-300 !border-amber-500/30"
                 icon={<BranchesOutlined />}
               >
-                Logic + Map
+                Luật + Sơ đồ
               </Tag>
             </div>
           }
@@ -841,7 +833,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
               type="primary"
               className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
             >
-              Questions & Logic ({formFields.length})
+              Câu hỏi & Luật ({formFields.length})
             </Button>
           }
           className={`rounded-3xl border ${
@@ -850,7 +842,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
         >
           {!flowNodes.length ? (
             <Empty
-              description="No questions to visualize"
+              description="Chưa có câu hỏi để hiển thị"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           ) : (
@@ -877,8 +869,8 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
         title={
           <div className="flex items-center gap-2">
             <ApartmentOutlined />
-            <span>Questions & Logic</span>
-            <Tag>{formFields.length} steps</Tag>
+            <span>Câu hỏi & Luật</span>
+            <Tag>{formFields.length} bước</Tag>
           </div>
         }
         placement="right"
@@ -890,17 +882,17 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
           {/* Questions List */}
           <div>
             <p className="m-0 mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Select a question
+              Chọn một câu hỏi
             </p>
             <div className="max-h-[280px] space-y-2 overflow-y-auto pr-1">
               {isFormLoading && (
                 <div className="rounded-2xl border border-dashed px-3 py-2 text-sm text-center">
-                  Loading questions...
+                  Đang tải câu hỏi...
                 </div>
               )}
               {!isFormLoading && !formFields.length && (
                 <div className="rounded-2xl border border-dashed px-3 py-2 text-sm text-center">
-                  No questions yet.
+                  Chưa có câu hỏi nào.
                 </div>
               )}
               {formFields.map((field, index) => {
@@ -934,17 +926,17 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                       <p
                         className={`m-0 text-sm font-medium truncate ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
                       >
-                        {field.title || `Question ${index + 1}`}
+                        {field.title || `Câu hỏi ${index + 1}`}
                       </p>
                       <p
                         className={`m-0 text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
                       >
-                        {field.type ?? "unknown"}
+                        {field.type ?? "không rõ"}
                       </p>
                     </div>
                     {isActive && (
                       <Tag className="ml-auto !bg-amber-500 !text-white !border-none">
-                        Active
+                        Đang chọn
                       </Tag>
                     )}
                   </button>
@@ -959,34 +951,34 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
           {/* Logic Rules Section */}
           {!activeField ? (
             <div className="rounded-2xl border border-dashed px-3 py-6 text-center text-sm text-slate-500">
-              Select a question above to configure logic rules.
+              Chọn câu hỏi phía trên để cấu hình luật logic.
             </div>
           ) : (
             <div className="flex flex-col gap-4">
               <div className="rounded-2xl bg-amber-50 p-3 border border-amber-200">
                 <p className="m-0 text-xs uppercase tracking-wide text-amber-600">
-                  Logic for
+                  Luật cho
                 </p>
                 <p className="m-0 text-base font-semibold text-amber-900">
-                  {activeField?.title ?? "Select from map"}
+                  {activeField?.title ?? "Chọn từ sơ đồ"}
                 </p>
                 <p className="m-0 text-xs text-amber-600 mt-1">
-                  Default → {defaultNextField?.title ?? "End of form"}
+                  Mặc định → {defaultNextField?.title ?? "Kết thúc biểu mẫu"}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Existing rules ({activeLogicRules.length})
+                  Các luật hiện có ({activeLogicRules.length})
                 </p>
                 {activeLogicRules.length === 0 && (
                   <div className="rounded-2xl border border-dashed px-3 py-2 text-xs text-slate-500">
-                    No custom rules yet.
+                    Chưa có luật tùy chỉnh.
                   </div>
                 )}
                 {activeLogicRules.map((rule) => {
                   const copy = conditionCopy[rule.condition ?? ""] ?? {
-                    title: rule.condition ?? "Condition",
+                    title: rule.condition ?? "Điều kiện",
                     helper: "",
                   };
                   const destination = rule.destinationFieldId
@@ -1009,7 +1001,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                         {rule.value ? `: "${rule.value}"` : ""}
                       </p>
                       <span className="text-[11px] font-semibold text-amber-600">
-                        Go to {destination?.title ?? "End of form"}
+                        Chuyển đến {destination?.title ?? "Kết thúc biểu mẫu"}
                       </span>
                     </div>
                   );
@@ -1024,18 +1016,18 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
               >
                 <div className="flex items-center justify-between">
                   <p className="m-0 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    Add new rule
+                    Thêm luật mới
                   </p>
                   {!canCreateLogic && (
                     <Tag color="orange" icon={<InfoCircleOutlined />}>
-                      Need 2+ questions
+                      Cần ít nhất 2 câu hỏi
                     </Tag>
                   )}
                 </div>
                 <Form.Item
                   className="mb-2"
                   name="condition"
-                  rules={[{ required: true, message: "Pick condition" }]}
+                  rules={[{ required: true, message: "Chọn điều kiện" }]}
                 >
                   <Select
                     size="small"
@@ -1059,10 +1051,10 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                           value === null ||
                           value === ""
                         )
-                          return Promise.reject(new Error("Provide a value"));
+                          return Promise.reject(new Error("Vui lòng nhập giá trị"));
                         if (Array.isArray(value) && value.length === 0)
                           return Promise.reject(
-                            new Error("Select at least one option"),
+                            new Error("Chọn ít nhất một lựa chọn"),
                           );
                         return Promise.resolve();
                       },
@@ -1080,7 +1072,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                           ? "example@mail.com"
                           : activeFieldCategory === "phone"
                             ? "+84..."
-                            : "Enter text..."
+                            : "Nhập nội dung..."
                       }
                       disabled={!canCreateLogic}
                     />
@@ -1090,7 +1082,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                     <InputNumber
                       size="small"
                       className="w-full"
-                      placeholder="Enter number"
+                      placeholder="Nhập số"
                       disabled={!canCreateLogic}
                     />
                   )}
@@ -1139,40 +1131,29 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                   {["select", "radio"].includes(activeFieldCategory) && (
                     <Select
                       size="small"
-                      placeholder="Pick an option"
+                      placeholder="Chọn một lựa chọn"
                       options={choiceOptions}
                       disabled={!canCreateLogic || choiceOptions.length === 0}
-                      notFoundContent="No options configured"
+                      notFoundContent="Chưa cấu hình lựa chọn"
                     />
                   )}
-                  {/* MultiSelect, Checkbox */}
-                  {["multiselect", "checkbox"].includes(
-                    activeFieldCategory,
-                  ) && (
+                  {/* MultiSelect */}
+                  {["multiselect"].includes(activeFieldCategory) && (
                     <Select
                       size="small"
                       mode="multiple"
-                      placeholder="Pick options"
+                      placeholder="Chọn các lựa chọn"
                       options={choiceOptions}
                       disabled={!canCreateLogic || choiceOptions.length === 0}
-                      notFoundContent="No options configured"
+                      notFoundContent="Chưa cấu hình lựa chọn"
                     />
                   )}
                   {/* YesNo */}
                   {activeFieldCategory === "yesno" && (
                     <Select
                       size="small"
-                      placeholder="Yes or No"
+                      placeholder="Có / Không"
                       options={yesNoOptions}
-                      disabled={!canCreateLogic}
-                    />
-                  )}
-                  {/* File */}
-                  {activeFieldCategory === "file" && (
-                    <Select
-                      size="small"
-                      placeholder="File status"
-                      options={fileStatusOptions}
                       disabled={!canCreateLogic}
                     />
                   )}
@@ -1180,15 +1161,15 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                 <Form.Item
                   className="mb-3"
                   name="destinationFieldId"
-                  rules={[{ required: true, message: "Destination" }]}
+                  rules={[{ required: true, message: "Điểm đến" }]}
                 >
                   <Select
                     size="small"
-                    placeholder="Jump to question"
+                    placeholder="Chuyển đến câu hỏi"
                     disabled={!canCreateLogic}
                     options={destinationOptions.map((field) => ({
                       value: field.id!,
-                      label: field.title || "Untitled",
+                      label: field.title || "Chưa đặt tên",
                     }))}
                   />
                 </Form.Item>
@@ -1201,7 +1182,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                   disabled={!canCreateLogic}
                   className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
                 >
-                  Add rule
+                  Thêm luật
                 </Button>
               </Form>
             </div>
@@ -1214,7 +1195,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
         title={
           <div className="flex items-center gap-2">
             <EditOutlined className="text-amber-500" />
-            <span>Chỉnh sửa Logic Rule</span>
+            <span>Chỉnh sửa luật logic</span>
           </div>
         }
         open={isEditRuleModalOpen}
@@ -1268,7 +1249,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                         return Promise.reject(new Error("Nhập giá trị"));
                       if (Array.isArray(value) && value.length === 0)
                         return Promise.reject(
-                          new Error("Chọn ít nhất một option"),
+                          new Error("Chọn ít nhất một lựa chọn"),
                         );
                       return Promise.resolve();
                     },
@@ -1312,37 +1293,27 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                 {/* Select, Radio */}
                 {["select", "radio"].includes(editingFieldCategory) && (
                   <Select
-                    placeholder="Chọn option"
+                    placeholder="Chọn lựa chọn"
                     options={editingChoiceOptions}
-                    notFoundContent="Chưa có options"
+                    notFoundContent="Chưa có lựa chọn"
                   />
                 )}
-                {/* MultiSelect, Checkbox */}
-                {["multiselect", "checkbox"].includes(editingFieldCategory) && (
+                {/* MultiSelect */}
+                {["multiselect"].includes(editingFieldCategory) && (
                   <Select
                     mode="multiple"
-                    placeholder="Chọn options"
+                    placeholder="Chọn các lựa chọn"
                     options={editingChoiceOptions}
-                    notFoundContent="Chưa có options"
+                    notFoundContent="Chưa có lựa chọn"
                   />
                 )}
                 {/* YesNo */}
                 {editingFieldCategory === "yesno" && (
                   <Select
-                    placeholder="Yes or No"
+                    placeholder="Có / Không"
                     options={[
-                      { value: "yes", label: "Yes" },
-                      { value: "no", label: "No" },
-                    ]}
-                  />
-                )}
-                {/* File */}
-                {editingFieldCategory === "file" && (
-                  <Select
-                    placeholder="File status"
-                    options={[
-                      { value: "uploaded", label: "Has uploaded" },
-                      { value: "not_uploaded", label: "Not uploaded" },
+                      { value: "yes", label: "Có" },
+                      { value: "no", label: "Không" },
                     ]}
                   />
                 )}
@@ -1357,7 +1328,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                   placeholder="Chọn câu hỏi đích"
                   options={editingDestinationOptions.map((field) => ({
                     value: field.id!,
-                    label: field.title || "Untitled",
+                    label: field.title || "Chưa đặt tên",
                   }))}
                 />
               </Form.Item>
@@ -1708,10 +1679,10 @@ function FlowVisualizer({
           onClick={focusActiveNode}
           disabled={!activeNodeId}
         >
-          Focus
+          Tập trung
         </Button>
         <Button icon={<ReloadOutlined />} size="small" onClick={resetView}>
-          Fit
+          Vừa khung
         </Button>
       </div>
       <ReactFlow
@@ -1770,7 +1741,7 @@ function FlowVisualizer({
         }`}
       >
         <strong>Tương tác:</strong> Kéo thả node • Kéo đầu dây để đổi kết nối •
-        Double-click để chỉnh sửa • Scroll để zoom
+        Nhấp đúp để chỉnh sửa • Cuộn để zoom
       </div>
 
       {/* Connection confirmation modal */}
@@ -1784,7 +1755,7 @@ function FlowVisualizer({
         open={connectModalOpen}
         onOk={confirmConnection}
         onCancel={cancelConnection}
-        okText="Tạo kết nối (Always jump)"
+        okText="Tạo kết nối (Luôn chuyển)"
         cancelText="Hủy"
         okButtonProps={{
           className:
@@ -1812,8 +1783,8 @@ function FlowVisualizer({
             </div>
           </div>
           <p className="mt-4 text-xs text-slate-500">
-            Kết nối sẽ được tạo với điều kiện &quot;Always jump&quot;. Bạn có
-            thể chỉnh sửa điều kiện chi tiết hơn trong panel bên phải.
+            Kết nối sẽ được tạo với điều kiện &quot;Luôn chuyển&quot;. Bạn có thể
+            chỉnh sửa điều kiện chi tiết hơn trong panel bên phải.
           </p>
         </div>
       </Modal>
@@ -1883,14 +1854,16 @@ function CustomEdge({
               <div>
                 <p className="m-0 font-semibold">{conditionLabel}</p>
                 {data?.value && (
-                  <p className="m-0 text-xs opacity-80">Value: {data.value}</p>
+                  <p className="m-0 text-xs opacity-80">
+                    Giá trị: {data.value}
+                  </p>
                 )}
                 {data?.isDefault && (
-                  <p className="m-0 text-xs opacity-80">Default connection</p>
+                  <p className="m-0 text-xs opacity-80">Kết nối mặc định</p>
                 )}
                 {!data?.isDefault && (
                   <p className="m-0 text-xs opacity-80 mt-1">
-                    Click ✏️ để sửa • Click ✕ để xóa
+                    Nhấp ✏️ để sửa • Nhấp ✕ để xóa
                   </p>
                 )}
               </div>
@@ -1918,7 +1891,7 @@ function CustomEdge({
                         e.stopPropagation();
                         data.onEdit?.();
                       }}
-                      title="Sửa rule"
+                      title="Sửa luật"
                     >
                       <EditOutlined style={{ fontSize: 10 }} />
                     </button>
@@ -1985,12 +1958,12 @@ function WorkflowNode({ data }: NodeProps<WorkflowNodeData>) {
       title={
         <div>
           <p className="m-0 font-semibold">{data.title}</p>
-          <p className="m-0 text-xs opacity-80">Type: {data.fieldType}</p>
+          <p className="m-0 text-xs opacity-80">Loại: {data.fieldType}</p>
           <p className="m-0 text-xs opacity-80">
-            Logic rules: {data.logicCount ?? 0}
+            Luật logic: {data.logicCount ?? 0}
           </p>
           <p className="m-0 text-xs mt-1 opacity-60">
-            Double-click để chỉnh sửa
+            Nhấp đúp để chỉnh sửa
           </p>
         </div>
       }
@@ -2013,11 +1986,11 @@ function WorkflowNode({ data }: NodeProps<WorkflowNodeData>) {
         />
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-medium text-slate-500">
-            Step {data.orderIndex}
+            Bước {data.orderIndex}
           </span>
           <div className="flex items-center gap-1">
             {(data.logicCount ?? 0) > 0 && (
-              <Tooltip title={`${data.logicCount} logic rules`}>
+              <Tooltip title={`${data.logicCount} luật logic`}>
                 <Tag
                   className="!m-0 !text-[10px] !px-1.5 !py-0 !bg-amber-500 !text-white !border-none"
                   icon={<BranchesOutlined />}
@@ -2029,7 +2002,7 @@ function WorkflowNode({ data }: NodeProps<WorkflowNodeData>) {
             <span
               className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeTone}`}
             >
-              {data.fieldType ?? "Field"}
+              {data.fieldType ?? "Trường"}
             </span>
           </div>
         </div>
