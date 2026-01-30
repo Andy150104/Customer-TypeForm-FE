@@ -32,7 +32,7 @@ export default function FormSharePage({ params }: SharePageProps) {
   const tabInactiveClass = isDarkMode
     ? "text-slate-300 hover:bg-slate-800/80"
     : "text-slate-600 hover:bg-slate-100";
-  const brandColor = "#6B46C1";
+  const brandColor = "#f59e0b";
   const tabGridTemplate: CSSProperties = {
     gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
   };
@@ -71,7 +71,10 @@ export default function FormSharePage({ params }: SharePageProps) {
 
   useEffect(() => {
     if (!formId) return;
-    const origin = typeof window !== "undefined" ? window.location.origin : "https://uniwrap.app";
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : "https://uniwrap.app";
     setShareUrl(`${origin}/client/form/${formId}`);
   }, [formId]);
 

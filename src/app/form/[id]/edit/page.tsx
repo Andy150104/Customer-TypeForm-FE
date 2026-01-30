@@ -44,6 +44,7 @@ import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
 import { useRouter } from "next/navigation";
 import { AddContentModal } from "EduSmart/components/Modal/AddContentModal";
 import { EditFieldModal } from "EduSmart/components/Modal/EditFieldModal";
+import { DesignFieldModal } from "EduSmart/components/Modal/DesignFieldModal";
 import {
   DndContext,
   closestCenter,
@@ -67,9 +68,9 @@ const tabs = ["Content", "Workflow", "Share", "Results"];
 const getFieldTone = (type?: string | null) => {
   const normalized = type?.toLowerCase() ?? "";
   if (normalized.includes("email") || normalized.includes("phone")) {
-    return "rose";
+    return "orange";
   }
-  return "violet";
+  return "amber";
 };
 
 const getFieldIcon = (type?: string | null) => {
@@ -132,13 +133,13 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
 
   const tone = getFieldTone(field.type);
   const badgeTone =
-    tone === "rose"
+    tone === "orange"
       ? isDarkMode
-        ? "bg-rose-500/20 text-rose-200"
-        : "bg-rose-100 text-rose-700"
+        ? "bg-orange-500/20 text-orange-200"
+        : "bg-orange-100 text-orange-700"
       : isDarkMode
-        ? "bg-indigo-500/20 text-indigo-200"
-        : "bg-indigo-100 text-indigo-700";
+        ? "bg-amber-500/20 text-amber-200"
+        : "bg-amber-100 text-amber-700";
   const label = field.title?.trim() || `Question ${index + 1}`;
   const order = field.order ?? index + 1;
 
@@ -149,18 +150,18 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
       className={`group flex w-full items-center gap-2 rounded-2xl px-3 py-2 transition-colors ${
         isActive
           ? isDarkMode
-            ? "bg-slate-800/70"
-            : "bg-slate-100"
-          : "bg-transparent hover:bg-slate-50"
-      } ${isDarkMode ? "hover:bg-slate-800/50" : ""} ${isDragging ? "shadow-lg" : ""}`}
+            ? "bg-amber-950/40 border border-amber-800/30"
+            : "bg-amber-50 border border-amber-200"
+          : "bg-transparent hover:bg-amber-50/50"
+      } ${isDarkMode ? "hover:bg-amber-950/30" : ""} ${isDragging ? "shadow-lg" : ""}`}
     >
       {/* Drag Handle */}
       <button
         type="button"
         className={`flex h-8 w-6 cursor-grab items-center justify-center rounded-lg transition-colors active:cursor-grabbing ${
           isDarkMode
-            ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700/50"
-            : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+            ? "text-amber-500/50 hover:text-amber-400 hover:bg-amber-950/50"
+            : "text-amber-400 hover:text-amber-600 hover:bg-amber-100"
         }`}
         {...attributes}
         {...listeners}
@@ -182,7 +183,7 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
           <span className="text-sm font-semibold">{order}</span>
         </div>
         <span
-          className={`flex-1 min-w-0 text-sm font-medium truncate ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+          className={`flex-1 min-w-0 text-sm font-medium truncate ${isDarkMode ? "text-amber-100" : "text-amber-900"}`}
         >
           {label}
           {field.isRequired && <span className="text-rose-500"> *</span>}
@@ -197,8 +198,8 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
               type="button"
               className={`flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100 ${
                 isDarkMode
-                  ? "text-slate-400 hover:bg-violet-500/20 hover:text-violet-400"
-                  : "text-slate-400 hover:bg-violet-50 hover:text-violet-500"
+                  ? "text-amber-400/60 hover:bg-amber-500/20 hover:text-amber-400"
+                  : "text-amber-500 hover:bg-amber-50 hover:text-amber-600"
               }`}
               onClick={(e) => {
                 e.stopPropagation();
@@ -224,8 +225,8 @@ const SortableFieldItem: React.FC<SortableFieldItemProps> = ({
                 type="button"
                 className={`flex h-8 w-8 items-center justify-center rounded-lg opacity-0 transition-all group-hover:opacity-100 ${
                   isDarkMode
-                    ? "text-slate-400 hover:bg-red-500/20 hover:text-red-400"
-                    : "text-slate-400 hover:bg-red-50 hover:text-red-500"
+                    ? "text-amber-400/60 hover:bg-red-500/20 hover:text-red-400"
+                    : "text-amber-500 hover:bg-red-50 hover:text-red-500"
                 }`}
                 onClick={(e) => e.stopPropagation()}
               >
@@ -271,6 +272,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
   } = useFormsStore();
   const [isAddContentModalOpen, setIsAddContentModalOpen] = useState(false);
   const [isEditFieldModalOpen, setIsEditFieldModalOpen] = useState(false);
+  const [isDesignModalOpen, setIsDesignModalOpen] = useState(false);
   const [editingField, setEditingField] =
     useState<FieldWithLogicResponseEntity | null>(null);
 
@@ -296,8 +298,13 @@ export default function FormEditorPage({ params }: EditorPageProps) {
 
       if (oldIndex === -1 || newIndex === -1) return;
 
-      // Optimistic update
-      const newFields = arrayMove(formFields, oldIndex, newIndex);
+      // Optimistic update - cập nhật UI ngay với order mới
+      const newFields = arrayMove(formFields, oldIndex, newIndex).map(
+        (field, index) => ({
+          ...field,
+          order: index + 1,
+        }),
+      );
       setFormFields(newFields);
 
       // Call API to persist the new order
@@ -437,17 +444,17 @@ export default function FormEditorPage({ params }: EditorPageProps) {
     }
   }, [formId, updateFormPublishedStatus, messageApi]);
 
-  const mutedText = isDarkMode ? "text-slate-400" : "text-slate-500";
+  const mutedText = isDarkMode ? "text-amber-400/60" : "text-amber-600/60";
   const panelSurface = isDarkMode
-    ? "bg-slate-900/60 border-slate-800"
-    : "bg-white/70 border-slate-200";
+    ? "bg-amber-950/30 border-amber-800/30"
+    : "bg-amber-50/70 border-amber-200";
   const tabSurface = isDarkMode
-    ? "border-slate-800 bg-slate-900/70"
-    : "border-slate-200 bg-white/90 shadow-sm";
+    ? "border-amber-800/30 bg-amber-950/40"
+    : "border-amber-200 bg-amber-50/90 shadow-sm";
   const tabInactiveClass = isDarkMode
-    ? "text-slate-300 hover:bg-slate-800/80"
-    : "text-slate-600 hover:bg-slate-100";
-  const brandColor = "#6B46C1";
+    ? "text-amber-200 hover:bg-amber-900/60"
+    : "text-amber-700 hover:bg-amber-100";
+  const brandColor = "#f59e0b";
   const previewWidth = isMobilePreview ? "max-w-[420px]" : "max-w-[720px]";
   const previewFramePadding = isMobilePreview ? "px-8" : "px-12";
   const previewContentWidth = isMobilePreview
@@ -455,8 +462,8 @@ export default function FormEditorPage({ params }: EditorPageProps) {
     : "max-w-[520px]";
   const previewFrameHeight = isMobilePreview ? "h-[720px]" : "h-[520px]";
   const previewFrameSurface = isDarkMode
-    ? "border-slate-800 bg-slate-950/40"
-    : "border-slate-200 bg-white";
+    ? "border-amber-800/30 bg-amber-950/20"
+    : "border-amber-200 bg-white";
   const activeTabIndex = Math.max(0, tabs.indexOf(activeTab));
   const previewIndex = previewMode === "desktop" ? 0 : 1;
   const tabGridTemplate: CSSProperties = {
@@ -611,8 +618,8 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                 onClick={handleOpenPublishModal}
                 className={`rounded-full px-4 font-medium ${
                   isDarkMode
-                    ? "border-slate-700 text-slate-100"
-                    : "border-slate-300 text-slate-700"
+                    ? "border-amber-700 text-amber-100 hover:border-amber-500 hover:text-amber-300"
+                    : "border-amber-300 text-amber-700 hover:border-amber-400 hover:text-amber-800"
                 }`}
               >
                 Publish edits
@@ -624,15 +631,15 @@ export default function FormEditorPage({ params }: EditorPageProps) {
             <div
               className={`flex flex-wrap items-center gap-2 rounded-2xl border p-3 shadow-sm ${
                 isDarkMode
-                  ? "border-slate-800 bg-slate-900/60"
-                  : "border-slate-200 bg-white/80"
+                  ? "border-amber-800/30 bg-amber-950/30"
+                  : "border-amber-200 bg-amber-50/80"
               }`}
             >
               <Tooltip title="Add content">
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
-                  className="rounded-full bg-slate-900 px-4 hover:bg-slate-800"
+                  className="rounded-full !bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600 px-4"
                   onClick={handleAddContent}
                 >
                   Add content
@@ -644,9 +651,24 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                   icon={<BgColorsOutlined />}
                   className={`rounded-full ${
                     isDarkMode
-                      ? "border-slate-700 text-slate-100"
-                      : "border-slate-200 text-slate-700"
+                      ? "border-amber-700 text-amber-100 hover:border-amber-500"
+                      : "border-amber-200 text-amber-700 hover:border-amber-400"
                   }`}
+                  onClick={() => {
+                    const currentField = formFields.find(
+                      (f) => f.id === activeFieldId,
+                    );
+                    if (currentField) {
+                      setEditingField(currentField);
+                      setIsDesignModalOpen(true);
+                    } else if (formFields.length > 0) {
+                      setEditingField(formFields[0]);
+                      setIsDesignModalOpen(true);
+                    } else {
+                      messageApi.info("Please add a question first");
+                    }
+                  }}
+                  disabled={formFields.length === 0}
                 >
                   Design
                 </Button>
@@ -654,8 +676,8 @@ export default function FormEditorPage({ params }: EditorPageProps) {
               <div
                 className={`relative inline-grid grid-cols-2 items-center rounded-full border p-1 ${
                   isDarkMode
-                    ? "border-slate-800 bg-slate-900/60"
-                    : "border-slate-200 bg-white"
+                    ? "border-amber-800/30 bg-amber-950/40"
+                    : "border-amber-200 bg-white"
                 }`}
               >
                 <span
@@ -707,7 +729,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
               </div>
               <div
                 className={`flex items-center gap-1 rounded-full border px-2 py-1 ${
-                  isDarkMode ? "border-slate-800" : "border-slate-200"
+                  isDarkMode ? "border-amber-800/30" : "border-amber-200"
                 }`}
               >
                 <Tooltip title="Preview">
@@ -787,16 +809,16 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                   type="button"
                   className={`flex w-full items-center justify-between rounded-2xl border border-dashed px-4 py-4 text-left ${
                     isDarkMode
-                      ? "border-slate-700 text-slate-200"
-                      : "border-slate-200 text-slate-700"
+                      ? "border-amber-700/50 text-amber-200 hover:border-amber-600 hover:bg-amber-950/30"
+                      : "border-amber-300 text-amber-700 hover:border-amber-400 hover:bg-amber-50"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-xl ${
                         isDarkMode
-                          ? "bg-slate-800 text-amber-200"
-                          : "bg-amber-100 text-amber-700"
+                          ? "bg-amber-500/20 text-amber-300"
+                          : "bg-amber-100 text-amber-600"
                       }`}
                     >
                       <BulbOutlined />
@@ -826,7 +848,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
           {isPlayOpen && (
             <div
               className={`fixed inset-0 z-50 flex items-start justify-center overflow-auto transition-opacity duration-200 ${
-                isDarkMode ? "bg-slate-950/70" : "bg-slate-50/80"
+                isDarkMode ? "bg-amber-950/80" : "bg-amber-50/90"
               } ${isPlayVisible ? "opacity-100" : "opacity-0 pointer-events-none"}`}
               onClick={closePlayPreview}
             >
@@ -841,8 +863,8 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                 <div
                   className={`sticky top-6 z-10 flex items-center gap-2 rounded-full border px-3 py-2 shadow-sm ${
                     isDarkMode
-                      ? "border-slate-700 bg-slate-900/90 text-slate-100"
-                      : "border-slate-200 bg-white/90 text-slate-700"
+                      ? "border-amber-800/30 bg-amber-950/90 text-amber-100"
+                      : "border-amber-200 bg-white/90 text-amber-700"
                   }`}
                 >
                   <Tooltip title="Close preview">
@@ -850,7 +872,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                       type="button"
                       onClick={closePlayPreview}
                       className={`flex h-9 w-9 items-center justify-center rounded-full ${
-                        isDarkMode ? "hover:bg-slate-800" : "hover:bg-slate-100"
+                        isDarkMode ? "hover:bg-amber-900" : "hover:bg-amber-100"
                       }`}
                       aria-label="Close preview"
                     >
@@ -858,13 +880,13 @@ export default function FormEditorPage({ params }: EditorPageProps) {
                     </button>
                   </Tooltip>
                   <span
-                    className={`h-6 w-px ${isDarkMode ? "bg-slate-700" : "bg-slate-200"}`}
+                    className={`h-6 w-px ${isDarkMode ? "bg-amber-800" : "bg-amber-200"}`}
                   />
                   <div
                     className={`relative inline-grid grid-cols-2 items-center rounded-full border p-1 ${
                       isDarkMode
-                        ? "border-slate-700 bg-slate-900/80"
-                        : "border-slate-200 bg-white"
+                        ? "border-amber-800/50 bg-amber-950/80"
+                        : "border-amber-200 bg-white"
                     }`}
                   >
                     <span
@@ -949,6 +971,16 @@ export default function FormEditorPage({ params }: EditorPageProps) {
         onUpdated={handleFieldUpdated}
       />
 
+      <DesignFieldModal
+        open={isDesignModalOpen}
+        field={editingField}
+        onClose={() => {
+          setIsDesignModalOpen(false);
+          setEditingField(null);
+        }}
+        onUpdated={handleFieldUpdated}
+      />
+
       <Modal
         open={isPublishModalOpen}
         title="Xác nhận Publish Form"
@@ -962,7 +994,7 @@ export default function FormEditorPage({ params }: EditorPageProps) {
             type="primary"
             loading={isPublishing}
             onClick={handleConfirmPublish}
-            className="bg-violet-600 hover:bg-violet-700"
+            className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
           >
             Publish
           </Button>,

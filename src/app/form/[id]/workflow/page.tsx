@@ -330,7 +330,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
   const tabInactiveClass = isDarkMode
     ? "text-slate-300 hover:bg-slate-800/80"
     : "text-slate-600 hover:bg-slate-100";
-  const brandColor = "#6B46C1";
+  const brandColor = "#f59e0b";
 
   const orderedFields = useMemo(() => {
     return [...formFields].sort((a, b) => {
@@ -826,7 +826,10 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
             <div className="flex items-center gap-2">
               <NodeExpandOutlined />
               <span>Flow builder</span>
-              <Tag color="purple" icon={<BranchesOutlined />}>
+              <Tag
+                className="!bg-amber-500/20 !text-amber-300 !border-amber-500/30"
+                icon={<BranchesOutlined />}
+              >
                 Logic + Map
               </Tag>
             </div>
@@ -836,7 +839,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
               icon={<ApartmentOutlined />}
               onClick={() => setIsWorkflowDrawerOpen(true)}
               type="primary"
-              style={{ backgroundColor: brandColor }}
+              className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
             >
               Questions & Logic ({formFields.length})
             </Button>
@@ -905,17 +908,17 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                 const badgeTone =
                   tone === "rose"
                     ? isDarkMode
-                      ? "bg-rose-500/20 text-rose-200"
-                      : "bg-rose-100 text-rose-700"
+                      ? "bg-orange-500/20 text-orange-200"
+                      : "bg-orange-100 text-orange-700"
                     : isDarkMode
-                      ? "bg-indigo-500/20 text-indigo-200"
-                      : "bg-indigo-100 text-indigo-700";
+                      ? "bg-amber-500/20 text-amber-200"
+                      : "bg-amber-100 text-amber-700";
                 const isActive = field.id === activeFieldId;
                 return (
                   <button
                     className={`flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors ${
                       isActive
-                        ? "bg-violet-100 border-2 border-violet-400"
+                        ? "bg-amber-100 border-2 border-amber-400"
                         : "bg-transparent hover:bg-slate-50 border-2 border-transparent"
                     }`}
                     type="button"
@@ -940,7 +943,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                       </p>
                     </div>
                     {isActive && (
-                      <Tag color="#6B46C1" className="ml-auto">
+                      <Tag className="ml-auto !bg-amber-500 !text-white !border-none">
                         Active
                       </Tag>
                     )}
@@ -960,14 +963,14 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              <div className="rounded-2xl bg-violet-50 p-3 border border-violet-200">
-                <p className="m-0 text-xs uppercase tracking-wide text-violet-600">
+              <div className="rounded-2xl bg-amber-50 p-3 border border-amber-200">
+                <p className="m-0 text-xs uppercase tracking-wide text-amber-600">
                   Logic for
                 </p>
-                <p className="m-0 text-base font-semibold text-violet-900">
+                <p className="m-0 text-base font-semibold text-amber-900">
                   {activeField?.title ?? "Select from map"}
                 </p>
-                <p className="m-0 text-xs text-violet-600 mt-1">
+                <p className="m-0 text-xs text-amber-600 mt-1">
                   Default → {defaultNextField?.title ?? "End of form"}
                 </p>
               </div>
@@ -1005,7 +1008,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                         {copy.helper}
                         {rule.value ? `: "${rule.value}"` : ""}
                       </p>
-                      <span className="text-[11px] font-semibold text-[#6B46C1]">
+                      <span className="text-[11px] font-semibold text-amber-600">
                         Go to {destination?.title ?? "End of form"}
                       </span>
                     </div>
@@ -1196,7 +1199,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                   size="middle"
                   loading={isSavingLogic}
                   disabled={!canCreateLogic}
-                  style={{ backgroundColor: brandColor }}
+                  className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
                 >
                   Add rule
                 </Button>
@@ -1210,7 +1213,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <EditOutlined className="text-blue-500" />
+            <EditOutlined className="text-amber-500" />
             <span>Chỉnh sửa Logic Rule</span>
           </div>
         }
@@ -1226,11 +1229,11 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
       >
         {editingConnection && (
           <div className="py-2">
-            <div className="mb-4 rounded-2xl bg-slate-100 p-3">
-              <p className="m-0 text-xs text-slate-500">
+            <div className="mb-4 rounded-2xl bg-amber-50 p-3">
+              <p className="m-0 text-xs text-amber-600">
                 Chỉnh sửa rule từ câu hỏi:
               </p>
-              <p className="m-0 font-semibold">
+              <p className="m-0 font-semibold text-amber-900">
                 {editingSourceNode?.title ?? editingConnection.sourceId}
               </p>
             </div>
@@ -1373,7 +1376,7 @@ export default function FormWorkflowPage({ params }: WorkflowPageProps) {
                   type="primary"
                   htmlType="submit"
                   loading={isSavingLogic}
-                  style={{ backgroundColor: "#6B46C1" }}
+                  className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
                 >
                   Lưu thay đổi
                 </Button>
@@ -1498,8 +1501,8 @@ function FlowVisualizer({
           ? "#475569"
           : "#CBD5F5"
         : isDarkMode
-          ? "#C084FC"
-          : "#7C3AED";
+          ? "#FBBF24"
+          : "#F59E0B";
       return {
         id: conn.id,
         source: conn.sourceId,
@@ -1678,12 +1681,15 @@ function FlowVisualizer({
         isDarkMode
           ? "border-slate-800 bg-slate-950/50"
           : "border-slate-200 bg-white"
-      } ${isConnecting ? "ring-2 ring-violet-400 ring-opacity-50" : ""}`}
+      } ${isConnecting ? "ring-2 ring-amber-400 ring-opacity-50" : ""}`}
     >
       <div className="absolute right-4 top-4 z-20 flex flex-wrap items-center gap-2">
         <Tooltip title="Kéo từ node này đến node khác để tạo kết nối">
           <Tag
-            color={isConnecting ? "green" : isDarkMode ? "purple" : "#6B46C1"}
+            color={isConnecting ? "green" : isDarkMode ? "default" : undefined}
+            className={
+              !isConnecting ? "!bg-amber-500 !text-white !border-none" : ""
+            }
             icon={<LinkOutlined />}
           >
             {isConnecting ? "Đang kết nối..." : "Kéo để nối"}
@@ -1693,7 +1699,9 @@ function FlowVisualizer({
           <Button icon={<MinusOutlined />} onClick={() => changeZoom(-0.2)} />
           <Button icon={<PlusOutlined />} onClick={() => changeZoom(0.2)} />
         </Button.Group>
-        <Tag color={isDarkMode ? "purple" : "#6B46C1"}>{zoomPercent}%</Tag>
+        <Tag className="!bg-amber-500 !text-white !border-none">
+          {zoomPercent}%
+        </Tag>
         <Button
           icon={<AimOutlined />}
           size="small"
@@ -1735,13 +1743,13 @@ function FlowVisualizer({
         selectionOnDrag
         zoomOnScroll
         zoomOnPinch
-        connectionLineStyle={{ stroke: "#7C3AED", strokeWidth: 2 }}
+        connectionLineStyle={{ stroke: "#F59E0B", strokeWidth: 2 }}
         proOptions={{ hideAttribution: true }}
       >
         <MiniMap
           maskColor={isDarkMode ? "#020617cc" : "#eef2ffcc"}
           nodeColor={(node) =>
-            node.data?.tone === "rose" ? "#FB7185" : "#7C3AED"
+            node.data?.tone === "rose" ? "#FB923C" : "#F59E0B"
           }
           pannable
           zoomable
@@ -1769,7 +1777,7 @@ function FlowVisualizer({
       <Modal
         title={
           <div className="flex items-center gap-2">
-            <LinkOutlined className="text-violet-500" />
+            <LinkOutlined className="text-amber-500" />
             <span>Tạo kết nối mới</span>
           </div>
         }
@@ -1778,22 +1786,29 @@ function FlowVisualizer({
         onCancel={cancelConnection}
         okText="Tạo kết nối (Always jump)"
         cancelText="Hủy"
-        okButtonProps={{ style: { backgroundColor: "#6B46C1" } }}
+        okButtonProps={{
+          className:
+            "!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none",
+        }}
       >
         <div className="py-4">
           <p className="mb-4">
             Bạn muốn tạo kết nối từ <strong>{sourceNode?.title}</strong> đến{" "}
             <strong>{targetNode?.title}</strong>?
           </p>
-          <div className="flex items-center gap-3 rounded-2xl bg-slate-100 p-4">
+          <div className="flex items-center gap-3 rounded-2xl bg-amber-50 p-4">
             <div className="flex-1 rounded-xl bg-white p-3 text-center shadow-sm">
-              <p className="m-0 text-xs text-slate-500">Từ</p>
-              <p className="m-0 font-semibold">{sourceNode?.title}</p>
+              <p className="m-0 text-xs text-amber-600">Từ</p>
+              <p className="m-0 font-semibold text-amber-900">
+                {sourceNode?.title}
+              </p>
             </div>
-            <BranchesOutlined className="text-2xl text-violet-500" />
+            <BranchesOutlined className="text-2xl text-amber-500" />
             <div className="flex-1 rounded-xl bg-white p-3 text-center shadow-sm">
-              <p className="m-0 text-xs text-slate-500">Đến</p>
-              <p className="m-0 font-semibold">{targetNode?.title}</p>
+              <p className="m-0 text-xs text-amber-600">Đến</p>
+              <p className="m-0 font-semibold text-amber-900">
+                {targetNode?.title}
+              </p>
             </div>
           </div>
           <p className="mt-4 text-xs text-slate-500">
@@ -1888,8 +1903,8 @@ function CustomEdge({
                     ? "bg-slate-700 text-slate-300"
                     : "bg-slate-200 text-slate-600"
                   : data?.isDarkMode
-                    ? "bg-violet-900/80 text-violet-200"
-                    : "bg-violet-100 text-violet-700"
+                    ? "bg-amber-900/80 text-amber-200"
+                    : "bg-amber-100 text-amber-700"
               }`}
             >
               <span className="max-w-[100px] truncate">{displayLabel}</span>
@@ -1943,15 +1958,15 @@ function WorkflowNode({ data }: NodeProps<WorkflowNodeData>) {
   const badgeTone =
     data.tone === "rose"
       ? data.isDarkMode
-        ? "bg-rose-500/20 text-rose-200"
-        : "bg-rose-100 text-rose-700"
+        ? "bg-orange-500/20 text-orange-200"
+        : "bg-orange-100 text-orange-700"
       : data.isDarkMode
-        ? "bg-indigo-500/20 text-indigo-200"
-        : "bg-indigo-100 text-indigo-700";
+        ? "bg-amber-500/20 text-amber-200"
+        : "bg-amber-100 text-amber-700";
   const wrapperTone = data.isActive
     ? data.isDarkMode
-      ? "border-violet-400 bg-slate-900 shadow-lg shadow-violet-500/20"
-      : "border-violet-400 bg-white shadow-lg shadow-violet-500/20"
+      ? "border-amber-400 bg-slate-900 shadow-lg shadow-amber-500/20"
+      : "border-amber-400 bg-white shadow-lg shadow-amber-500/20"
     : data.isDarkMode
       ? "border-slate-700 bg-slate-900/70 hover:border-slate-600"
       : "border-slate-200 bg-white hover:border-slate-300";
@@ -1960,7 +1975,7 @@ function WorkflowNode({ data }: NodeProps<WorkflowNodeData>) {
   const handleStyle = {
     width: 12,
     height: 12,
-    background: data.isDarkMode ? "#7C3AED" : "#8B5CF6",
+    background: data.isDarkMode ? "#F59E0B" : "#FBBF24",
     border: "2px solid white",
     boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
   };
@@ -2004,8 +2019,7 @@ function WorkflowNode({ data }: NodeProps<WorkflowNodeData>) {
             {(data.logicCount ?? 0) > 0 && (
               <Tooltip title={`${data.logicCount} logic rules`}>
                 <Tag
-                  color="purple"
-                  className="!m-0 !text-[10px] !px-1.5 !py-0"
+                  className="!m-0 !text-[10px] !px-1.5 !py-0 !bg-amber-500 !text-white !border-none"
                   icon={<BranchesOutlined />}
                 >
                   {data.logicCount}
@@ -2026,7 +2040,7 @@ function WorkflowNode({ data }: NodeProps<WorkflowNodeData>) {
           {data.title}
         </p>
         {data.isActive && (
-          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full bg-violet-500" />
+          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 w-8 rounded-full bg-gradient-to-r from-amber-500 to-orange-500" />
         )}
       </div>
     </Tooltip>

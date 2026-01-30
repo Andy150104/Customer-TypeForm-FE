@@ -313,6 +313,40 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
       ? currentField.properties.label
       : "I agree with the terms";
 
+  // Extract design properties
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const designProps = (currentField?.properties as any)?.design as
+    | {
+        fontFamily?: string;
+        isBold?: boolean;
+        isItalic?: boolean;
+        isUnderlined?: boolean;
+        textColor?: string;
+        textAlign?: "left" | "center" | "right";
+      }
+    | undefined;
+
+  const titleStyle: React.CSSProperties = useMemo(() => {
+    if (!designProps) return {};
+    return {
+      fontFamily: designProps.fontFamily || undefined,
+      fontWeight: designProps.isBold ? "bold" : undefined,
+      fontStyle: designProps.isItalic ? "italic" : undefined,
+      textDecoration: designProps.isUnderlined ? "underline" : undefined,
+      color: designProps.textColor || undefined,
+      textAlign: designProps.textAlign || undefined,
+    };
+  }, [designProps]);
+
+  const hasCustomDesign = Boolean(
+    designProps?.fontFamily ||
+      designProps?.isBold ||
+      designProps?.isItalic ||
+      designProps?.isUnderlined ||
+      designProps?.textColor ||
+      designProps?.textAlign,
+  );
+
   const isOptionListType = ["select", "multiselect", "radio"].includes(
     normalizedType,
   );
@@ -1165,15 +1199,47 @@ export const FormPreviewCard: React.FC<FormPreviewCardProps> = ({
                 ref={contentMeasureRef}
                 className={`space-y-5 transform-gpu ${questionAnimationClass}`}
               >
-                <div className="text-lg font-semibold sm:text-xl">
+                <div
+                  className={`text-lg font-semibold sm:text-xl ${designProps?.textAlign === "center" ? "text-center" : designProps?.textAlign === "right" ? "text-right" : ""}`}
+                  style={
+                    hasCustomDesign
+                      ? {
+                          fontFamily: titleStyle.fontFamily,
+                        }
+                      : undefined
+                  }
+                >
                   <span className={labelColor}>{questionNumber}.</span>{" "}
-                  <span className={titleColor}>
+                  <span
+                    className={
+                      hasCustomDesign && titleStyle.color ? "" : titleColor
+                    }
+                    style={
+                      hasCustomDesign
+                        ? {
+                            fontWeight: titleStyle.fontWeight,
+                            fontStyle: titleStyle.fontStyle,
+                            textDecoration: titleStyle.textDecoration,
+                            color: titleStyle.color,
+                          }
+                        : undefined
+                    }
+                  >
                     {currentField ? titleText : placeholderTitle}
                   </span>
                   {isRequired && <span className="text-rose-500"> *</span>}
                 </div>
 
-                <div className={`text-sm italic ${descriptionColor}`}>
+                <div
+                  className={`text-sm italic ${descriptionColor} ${designProps?.textAlign === "center" ? "text-center" : designProps?.textAlign === "right" ? "text-right" : ""}`}
+                  style={
+                    hasCustomDesign
+                      ? {
+                          fontFamily: titleStyle.fontFamily,
+                        }
+                      : undefined
+                  }
+                >
                   {currentField ? descriptionText : placeholderDescription}
                 </div>
                 {imageUrl && (

@@ -396,9 +396,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
         return;
       }
       setIsSubmitting(true);
-      const propertiesPayload = propertyPreview
-        ? { ...propertyPreview }
-        : undefined;
+      const propertiesPayload = propertyPreview ? { ...propertyPreview } : {};
       const optionsPayload = needsOptions
         ? (lockedOptions ?? values.options ?? createOptionPlaceholders()).map(
             (option, index) => ({
@@ -455,7 +453,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
       okButtonProps={{
         disabled: !formId,
         className:
-          "bg-[#6B46C1] border-[#6B46C1] hover:bg-[#5B36B1] hover:border-[#5B36B1]",
+          "!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600",
       }}
       cancelButtonProps={{ disabled: isSubmitting }}
       styles={{
@@ -476,16 +474,23 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
         <div
           className={`rounded-3xl border px-5 py-4 shadow-sm ${
             isDarkMode
-              ? "border-slate-800 bg-slate-900/70"
-              : "border-slate-200 bg-white"
+              ? "border-amber-800/30 bg-amber-950/30"
+              : "border-amber-200 bg-amber-50/50"
           }`}
         >
           <div className="flex flex-wrap items-center gap-4">
             <div>
-              <Typography.Title level={4} className="m-0">
+              <Typography.Title
+                level={4}
+                className={`m-0 ${isDarkMode ? "!text-amber-50" : "!text-amber-900"}`}
+              >
                 Add a question
               </Typography.Title>
-              <Typography.Text type="secondary">
+              <Typography.Text
+                className={
+                  isDarkMode ? "!text-amber-200/60" : "!text-amber-700/70"
+                }
+              >
                 Choose a field pattern on the left, then fine-tune the content
                 on the right.
               </Typography.Text>
@@ -499,8 +504,8 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             <div
               className={`rounded-2xl px-4 py-2 text-sm font-semibold ${
                 isDarkMode
-                  ? "bg-indigo-500/20 text-indigo-200"
-                  : "bg-indigo-100 text-indigo-700"
+                  ? "bg-amber-500/20 text-amber-200"
+                  : "bg-amber-100 text-amber-700"
               }`}
             >
               Current type: {selectedMeta?.label}
@@ -512,24 +517,32 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
           <div
             className={`rounded-3xl border px-5 py-5 shadow-sm ${
               isDarkMode
-                ? "border-slate-800 bg-gradient-to-b from-slate-900/90 to-slate-900"
-                : "border-slate-200 bg-gradient-to-b from-white to-slate-50"
+                ? "border-amber-800/30 bg-gradient-to-b from-amber-950/40 to-amber-950/20"
+                : "border-amber-200 bg-gradient-to-b from-amber-50/80 to-white"
             }`}
           >
             <div className="flex items-center justify-between gap-3">
               <div>
-                <p className="m-0 text-base font-semibold">Field palette</p>
                 <p
-                  className={`m-0 text-sm ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+                  className={`m-0 text-base font-semibold ${isDarkMode ? "text-amber-50" : "text-amber-900"}`}
+                >
+                  Field palette
+                </p>
+                <p
+                  className={`m-0 text-sm ${isDarkMode ? "text-amber-200/60" : "text-amber-700/70"}`}
                 >
                   Pick a layout that fits the answer style you expect.
                 </p>
               </div>
-              <Tag color="#6B46C1" className="px-3 py-1 text-xs">
+              <Tag
+                className={`px-3 py-1 text-xs border-0 ${isDarkMode ? "!bg-amber-500/20 !text-amber-300" : "!bg-amber-100 !text-amber-700"}`}
+              >
                 {selectedMeta?.category === "choice" ? "Choice based" : "Input"}
               </Tag>
             </div>
-            <Divider className="my-4" />
+            <Divider
+              className={`my-4 ${isDarkMode ? "!border-amber-800/30" : "!border-amber-200"}`}
+            />
             {FIELD_TYPE_SECTIONS.map((section) => {
               const items = FIELD_TYPES.filter(
                 (item) => item.category === section.key,
@@ -539,7 +552,7 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                 <div key={section.key} className="mb-5 last:mb-0">
                   <p
                     className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
-                      isDarkMode ? "text-slate-400" : "text-slate-500"
+                      isDarkMode ? "text-amber-400/60" : "text-amber-600"
                     }`}
                   >
                     {section.title}
@@ -554,29 +567,31 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                           onClick={() => handleTypeSelect(item.value)}
                           className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition-all ${
                             isActive
-                              ? "border-indigo-400 bg-indigo-500/10 shadow focus:outline-none"
+                              ? "border-amber-400 bg-amber-500/10 shadow focus:outline-none"
                               : isDarkMode
-                                ? "border-white/5 hover:border-indigo-400/50"
-                                : "border-slate-200 hover:border-indigo-200 hover:bg-white"
+                                ? "border-amber-800/20 hover:border-amber-500/50 hover:bg-amber-950/30"
+                                : "border-amber-200 hover:border-amber-300 hover:bg-amber-50"
                           }`}
                         >
                           <span
                             className={`mt-1 text-lg ${
                               isActive
-                                ? "text-indigo-400"
+                                ? "text-amber-500"
                                 : isDarkMode
-                                  ? "text-slate-400"
-                                  : "text-slate-500"
+                                  ? "text-amber-400/60"
+                                  : "text-amber-600"
                             }`}
                           >
                             {item.icon}
                           </span>
                           <span>
-                            <span className="block text-sm font-semibold">
+                            <span
+                              className={`block text-sm font-semibold ${isDarkMode ? "text-amber-50" : "text-amber-900"}`}
+                            >
                               {item.label}
                             </span>
                             <span
-                              className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+                              className={`text-xs ${isDarkMode ? "text-amber-200/50" : "text-amber-700/70"}`}
                             >
                               {item.description}
                             </span>
@@ -594,27 +609,32 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             <div
               className={`rounded-3xl border px-5 py-5 shadow-sm ${
                 isDarkMode
-                  ? "border-slate-800 bg-slate-900/70"
-                  : "border-slate-200 bg-white"
+                  ? "border-amber-800/30 bg-amber-950/30"
+                  : "border-amber-200 bg-white"
               }`}
             >
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-semibold m-0">Question copy</p>
                   <p
-                    className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+                    className={`text-sm font-semibold m-0 ${isDarkMode ? "text-amber-50" : "text-amber-900"}`}
+                  >
+                    Question copy
+                  </p>
+                  <p
+                    className={`text-xs ${isDarkMode ? "text-amber-200/60" : "text-amber-700/70"}`}
                   >
                     Keep it short and actionable.
                   </p>
                 </div>
                 <Tag
-                  className="text-xs"
-                  color={isDarkMode ? "#94a3b8" : "#cbd5f5"}
+                  className={`text-xs border-0 ${isDarkMode ? "!bg-amber-500/20 !text-amber-300" : "!bg-amber-100 !text-amber-700"}`}
                 >
                   Visible to respondents
                 </Tag>
               </div>
-              <Divider className="my-4" />
+              <Divider
+                className={`my-4 ${isDarkMode ? "!border-amber-800/30" : "!border-amber-200"}`}
+              />
               <Form.Item
                 name="title"
                 label="Question"
@@ -695,15 +715,19 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
             <div
               className={`rounded-3xl border px-5 py-5 shadow-sm space-y-4 ${
                 isDarkMode
-                  ? "border-slate-800 bg-slate-900/70"
-                  : "border-slate-200 bg-white"
+                  ? "border-amber-800/30 bg-amber-950/30"
+                  : "border-amber-200 bg-white"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold m-0">Validation</p>
                   <p
-                    className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+                    className={`text-sm font-semibold m-0 ${isDarkMode ? "text-amber-50" : "text-amber-900"}`}
+                  >
+                    Validation
+                  </p>
+                  <p
+                    className={`text-xs ${isDarkMode ? "text-amber-200/60" : "text-amber-700/70"}`}
                   >
                     Control whether the answer is mandatory.
                   </p>
@@ -713,24 +737,34 @@ export const AddContentModal: React.FC<AddContentModalProps> = ({
                 </Form.Item>
               </div>
               {needsOptions && (
-                <div className="rounded-2xl border border-dashed px-4 py-4">
+                <div
+                  className={`rounded-2xl border border-dashed px-4 py-4 ${isDarkMode ? "border-amber-700/50" : "border-amber-300"}`}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="m-0 text-sm font-semibold">Choices</p>
                       <p
-                        className={`m-0 text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+                        className={`m-0 text-sm font-semibold ${isDarkMode ? "text-amber-50" : "text-amber-900"}`}
+                      >
+                        Choices
+                      </p>
+                      <p
+                        className={`m-0 text-xs ${isDarkMode ? "text-amber-200/60" : "text-amber-700/70"}`}
                       >
                         Add the answers respondents can pick.
                       </p>
                     </div>
-                    <Tag>{lockedOptions ? "Preset" : "Custom"}</Tag>
+                    <Tag
+                      className={`border-0 ${isDarkMode ? "!bg-amber-500/20 !text-amber-300" : "!bg-amber-100 !text-amber-700"}`}
+                    >
+                      {lockedOptions ? "Preset" : "Custom"}
+                    </Tag>
                   </div>
                   {lockedOptions ? (
                     <div
                       className={`mt-3 rounded-xl border px-3 py-3 ${
                         isDarkMode
-                          ? "border-slate-700 bg-slate-900/40"
-                          : "border-slate-200 bg-slate-50"
+                          ? "border-amber-800/30 bg-amber-950/40"
+                          : "border-amber-200 bg-amber-50"
                       }`}
                     >
                       <Typography.Text type="secondary">

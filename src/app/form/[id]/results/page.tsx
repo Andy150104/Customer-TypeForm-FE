@@ -69,7 +69,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
   const tabInactiveClass = isDarkMode
     ? "text-slate-300 hover:bg-slate-800/80"
     : "text-slate-600 hover:bg-slate-100";
-  const brandColor = "#6B46C1";
+  const brandColor = "#f59e0b";
   const tabGridTemplate: CSSProperties = {
     gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))`,
   };
@@ -221,7 +221,9 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
       key: "answerCount",
       width: 130,
       render: (_, record) => (
-        <Tag color="purple">{record.answers?.length ?? 0} câu</Tag>
+        <Tag className="!bg-amber-500/20 !text-amber-600 !border-amber-500/30">
+          {record.answers?.length ?? 0} câu
+        </Tag>
       ),
     },
     {
@@ -310,7 +312,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
         {/* Decorative gradient */}
         <div
           className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-2xl opacity-30 ${
-            hasOptions ? "bg-violet-500" : "bg-blue-500"
+            hasOptions ? "bg-amber-500" : "bg-blue-500"
           }`}
           style={{ transform: "translate(30%, -30%)" }}
         />
@@ -328,7 +330,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
               </h4>
               <div className="flex items-center gap-2">
                 <Tag
-                  color={hasOptions ? "purple" : "blue"}
+                  color={hasOptions ? "orange" : "blue"}
                   className="!rounded-full !px-2.5 !py-0.5 !text-xs"
                 >
                   {field.type || "text"}
@@ -345,19 +347,19 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
             </div>
             <div
               className={`text-center p-3 rounded-xl ${
-                isDarkMode ? "bg-violet-500/20" : "bg-violet-100"
+                isDarkMode ? "bg-amber-500/20" : "bg-amber-100"
               }`}
             >
               <span
                 className={`text-2xl font-bold block ${
-                  isDarkMode ? "text-violet-300" : "text-violet-600"
+                  isDarkMode ? "text-amber-300" : "text-amber-600"
                 }`}
               >
                 {field.answeredCount ?? 0}
               </span>
               <span
                 className={`text-xs ${
-                  isDarkMode ? "text-violet-400" : "text-violet-500"
+                  isDarkMode ? "text-amber-400" : "text-amber-500"
                 }`}
               >
                 trả lời
@@ -419,7 +421,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
             <div className="mt-3">
               <div className="flex items-center gap-2 mb-3">
                 <PieChartOutlined
-                  className={isDarkMode ? "text-violet-400" : "text-violet-500"}
+                  className={isDarkMode ? "text-amber-400" : "text-amber-500"}
                 />
                 <span
                   className={`text-sm font-medium ${
@@ -488,8 +490,8 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
           <span
             className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
               isDarkMode
-                ? "bg-violet-600/30 text-violet-300"
-                : "bg-violet-100 text-violet-600"
+                ? "bg-amber-600/30 text-amber-300"
+                : "bg-amber-100 text-amber-600"
             }`}
           >
             {index + 1}
@@ -502,7 +504,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
             >
               {answer.fieldTitle || "Untitled Question"}
             </h4>
-            <Tag color="purple" className="mb-2">
+            <Tag className="mb-2 !bg-amber-500/20 !text-amber-600 !border-amber-500/30">
               {answer.fieldType || "text"}
             </Tag>
             <div
@@ -567,13 +569,13 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
           <div
             className={`relative overflow-hidden rounded-3xl p-6 ${
               isDarkMode
-                ? "bg-gradient-to-br from-violet-900/80 via-purple-900/60 to-slate-900/80"
-                : "bg-gradient-to-br from-violet-500 via-purple-500 to-indigo-600"
+                ? "bg-gradient-to-br from-amber-900/80 via-orange-900/60 to-slate-900/80"
+                : "bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600"
             }`}
           >
             {/* Decorative elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-300/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-orange-300/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
 
             <div className="relative z-10 flex items-center justify-between">
               <div>
@@ -601,7 +603,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                 <Button
                   icon={<DownloadOutlined />}
                   type="primary"
-                  className="!bg-white !text-violet-600 !border-white hover:!bg-white/90 font-semibold"
+                  className="!bg-white !text-amber-600 !border-white hover:!bg-white/90 font-semibold"
                   disabled={submissions.length === 0}
                 >
                   Xuất Excel
@@ -616,23 +618,23 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
             <div
               className={`relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${
                 isDarkMode
-                  ? "bg-gradient-to-br from-violet-900/60 to-purple-900/40 border border-violet-800/50"
-                  : "bg-gradient-to-br from-violet-50 to-purple-100 border border-violet-200"
+                  ? "bg-gradient-to-br from-amber-900/60 to-orange-900/40 border border-amber-800/50"
+                  : "bg-gradient-to-br from-amber-50 to-orange-100 border border-amber-200"
               }`}
             >
-              <div className="absolute top-0 right-0 w-20 h-20 bg-violet-500/20 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/20 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-3">
                   <div
                     className={`p-2.5 rounded-xl ${
-                      isDarkMode ? "bg-violet-500/30" : "bg-violet-500/20"
+                      isDarkMode ? "bg-amber-500/30" : "bg-amber-500/20"
                     }`}
                   >
-                    <UserOutlined className="text-xl text-violet-500" />
+                    <UserOutlined className="text-xl text-amber-500" />
                   </div>
                   <span
                     className={`text-sm font-medium ${
-                      isDarkMode ? "text-violet-300" : "text-violet-600"
+                      isDarkMode ? "text-amber-300" : "text-amber-600"
                     }`}
                   >
                     Tổng phản hồi
@@ -646,7 +648,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                   >
                     {overview?.totalSubmissions ?? 0}
                   </span>
-                  <span className="text-sm text-violet-500 mb-1">phản hồi</span>
+                  <span className="text-sm text-amber-500 mb-1">phản hồi</span>
                 </div>
               </div>
             </div>
@@ -787,13 +789,13 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                 className={`lg:col-span-2 relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl ${
                   isDarkMode
                     ? "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border border-slate-700/50"
-                    : "bg-gradient-to-br from-white via-violet-50/30 to-white border border-violet-100"
+                    : "bg-gradient-to-br from-white via-amber-50/30 to-white border border-amber-100"
                 }`}
               >
                 {/* Decorative elements */}
                 <div
                   className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-3xl ${
-                    isDarkMode ? "bg-violet-500/10" : "bg-violet-200/40"
+                    isDarkMode ? "bg-amber-500/10" : "bg-amber-200/40"
                   }`}
                 />
                 <div
@@ -807,11 +809,11 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                     <div
                       className={`p-3 rounded-xl ${
                         isDarkMode
-                          ? "bg-gradient-to-br from-violet-500/30 to-purple-600/30"
-                          : "bg-gradient-to-br from-violet-100 to-purple-100"
+                          ? "bg-gradient-to-br from-amber-500/30 to-orange-600/30"
+                          : "bg-gradient-to-br from-amber-100 to-orange-100"
                       }`}
                     >
-                      <BarChartOutlined className="text-xl text-violet-500" />
+                      <BarChartOutlined className="text-xl text-amber-500" />
                     </div>
                     <div>
                       <h3
@@ -873,8 +875,8 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
                               <span
                                 className={`text-sm font-bold ${
                                   isDarkMode
-                                    ? "text-violet-400"
-                                    : "text-violet-600"
+                                    ? "text-amber-400"
+                                    : "text-amber-600"
                                 }`}
                               >
                                 {field.answeredCount ?? 0}
@@ -1091,16 +1093,13 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
               <div className="flex items-center gap-3">
                 <div
                   className={`p-2 rounded-lg ${
-                    isDarkMode ? "bg-indigo-500/20" : "bg-indigo-100"
+                    isDarkMode ? "bg-amber-500/20" : "bg-amber-100"
                   }`}
                 >
-                  <FileTextOutlined className="text-lg text-indigo-500" />
+                  <FileTextOutlined className="text-lg text-amber-500" />
                 </div>
                 <span className="font-semibold">Danh sách phản hồi</span>
-                <Tag
-                  color="purple"
-                  className="!rounded-full !px-3 !py-0.5 !text-sm font-medium"
-                >
+                <Tag className="!rounded-full !px-3 !py-0.5 !text-sm font-medium !bg-amber-500/20 !text-amber-600 !border-amber-500/30">
                   {submissions.length} phản hồi
                 </Tag>
               </div>
@@ -1137,7 +1136,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
               >
                 <Button
                   type="primary"
-                  className="bg-[#6B46C1] border-[#6B46C1]"
+                  className="!bg-gradient-to-r !from-amber-500 !to-orange-500 !border-none hover:!from-amber-600 hover:!to-orange-600"
                   onClick={() => formId && router.push(`/form/${formId}/share`)}
                 >
                   Đi đến Share
@@ -1153,7 +1152,7 @@ export default function FormResultsPage({ params }: ResultsPageProps) {
         open={isDetailModalOpen}
         title={
           <div className="flex items-center gap-2">
-            <EyeOutlined className="text-[#6B46C1]" />
+            <EyeOutlined className="text-amber-500" />
             <span>Chi tiết phản hồi</span>
           </div>
         }
