@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ReactNode, useState, useEffect } from "react";
+import React, { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { Layout, Breadcrumb, Spin } from "antd";
 import { MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { AdminSidebar } from "EduSmart/components/SideBar/SideBar";
@@ -14,6 +14,7 @@ import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
 import { NotificationBell } from "EduSmart/components/Notifications/NotificationBell";
 import { NotificationToast } from "EduSmart/components/Notifications/NotificationToast";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
+import { useNotificationsStore } from "EduSmart/stores/Notifications/NotificationsStore";
 
 const { Content, Footer } = Layout;
 
@@ -38,11 +39,30 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
   const setCollapsed = useSidebarStore((s) => s.setCollapsed);
   const { isDarkMode } = useTheme();
   const toggleIconColor = isDarkMode ? "#ffffff" : "#374151";
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const { notifications, markReadNotifications } = useNotificationsStore();
+  const lastReadKey = useRef("");
+
+  const unreadIds = useMemo(
+    () =>
+      notifications
+        .filter((item) => !item.isRead && item.id)
+        .map((item) => item.id as string),
+    [notifications],
+  );
 
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  useEffect(() => {
+    if (!notificationOpen || unreadIds.length === 0) return;
+    const key = [...unreadIds].sort().join("|");
+    if (lastReadKey.current === key) return;
+    lastReadKey.current = key;
+    void markReadNotifications(unreadIds);
+  }, [notificationOpen, unreadIds, markReadNotifications]);
 
   if (invalid) return <NotFound />;
 
@@ -123,7 +143,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
               )}
             </div>
             <div className="flex items-center gap-3">
-              <NotificationBell />
+              <NotificationBell onOpenChange={setNotificationOpen} />
               <ThemeSwitch />
             </div>
           </div>

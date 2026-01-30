@@ -38,8 +38,6 @@ export enum FieldType {
   Value11 = 11,
   Value12 = 12,
   Value13 = 13,
-  Value14 = 14,
-  Value15 = 15,
 }
 
 export interface AnswerDetailResponseEntity {
@@ -161,34 +159,6 @@ export interface CreateFormFromTemplateResponseEntity {
   createdAt?: string;
 }
 
-export interface CreateFormFromTemplateCommand {
-  /** @format uuid */
-  templateId?: string;
-  title?: string | null;
-}
-
-export interface CreateFormFromTemplateCommandResponse {
-  success?: boolean;
-  messageId?: string | null;
-  message?: string | null;
-  detailErrors?: DetailError[] | null;
-  response?: CreateFormFromTemplateResponseEntity;
-}
-
-export interface CreateFormFromTemplateResponseEntity {
-  /** @format uuid */
-  formId?: string;
-  /** @format uuid */
-  templateId?: string;
-  title?: string | null;
-  slug?: string | null;
-  isPublished?: boolean;
-  /** @format int32 */
-  fieldCount?: number;
-  /** @format date-time */
-  createdAt?: string;
-}
-
 export interface CreateFormResponseEntity {
   /** @format uuid */
   id?: string;
@@ -261,35 +231,6 @@ export interface CreateTemplateResponseEntity {
   createdAt?: string;
 }
 
-export interface CreateTemplateCommand {
-  title?: string | null;
-  description?: string | null;
-  themeConfig?: any;
-  settings?: any;
-  fields?: TemplateFieldDataDto[] | null;
-}
-
-export interface CreateTemplateCommandResponse {
-  success?: boolean;
-  messageId?: string | null;
-  message?: string | null;
-  detailErrors?: DetailError[] | null;
-  response?: CreateTemplateResponseEntity;
-}
-
-export interface CreateTemplateResponseEntity {
-  /** @format uuid */
-  id?: string;
-  /** @format uuid */
-  userId?: string;
-  title?: string | null;
-  description?: string | null;
-  /** @format int32 */
-  fieldCount?: number;
-  /** @format date-time */
-  createdAt?: string;
-}
-
 export interface DeleteFieldCommandResponse {
   success?: boolean;
   messageId?: string | null;
@@ -329,21 +270,6 @@ export interface DeleteLogicCommandResponse {
 }
 
 export interface DeleteLogicResponseEntity {
-  /** @format uuid */
-  id?: string;
-  /** @format date-time */
-  updatedAt?: string;
-}
-
-export interface DeleteTemplateCommandResponse {
-  success?: boolean;
-  messageId?: string | null;
-  message?: string | null;
-  detailErrors?: DetailError[] | null;
-  response?: DeleteTemplateResponseEntity;
-}
-
-export interface DeleteTemplateResponseEntity {
   /** @format uuid */
   id?: string;
   /** @format date-time */
@@ -568,14 +494,6 @@ export interface GetNotificationsQueryResponse {
   response?: NotificationResponseEntity[] | null;
 }
 
-export interface GetNotificationsQueryResponse {
-  success?: boolean;
-  messageId?: string | null;
-  message?: string | null;
-  detailErrors?: DetailError[] | null;
-  response?: NotificationResponseEntity[] | null;
-}
-
 export interface GetPublishedFormWithFieldsAndLogicQueryResponse {
   success?: boolean;
   messageId?: string | null;
@@ -598,22 +516,6 @@ export interface GetSubmissionsOverviewQueryResponse {
   message?: string | null;
   detailErrors?: DetailError[] | null;
   response?: FormSubmissionsOverviewResponseEntity;
-}
-
-export interface GetTemplateWithFieldsQueryResponse {
-  success?: boolean;
-  messageId?: string | null;
-  message?: string | null;
-  detailErrors?: DetailError[] | null;
-  response?: TemplateWithFieldsResponseEntity;
-}
-
-export interface GetTemplatesQueryResponse {
-  success?: boolean;
-  messageId?: string | null;
-  message?: string | null;
-  detailErrors?: DetailError[] | null;
-  response?: TemplateSummaryResponseEntity[] | null;
 }
 
 export interface GetTemplateWithFieldsQueryResponse {
@@ -700,27 +602,6 @@ export interface NotificationResponseEntity {
   updatedAt?: string | null;
 }
 
-export interface NotificationResponseEntity {
-  /** @format uuid */
-  id?: string;
-  /** @format uuid */
-  formId?: string;
-  /** @format uuid */
-  latestSubmissionId?: string | null;
-  message?: string | null;
-  /** @format int32 */
-  count?: number;
-  /** @format date-time */
-  firstSubmissionAt?: string | null;
-  /** @format date-time */
-  lastSubmissionAt?: string | null;
-  isRead?: boolean;
-  /** @format date-time */
-  createdAt?: string | null;
-  /** @format date-time */
-  updatedAt?: string | null;
-}
-
 export interface OptionTrendResponseEntity {
   /** @format uuid */
   fieldOptionId?: string | null;
@@ -730,6 +611,14 @@ export interface OptionTrendResponseEntity {
   count?: number;
   /** @format double */
   rate?: number;
+}
+
+export interface ReadNotificationsCommandResponse {
+  success?: boolean;
+  messageId?: string | null;
+  message?: string | null;
+  detailErrors?: DetailError[] | null;
+  response?: string[] | null;
 }
 
 export interface RegisterApplicationCommand {
@@ -805,68 +694,6 @@ export interface SubmitFormResponseEntity {
   formId?: string;
   /** @format date-time */
   createdAt?: string;
-}
-
-export interface TemplateFieldDataDto {
-  title?: string | null;
-  description?: string | null;
-  imageUrl?: string | null;
-  type?: FieldType;
-  properties?: any;
-  isRequired?: boolean;
-  options?: TemplateFieldOptionDto[] | null;
-}
-
-export interface TemplateFieldOptionDto {
-  label?: string | null;
-  value?: string | null;
-}
-
-export interface TemplateFieldResponseEntity {
-  /** @format uuid */
-  id?: string;
-  /** @format uuid */
-  templateId?: string;
-  title?: string | null;
-  description?: string | null;
-  imageUrl?: string | null;
-  type?: string | null;
-  properties?: any;
-  isRequired?: boolean;
-  /** @format int32 */
-  order?: number;
-  /** @format date-time */
-  createdAt?: string;
-  /** @format date-time */
-  updatedAt?: string | null;
-  options?: FieldOptionResponseEntity[] | null;
-}
-
-export interface TemplateSummaryResponseEntity {
-  /** @format uuid */
-  id?: string;
-  title?: string | null;
-  description?: string | null;
-  /** @format int32 */
-  fieldCount?: number;
-  /** @format date-time */
-  createdAt?: string;
-  /** @format date-time */
-  updatedAt?: string | null;
-}
-
-export interface TemplateWithFieldsResponseEntity {
-  /** @format uuid */
-  id?: string;
-  title?: string | null;
-  description?: string | null;
-  themeConfig?: any;
-  settings?: any;
-  /** @format date-time */
-  createdAt?: string;
-  /** @format date-time */
-  updatedAt?: string | null;
-  fields?: TemplateFieldResponseEntity[] | null;
 }
 
 export interface TemplateFieldDataDto {
@@ -2068,6 +1895,28 @@ export class Api<
         path: `/api/v1/Notifications/GetNotifications`,
         method: "GET",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Notifications
+     * @name V1NotificationsReadNotificationsCreate
+     * @request POST:/api/v1/Notifications/ReadNotifications
+     * @secure
+     */
+    v1NotificationsReadNotificationsCreate: (
+      data: string[],
+      params: RequestParams = {},
+    ) =>
+      this.request<ReadNotificationsCommandResponse, any>({
+        path: `/api/v1/Notifications/ReadNotifications`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),

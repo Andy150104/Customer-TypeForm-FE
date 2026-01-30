@@ -27,7 +27,13 @@ const formatDateTime = (value?: string | null) => {
   });
 };
 
-export const NotificationBell: React.FC = () => {
+type NotificationBellProps = {
+  onOpenChange?: (open: boolean) => void;
+};
+
+export const NotificationBell: React.FC<NotificationBellProps> = ({
+  onOpenChange,
+}) => {
   const { isDarkMode } = useTheme();
   const { notifications, loading, fetchNotifications, startStream, stopStream } =
     useNotificationsStore();
@@ -71,12 +77,17 @@ export const NotificationBell: React.FC = () => {
   const mutedText = isDarkMode ? "text-slate-400" : "text-slate-500";
   const titleText = isDarkMode ? "text-slate-100" : "text-slate-900";
 
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    onOpenChange?.(nextOpen);
+  };
+
   return (
     <Popover
       placement="bottomRight"
       trigger="click"
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={handleOpenChange}
       overlayInnerStyle={{ padding: 0 }}
       getPopupContainer={() => document.documentElement}
       content={

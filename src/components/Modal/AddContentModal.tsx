@@ -169,7 +169,7 @@ const FIELD_TYPES: FieldTypeMeta[] = [
   },
   {
     key: "Radio",
-    value: FieldType.Value11,
+    value: FieldType.Value10,
     label: "Radio",
     description: "Show radio-style options",
     icon: <CheckCircleOutlined />,
@@ -178,7 +178,7 @@ const FIELD_TYPES: FieldTypeMeta[] = [
   },
   {
     key: "Rating",
-    value: FieldType.Value13,
+    value: FieldType.Value11,
     label: "Rating",
     description: "Capture star ratings",
     icon: <StarOutlined />,
@@ -186,7 +186,7 @@ const FIELD_TYPES: FieldTypeMeta[] = [
   },
   {
     key: "Scale",
-    value: FieldType.Value14,
+    value: FieldType.Value12,
     label: "Opinion scale",
     description: "Rate on a numeric scale",
     icon: <SlidersOutlined />,
@@ -194,7 +194,7 @@ const FIELD_TYPES: FieldTypeMeta[] = [
   },
   {
     key: "YesNo",
-    value: FieldType.Value15,
+    value: FieldType.Value13,
     label: "Yes / No",
     description: "Binary choice",
     icon: <QuestionCircleOutlined />,
@@ -228,15 +228,15 @@ const FIELD_PROPERTY_PRESETS: Partial<Record<FieldType, FieldPropertyBag>> = {
   [FieldType.Value7]: { placeholder: "Nhập câu trả lời dài", maxLength: 500 },
   [FieldType.Value8]: { placeholder: "Chọn 1 đáp án" },
   [FieldType.Value9]: { placeholder: "Chọn nhiều đáp án" },
-  [FieldType.Value11]: { placeholder: "Chọn một" },
-  [FieldType.Value13]: { placeholder: "1 = tệ, 5 = tuyệt vời", max: 5, min: 1 },
-  [FieldType.Value14]: {
+  [FieldType.Value10]: { placeholder: "Chọn một" },
+  [FieldType.Value11]: { placeholder: "1 = tệ, 5 = tuyệt vời", max: 5, min: 1 },
+  [FieldType.Value12]: {
     placeholder: "Kéo để đánh giá",
     min: 0,
     max: 10,
     step: 1,
   },
-  [FieldType.Value15]: { placeholder: "Có hoặc Không" },
+  [FieldType.Value13]: { placeholder: "Có hoặc Không" },
 };
 
 const getPropertiesForType = (type: FieldType): FieldPropertyBag | null => {
