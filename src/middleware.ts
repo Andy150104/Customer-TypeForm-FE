@@ -42,10 +42,12 @@ function getSidFromReq(req: NextRequest): string | null {
 export async function middleware(req: NextRequest) {
   // Redirect www to non-www in production only
   if (process.env.NODE_ENV === "production") {
-    const host = req.headers.get("host");
-    if (host === "www.edusmart.pro.vn") {
+    const hostHeader =
+      req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "";
+    const hostname = hostHeader.split(":")[0].toLowerCase();
+    if (hostname === "www.customer-type-form-fe.vercel.app") {
       const url = req.nextUrl.clone();
-      url.hostname = "edusmart.pro.vn";
+      url.hostname = "customer-type-form-fe.vercel.app";
       const response = NextResponse.redirect(url, 308);
       
       // Copy cookies từ request sang response để preserve auth state khi redirect

@@ -7,7 +7,6 @@ import { AdminSidebar } from "EduSmart/components/SideBar/SideBar";
 import Loading from "EduSmart/components/Loading/Loading";
 import { FadeInUp } from "EduSmart/components/Animation/FadeInUp";
 import { useValidateStore } from "EduSmart/stores/Validate/ValidateStore";
-import NotFound from "EduSmart/app/404/page";
 import { useSidebarStore } from "EduSmart/stores/SideBar/SideBarStore";
 import { GlobalMessage } from "EduSmart/components/Common/Message/GlobalMessage";
 import { ThemeSwitch } from "EduSmart/components/Themes/Theme";
@@ -15,6 +14,7 @@ import { NotificationBell } from "EduSmart/components/Notifications/Notification
 import { NotificationToast } from "EduSmart/components/Notifications/NotificationToast";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useNotificationsStore } from "EduSmart/stores/Notifications/NotificationsStore";
+import { useRouter } from "next/navigation";
 
 const { Content, Footer } = Layout;
 
@@ -34,7 +34,8 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
   breadcrumbItems = [],
 }) => {
   const [mounted, setMounted] = useState(false);
-  const invalid = useValidateStore.getState().inValid;
+  const [redirecting, setRedirecting] = useState(false);
+  const invalid = useValidateStore((s) => s.inValid);
   const collapsed = useSidebarStore((s) => s.collapsed);
   const setCollapsed = useSidebarStore((s) => s.setCollapsed);
   const { isDarkMode } = useTheme();
@@ -42,6 +43,7 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
   const [notificationOpen, setNotificationOpen] = useState(false);
   const { notifications, markReadNotifications } = useNotificationsStore();
   const lastReadKey = useRef("");
+  const router = useRouter();
 
   const unreadIds = useMemo(
     () =>
@@ -57,6 +59,17 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
   }, []);
 
   useEffect(() => {
+    if (!invalid) return;
+    setRedirecting(true);
+    const nextPath =
+      typeof window !== "undefined"
+        ? `${window.location.pathname}${window.location.search}`
+        : "/";
+    useValidateStore.getState().setInValid(false);
+    router.replace(`/Login?next=${encodeURIComponent(nextPath)}`);
+  }, [invalid, router]);
+
+  useEffect(() => {
     if (!notificationOpen || unreadIds.length === 0) return;
     const key = [...unreadIds].sort().join("|");
     if (lastReadKey.current === key) return;
@@ -64,7 +77,16 @@ const BaseScreenAdmin: React.FC<BaseScreenAdminProps> = ({
     void markReadNotifications(unreadIds);
   }, [notificationOpen, unreadIds, markReadNotifications]);
 
-  if (invalid) return <NotFound />;
+  if (invalid || redirecting) {
+    return (
+      <div className="min-h-screen bg-amber-50 dark:bg-amber-950/80 flex flex-col items-center justify-center gap-3">
+        <Spin size="large" />
+        <p className="text-sm text-amber-700/80 dark:text-amber-200/80">
+          Phiên đăng nhập đã hết hạn, đang chuyển hướng...
+        </p>
+      </div>
+    );
+  }
 
   if (!mounted) {
     return (
