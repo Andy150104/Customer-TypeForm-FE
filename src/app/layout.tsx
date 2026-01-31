@@ -24,7 +24,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.edusmart.pro.vn"),
+  metadataBase: new URL("https://customer-type-form-fe.vercel.app"),
   title: {
     default: "Uniwrap – Nền tảng tạo form khảo sát chuyên nghiệp",
     template: "%s | Uniwrap",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     siteName: "Uniwrap",
     images: [
       {
-        url: "https://www.edusmart.pro.vn/Logo.png",
+        url: "https://customer-type-form-fe.vercel.app/Logo.png",
         width: 1200,
         height: 630,
         alt: "Uniwrap logo",
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Uniwrap",
     description: "Nền tảng tạo form khảo sát chuyên nghiệp",
-    images: ["https://www.edusmart.pro.vn/Logo.png"],
+    images: ["https://customer-type-form-fe.vercel.app/Logo.png"],
   },
   icons: {
     icon: [

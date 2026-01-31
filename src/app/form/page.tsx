@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import { useTheme } from "EduSmart/Provider/ThemeProvider";
 import { useFormsStore } from "EduSmart/stores/Forms/FormsStore";
+import { useAuthStore } from "EduSmart/stores/Auth/AuthStore";
 import { useRouter } from "next/navigation";
 import { EditFormModal } from "EduSmart/components/Modal/EditFormModal";
 import { CreateFormModal } from "EduSmart/components/Modal/CreateFormModal";
@@ -34,6 +35,12 @@ const { Text } = Typography;
 export default function HomePage() {
   const { isDarkMode } = useTheme();
   const { forms, fetchForms, deleteForm } = useFormsStore();
+  const token = useAuthStore((s) => s.token);
+  const refreshToken = useAuthStore((s) => s.refreshToken);
+  const [authReady, setAuthReady] = useState(() =>
+    useAuthStore.persist.hasHydrated(),
+  );
+  const [hasFetched, setHasFetched] = useState(false);
   const [deletingFormId, setDeletingFormId] = useState<string | null>(null);
   const [isEditFormModalOpen, setIsEditFormModalOpen] = useState(false);
   const [isCreateFormModalOpen, setIsCreateFormModalOpen] = useState(false);
@@ -46,9 +53,39 @@ export default function HomePage() {
   const messageApi = useNotification();
 
   useEffect(() => {
-    fetchForms();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (authReady) return;
+    const unsubscribe = useAuthStore.persist.onFinishHydration(() => {
+      setAuthReady(true);
+    });
+    return () => {
+      unsubscribe?.();
+    };
+  }, [authReady]);
+
+  useEffect(() => {
+    if (!authReady || hasFetched) return;
+    let active = true;
+
+    const run = async () => {
+      try {
+        if (!token) {
+          await refreshToken();
+        }
+        if (!active) return;
+        await fetchForms();
+        if (active) setHasFetched(true);
+      } catch {
+        if (!active) return;
+        const nextPath = `${window.location.pathname}${window.location.search}`;
+        router.replace(`/Login?next=${encodeURIComponent(nextPath)}`);
+      }
+    };
+
+    void run();
+    return () => {
+      active = false;
+    };
+  }, [authReady, hasFetched, token, refreshToken, fetchForms, router]);
 
   // Stats calculation
   const stats = useMemo(() => {
