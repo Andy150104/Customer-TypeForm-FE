@@ -69,7 +69,8 @@ export default function LoginPage() {
   const didRunRef = useRef(false);
   const transitionLayerRef = useRef<HTMLDivElement | null>(null);
   const searchParams = useSearchParams();
-  const rawRedirect = searchParams.get("redirect") || "";
+  const rawRedirect =
+    searchParams.get("next") || searchParams.get("redirect") || "";
   const redirect =
     rawRedirect && rawRedirect.startsWith("/")
       ? decodeURIComponent(rawRedirect)
@@ -174,7 +175,7 @@ export default function LoginPage() {
         return;
       }
 
-      const target = redirect || "/";
+      const target = redirect && redirect !== "/" ? redirect : "/form";
       if (isOK) {
         messageApi.success("Đăng nhập thành công!");
         router.push(target);
