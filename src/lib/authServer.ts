@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { randomUUID } from "crypto";
 import {
   loadTokens,
@@ -12,9 +12,35 @@ const BACKEND = process.env.API_URL!;
 const CID = process.env.CLIENT_ID!;
 const CSECRET = process.env.CLIENT_SECRET!;
 const isProd = process.env.NODE_ENV === "production";
-const SID_NAME = isProd ? "__Host-sid" : "sid"; // dev không dùng __Host-
-const ALT_SID_NAME = SID_NAME === "__Host-sid" ? "sid" : "__Host-sid";
-const mustSecure = SID_NAME.startsWith("__Host-");
+
+const resolveSidCookieConfig = async () => {
+  if (!isProd) {
+    return { name: "sid", altName: "__Host-sid", secure: false };
+  }
+
+  let host = "";
+  let proto = "";
+  try {
+    const h = await headers();
+    host = h.get("host") ?? "";
+    proto = h.get("x-forwarded-proto") ?? "";
+  } catch {
+    // ignore header access issues (edge/callsite differences)
+  }
+
+  const isLocalhost =
+    host.startsWith("localhost") ||
+    host.startsWith("127.0.0.1") ||
+    host.startsWith("0.0.0.0");
+  const isHttps = proto === "https";
+  const useHostCookie = isHttps && !isLocalhost;
+
+  return {
+    name: useHostCookie ? "__Host-sid" : "sid",
+    altName: useHostCookie ? "sid" : "__Host-sid",
+    secure: isHttps && !isLocalhost,
+  };
+};
 
 const agent = new Agent({ connect: { rejectUnauthorized: false } });
 if (process.env.NODE_ENV !== "production") {
@@ -156,12 +182,13 @@ function isCookiePayload(x: unknown): x is CookiePayload {
   return true;
 }
 
-function getRawSidCookie(jar: Awaited<ReturnType<typeof cookies>>) {
-  const primary = jar.get(SID_NAME);
-  if (primary?.value) return { name: SID_NAME, value: primary.value };
+async function getRawSidCookie(jar: Awaited<ReturnType<typeof cookies>>) {
+  const { name, altName } = await resolveSidCookieConfig();
+  const primary = jar.get(name);
+  if (primary?.value) return { name, value: primary.value };
 
-  const alt = jar.get(ALT_SID_NAME);
-  if (alt?.value) return { name: ALT_SID_NAME, value: alt.value };
+  const alt = jar.get(altName);
+  if (alt?.value) return { name: altName, value: alt.value };
 
   return null;
 }
@@ -169,12 +196,13 @@ function getRawSidCookie(jar: Awaited<ReturnType<typeof cookies>>) {
 /** Ghi cookie: giá trị là base64url(JSON payload) */
 async function setSidCookie(payload: CookiePayload) {
   const jar = await cookies();
+  const { name, secure } = await resolveSidCookieConfig();
   const val = b64url(JSON.stringify(payload));
   jar.set({
-    name: SID_NAME,
+    name,
     value: val,
     httpOnly: true,
-    secure: mustSecure || isProd, // đảm bảo true nếu __Host-
+    secure,
     sameSite: "strict",
     path: "/",
     maxAge: 60 * 60 * 24 * 30, // 30 ngày
@@ -185,7 +213,7 @@ async function setSidCookie(payload: CookiePayload) {
 /** Đọc cookie và parse payload; hỗ trợ legacy (raw sid) bằng cách trả null */
 export async function readSidCookiePayload(): Promise<CookiePayload | null> {
   const jar = await cookies();
-  const raw = getRawSidCookie(jar)?.value;
+  const raw = (await getRawSidCookie(jar))?.value;
   if (!raw) return null;
 
   const asJson = ub64url(raw);
@@ -426,13 +454,14 @@ export async function getBearerForSid(sid: string) {
 /** ===== Cookie ops ===== */
 export async function clearSidCookie() {
   const jar = await cookies();
-  const names = [SID_NAME, ALT_SID_NAME];
+  const { name, altName, secure } = await resolveSidCookieConfig();
+  const names = [name, altName];
   for (const name of names) {
     jar.set({
       name,
       value: "",
       httpOnly: true,
-      secure: name.startsWith("__Host-") || isProd,
+      secure: name.startsWith("__Host-") ? true : secure,
       sameSite: "strict",
       path: "/",
       maxAge: 0,
@@ -478,7 +507,7 @@ export async function getSidFromCookie(): Promise<string | null> {
 
   // legacy fallback: nếu cookie là raw sid (cũ)
   const jar = await cookies();
-  const raw = getRawSidCookie(jar)?.value;
+  const raw = (await getRawSidCookie(jar))?.value;
   return raw ?? null;
 }
 
